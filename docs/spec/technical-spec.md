@@ -352,6 +352,24 @@ A semantic `<table>` with `<thead>` and `<th scope="col">`, inside a wrapper wit
 - On a failed Calculate, focus moves to the first invalid field. On Reset, focus moves to **Loan amount**. On Delete, focus moves per AC-12.1. On Restore, focus stays on the Restore button.
 - **Confirm dialog:** native `<dialog>` opened with `showModal()`. Focus targets are set **explicitly in code**, not with React's `autoFocus` (which fires at mount, not at `showModal()`) and not left to the browser's return-focus (macOS Safari and Firefox don't focus buttons on click). After `showModal()`, focus **Cancel**. **Cancel** or Escape (the `cancel` event) closes it without action and focuses **Clear all**. **Clear** clears the history and focuses the **Saved calculations** heading, because **Clear all** is now disabled (D-30). `aria-labelledby` points to the `dialog.clear.text` element and `aria-describedby` to `dialog.clear.hint`. **No JS focus trap** (D-20): Tab may leave the dialog to the browser's own UI, but must never reach page content behind the dialog (AC-8.5).
 
+### 8.3.1 Test-facing DOM contract (D-43; frozen with the tests at G3)
+
+Tests locate elements only by role and accessible name. The app must provide:
+
+| What | Markup | How tests find it |
+|---|---|---|
+| Title | `<h1>` = `app.title` | `getByRole('heading', { level: 1 })` |
+| Inputs and selects | `<label>` text from §7 | `getByLabel('Loan amount (Rs)')`, `getByLabel('Annual interest rate (%)')`, `getByLabel('Loan tenure')`, `getByLabel('Tenure unit')`, `getByLabel('Currency')`, `getByLabel('Theme')` |
+| Field errors | Error element linked with `aria-describedby` | `expect(input).toHaveAccessibleDescription('Enter a loan amount.')` and `toHaveAttribute('aria-invalid', 'true')` |
+| Summary figures | `<dl>`; each `<dd>` has `aria-labelledby` pointing at its `<dt>` (`summary.monthly`, `summary.interest`, `summary.total`) | `getByRole('definition', { name: 'Monthly payment' })` has text `Rs 88,848.79` |
+| Idle, stale and rounding texts | Plain text in the results card | `getByText(...)` with the exact §7 string |
+| Schedule | `<h2>` = `schedule.title`; region and table named by it (§8.2); `<th scope="col">` per §7 | `getByRole('table', { name: 'Repayment schedule' })`, `getByRole('row')`, `getByRole('columnheader')`, `getByRole('cell')` |
+| Saved calculations | `<h2 tabindex="-1">` = `history.title`; `<ul aria-labelledby>` that heading; one `<li>` per entry holding three lines (§7 line1, line2, line3) | `getByRole('list', { name: 'Saved calculations' })`, `getByRole('listitem')` |
+| Entry buttons | Accessible names per §7 (D-29) | `getByRole('button', { name: 'Restore Rs 2,500,000.00 at 18% for 5 years, saved …' })` |
+| Dialog | `<dialog>` named by `dialog.clear.text` | `getByRole('dialog', { name: "Clear all saved calculations? This can't be undone." })` |
+| Theme | `data-theme` on `<html>` | `document.documentElement.dataset.theme` |
+| Removal failure | Text in the Saved calculations card | `getByText(...)` with `history.removeFailed` |
+
 ### 8.4 Theme
 
 Resolved theme = the user's choice, or `prefers-color-scheme` when set to `system`. Apply it as `data-theme="light|dark"` on `<html>`. A tiny inline script in `index.html` applies the saved theme before first paint (wrapped in try/catch) so there is no flash of the wrong theme. Listen for `matchMedia('(prefers-color-scheme: dark)')` changes while `system` is selected.

@@ -54,8 +54,9 @@ Each decision is **Approved** or **Proposed — needs owner approval**. Claude C
 | D-38 | Property generators biased to corners; §5.3 regression tests | Approved (owner, Gate G1), 2026-10-17 |
 | D-39 | Contrast tests read computed styles | Approved (owner, Gate G1), 2026-10-17 |
 | D-40 | Batch of Gate G1 spec, AC and process fixes | Approved (owner, Gate G1), 2026-10-17 |
-| D-41 | TypeScript 6.0.3 and ESLint 9.39.5 instead of the newest majors | **Proposed**: applied provisionally in Phase 2, owner to confirm at G2 |
-| D-42 | Phase 2 scaffold choices | **Proposed**: developer decisions in Phase 2, owner to review at G2 |
+| D-41 | TypeScript 6.0.3 and ESLint 9.39.5 instead of the newest majors | Approved (owner, Gate G2), 2026-10-17 (recommendation (a) stands; see entry) |
+| D-42 | Phase 2 scaffold choices | Approved (owner, Gate G2), 2026-10-17 |
+| D-43 | Test-facing DOM contract (roles and names) | **Proposed**: added before Phase 3, owner to review at G3 |
 
 **How this log is kept (D-24):** every decision is recorded here, however small. Entries are never deleted or rewritten. A changed decision gets a new dated **Decision** line under its entry, or a new entry that names the one it supersedes, and a row in the change history.
 
@@ -298,6 +299,8 @@ Each item is approved as written in the spec or AC text it names:
   - (b) ESLint 10 with an npm `overrides` entry forcing jsx-a11y. This is newer but runs a plugin outside its declared range, and it may break.
   - (c) Drop `eslint-plugin-jsx-a11y` and rely on the role- and name-based Playwright locators for accessibility. That loses static a11y linting.
 - **Recommendation:** (a) for v1, revisited if jsx-a11y releases ESLint 10 support.
+- **Decision (owner, Gate G2, 2026-10-17):** The owner approved G2 ("let's do phase 3") without choosing between (a), (b) and (c). The recommendation (a) therefore stands. The owner may still choose (b) or (c) later; changing lint tooling doesn't touch the frozen tests.
+- **Note:** this log doesn't record whether the owner ran the G2 hand checks (`npm ci && npm run dev`; the `J-99` trace mutation). Claude Code ran the trace mutation itself in a scratch copy (exit 1, three errors).
 
 ### D-42 Phase 2 scaffold choices (Proposed, owner to review at G2)
 - **Versions** (exact, `save-exact=true` in `.npmrc`):
@@ -324,6 +327,19 @@ Each item is approved as written in the spec or AC text it names:
   - the action majors used are checkout v5, setup-node v5, upload-artifact v4, configure-pages v5, upload-pages-artifact v4 and deploy-pages v4;
   - the build stamps `<meta name="build-id" content="<commit SHA>">` into `index.html`, so the smoke job waits until Pages serves that exact commit.
 - **Page title:** `index.html` `<title>` holds `Loan EMI Calculator` as static text, because it's needed before any JS runs. It duplicates `copy.app.title`, and a test should keep the two equal.
+- **Decision (owner, Gate G2, 2026-10-17):** Approved as listed.
+
+## Phase 3 decisions (2026-10-17)
+
+### D-43 Test-facing DOM contract (Proposed, owner to review at G3)
+- **Decision:** Spec §8.3.1 defines how tests find each element, using only roles and accessible names:
+  - labelled inputs;
+  - errors linked by `aria-describedby`;
+  - summary figures as `<dd>` named by their `<dt>`;
+  - a named schedule table;
+  - a named history list of `<li>` entries;
+  - a named dialog.
+- **Why:** The spec defined the copy but not the structure. Left open, the test-designer would have invented a DOM shape, and freezing the tests at G3 would lock it in without anyone deciding it.
 
 ---
 
@@ -334,3 +350,4 @@ Each item is approved as written in the spec or AC text it names:
 | 2026-10-17 | Planning phase: D-05 approved (2 dp); D-13 to D-24 added and approved; AC-8.5 and AC-12.2 text updated | Claude Code (Opus 5.5) for M. Arslan, owner-approved |
 | 2026-10-17 | Gate G1: D-01 to D-04 and D-06 to D-12 approved (with Decision lines on D-02, D-10, D-12, D-24); D-25 to D-40 added; ACs 1.12, 2.1, 2.12, 2.15, 5.2, 5.3, 8.1, 8.5, 9.1, 10.8, 11.2, 11.5 and 11.10 reworded; AC-2.17 and AC-12.7 added | Claude Code (Opus 5.5) for M. Arslan, owner-approved |
 | 2026-10-17 | Phase 2: D-41 (toolchain version conflict) and D-42 (scaffold choices) added as Proposed for G2; spec §2 and §13 notes updated | Claude Code (Opus 5.5) for M. Arslan, pending G2 |
+| 2026-10-17 | Gate G2 approved: D-41 (recommendation (a)) and D-42 approved; D-43 (DOM contract, spec §8.3.1) added as Proposed for G3 | Claude Code (Opus 5.5) for M. Arslan |
