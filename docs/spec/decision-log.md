@@ -56,8 +56,8 @@ Each decision is **Approved** or **Proposed — needs owner approval**. Claude C
 | D-40 | Batch of Gate G1 spec, AC and process fixes | Approved (owner, Gate G1), 2026-10-17 |
 | D-41 | TypeScript 6.0.3 and ESLint 9.39.5 instead of the newest majors | Approved (owner, Gate G2), 2026-10-17 (recommendation (a) stands; see entry) |
 | D-42 | Phase 2 scaffold choices | Approved (owner, Gate G2), 2026-10-17 |
-| D-43 | Test-facing DOM contract (roles and names) | **Proposed**: added before Phase 3, owner to review at G3 |
-| D-44 | Test-designer interpretations frozen with the tests | **Proposed**: owner to review at G3 |
+| D-43 | Test-facing DOM contract (roles and names) | Approved (owner, Gate G3), 2026-10-18 |
+| D-44 | Test-designer interpretations frozen with the tests | Approved (owner, Gate G3), 2026-10-18 |
 
 **How this log is kept (D-24):** every decision is recorded here, however small. Entries are never deleted or rewritten. A changed decision gets a new dated **Decision** line under its entry, or a new entry that names the one it supersedes, and a row in the change history.
 
@@ -341,6 +341,7 @@ Each item is approved as written in the spec or AC text it names:
   - a named history list of `<li>` entries;
   - a named dialog.
 - **Why:** The spec defined the copy but not the structure. Left open, the test-designer would have invented a DOM shape, and freezing the tests at G3 would lock it in without anyone deciding it.
+- **Decision (owner, Gate G3, 2026-10-18):** Approved ("approved").
 
 ### D-44 Test-designer interpretations (Proposed, owner to review at G3)
 These readings were made while writing the tests. They become binding when the tests freeze.
@@ -356,6 +357,7 @@ These readings were made while writing the tests. They become binding when the t
 10. **§6 formatters:** a value with more than 2 dp is rounded half-up first (`999.999` gives `$1,000.00`).
 11. **Two-tab tests:** use a popup tab (`window.open`), because Playwright's WebKit doesn't deliver `storage` events between two `context.newPage()` pages. The "Clear in B, then Calculate in A" test suppresses `storage` events in tab A, so only re-read-before-write (D-13) can pass it.
 12. **Fixture timeouts:** the E2E page fixture sets an 8 s action timeout and a 30 s navigation timeout, so a red run takes minutes rather than hours. It also counts as frozen test code.
+- **Decision (owner, Gate G3, 2026-10-18):** Approved ("approved"). The tests are frozen from tag `g3-tests-approved` (D-12, D-23).
 
 ---
 
@@ -367,3 +369,4 @@ These readings were made while writing the tests. They become binding when the t
 | 2026-10-17 | Gate G1: D-01 to D-04 and D-06 to D-12 approved (with Decision lines on D-02, D-10, D-12, D-24); D-25 to D-40 added; ACs 1.12, 2.1, 2.12, 2.15, 5.2, 5.3, 8.1, 8.5, 9.1, 10.8, 11.2, 11.5 and 11.10 reworded; AC-2.17 and AC-12.7 added | Claude Code (Opus 5.5) for M. Arslan, owner-approved |
 | 2026-10-17 | Phase 2: D-41 (toolchain version conflict) and D-42 (scaffold choices) added as Proposed for G2; spec §2 and §13 notes updated | Claude Code (Opus 5.5) for M. Arslan, pending G2 |
 | 2026-10-17 | Gate G2 approved: D-41 (recommendation (a)) and D-42 approved; D-43 (DOM contract, spec §8.3.1) added as Proposed for G3 | Claude Code (Opus 5.5) for M. Arslan |
+| 2026-10-18 | Gate G3 approved: D-43 and D-44 approved; tests frozen at tag `g3-tests-approved` | Claude Code (Opus 5.5) for M. Arslan |
