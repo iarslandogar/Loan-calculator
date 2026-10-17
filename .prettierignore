@@ -1,0 +1,12 @@
+# Build and test output
+dist/
+reports/
+test-results/
+playwright-report/
+package-lock.json
+
+# Owner-written documents are not reformatted
+*.md
+docs/
+transcripts/
+.claude/
