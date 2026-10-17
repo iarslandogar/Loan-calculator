@@ -58,6 +58,7 @@ Each decision is **Approved** or **Proposed — needs owner approval**. Claude C
 | D-42 | Phase 2 scaffold choices | Approved (owner, Gate G2), 2026-10-17 |
 | D-43 | Test-facing DOM contract (roles and names) | Approved (owner, Gate G3), 2026-10-18 |
 | D-44 | Test-designer interpretations frozen with the tests | Approved (owner, Gate G3), 2026-10-18 |
+| D-45 | Handling of the G4.1 review's Minor findings | **Proposed**: developer decision, owner to review at G4.1 |
 
 **How this log is kept (D-24):** every decision is recorded here, however small. Entries are never deleted or rewritten. A changed decision gets a new dated **Decision** line under its entry, or a new entry that names the one it supersedes, and a row in the change history.
 
@@ -358,6 +359,14 @@ These readings were made while writing the tests. They become binding when the t
 11. **Two-tab tests:** use a popup tab (`window.open`), because Playwright's WebKit doesn't deliver `storage` events between two `context.newPage()` pages. The "Clear in B, then Calculate in A" test suppresses `storage` events in tab A, so only re-read-before-write (D-13) can pass it.
 12. **Fixture timeouts:** the E2E page fixture sets an 8 s action timeout and a 30 s navigation timeout, so a red run takes minutes rather than hours. It also counts as frozen test code.
 - **Decision (owner, Gate G3, 2026-10-18):** Approved ("approved"). The tests are frozen from tag `g3-tests-approved` (D-12, D-23).
+
+## Phase 4 decisions
+
+### D-45 G4.1 Minor findings (Proposed, owner to review at G4.1)
+The code-reviewer reported `BLOCKING FINDINGS: 0` for group 1 (domain), with three Minors:
+1. **`checkTenure` relies on the range check running before `toNumber()`:** fixed with a comment at that line.
+2. **`e2e/review/domain-probe.spec.ts` asserts nothing but would run in all three browsers:** the reviewer was asked to delete its own file, because `e2e/review/` is its area.
+3. **`formatDateTime` doesn't zero-pad years below 1000:** **won't fix.** It's unreachable: stored entries must have a year from 2000 to 9999 (§9.2), and new entries use the current clock.
 
 ---
 
