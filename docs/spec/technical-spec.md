@@ -27,7 +27,7 @@ A single-page, client-only web app that calculates the equal monthly instalment 
 | UI | React (latest stable) + TypeScript (latest stable, `strict: true`) | Function components and hooks only. |
 | Build/dev server | Vite (latest stable) | Static output in `dist/`. |
 | Decimal maths | `decimal.js` | **All money and rate arithmetic.** JS `number` must never hold a money value or be used in a calculation. |
-| Unit/component tests | Vitest + @testing-library/react + @testing-library/user-event + jsdom | |
+| Unit/component tests | Vitest + @testing-library/react + @testing-library/user-event + jsdom | `@testing-library/dom` is installed as the required peer of `@testing-library/react` (D-42). |
 | Property tests | `fast-check` | For invariants in §5.4. |
 | End-to-end tests | `@playwright/test` | Chromium, Firefox, WebKit. Edge is Chromium-based and is covered by the Chromium project; Safari by WebKit. |
 | Lint/format | ESLint (flat config, typescript-eslint, eslint-plugin-react-hooks, eslint-plugin-jsx-a11y) + Prettier | |
@@ -485,7 +485,7 @@ git log -p g3-tests-approved..HEAD -- e2e/ 'src/**/*.test.*' test/ playwright.co
 | Script | Does |
 |---|---|
 | `dev` | Vite dev server |
-| `build` | `tsc -b && vite build` |
+| `build` | `tsc -p tsconfig.app.json && vite build` (type-checks the app only, so red tests can't block the build; `typecheck` covers everything; D-42) |
 | `preview` | Serve `dist/` on port 4173 |
 | `lint` / `format:check` / `typecheck` | ESLint (`--max-warnings 0`) / Prettier check / `tsc` over app, tests and configs without emitting |
 | `test` | Vitest run, writes `reports/vitest.json` (`passWithNoTests`, so Phase 2 can be green) |

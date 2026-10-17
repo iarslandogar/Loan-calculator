@@ -54,6 +54,8 @@ Each decision is **Approved** or **Proposed — needs owner approval**. Claude C
 | D-38 | Property generators biased to corners; §5.3 regression tests | Approved (owner, Gate G1), 2026-10-17 |
 | D-39 | Contrast tests read computed styles | Approved (owner, Gate G1), 2026-10-17 |
 | D-40 | Batch of Gate G1 spec, AC and process fixes | Approved (owner, Gate G1), 2026-10-17 |
+| D-41 | TypeScript 6.0.3 and ESLint 9.39.5 instead of the newest majors | **Proposed**: applied provisionally in Phase 2, owner to confirm at G2 |
+| D-42 | Phase 2 scaffold choices | **Proposed**: developer decisions in Phase 2, owner to review at G2 |
 
 **How this log is kept (D-24):** every decision is recorded here, however small. Entries are never deleted or rewritten. A changed decision gets a new dated **Decision** line under its entry, or a new entry that names the one it supersedes, and a row in the change history.
 
@@ -283,9 +285,52 @@ Each item is approved as written in the spec or AC text it names:
 
 ---
 
+## Phase 2 decisions (2026-10-17)
+
+### D-41 TypeScript 6.0.3 and ESLint 9.39.5 (Proposed, needs owner confirmation)
+- **Conflict found:** spec §2 asks for "latest stable" TypeScript and lists `typescript-eslint` and `eslint-plugin-jsx-a11y`. On 2026-10-17 those can't all be satisfied:
+  - latest TypeScript is **7.0.2**, but `typescript-eslint@8.71.2` (latest) requires TypeScript `>=4.8.4 <6.1.0`;
+  - latest ESLint is **10.13.0**, but `eslint-plugin-jsx-a11y@6.10.2` (latest) supports ESLint only up to `^9`.
+- **Applied provisionally:** TypeScript **6.0.3** and ESLint **9.39.5** with `@eslint/js` 9.39.5, the newest versions that keep every listed tool on a supported peer range.
+- **Caveat:** npm marks `eslint@9.39.5` as "no longer supported" (deprecated).
+- **Alternatives:**
+  - (a) Keep it as is. Every tool runs inside its declared peer range, but ESLint 9 is out of support.
+  - (b) ESLint 10 with an npm `overrides` entry forcing jsx-a11y. This is newer but runs a plugin outside its declared range, and it may break.
+  - (c) Drop `eslint-plugin-jsx-a11y` and rely on the role- and name-based Playwright locators for accessibility. That loses static a11y linting.
+- **Recommendation:** (a) for v1, revisited if jsx-a11y releases ESLint 10 support.
+
+### D-42 Phase 2 scaffold choices (Proposed, owner to review at G2)
+- **Versions** (exact, `save-exact=true` in `.npmrc`):
+  - React and react-dom 19.3.1, decimal.js 10.6.0, Vite 8.3.4, `@vitejs/plugin-react` 6.1.2;
+  - Vitest 5.0.5, jsdom 30.1.3, Testing Library react 16.3.3, user-event 14.6.8 and dom 10.4.2, fast-check 4.10.2, Playwright 1.64.1;
+  - typescript-eslint 8.71.2, react-hooks 7.1.1, jsx-a11y 6.10.2, Prettier 3.9.10, eslint-config-prettier 10.1.8, globals 17.13.0;
+  - `@types/react` and `@types/react-dom` 19.3.0, and `@types/node` **24.19.2**, to match the Node 24 runtime rather than the latest 26.x.
+- **`@testing-library/dom`:** installed as the required peer of `@testing-library/react`. It isn't listed in §2 but can't be avoided.
+- **Build script:** `tsc -p tsconfig.app.json && vite build` instead of §13's `tsc -b && vite build`, so a type error in a test file can't block the app build. `typecheck` runs `tsc -b` over the app, tests and configs. §13 is updated to match.
+- **TS configs:** `tsconfig.app.json` (src without tests), `tsconfig.test.json` (src, `test/`, `e2e/`), `tsconfig.node.json` (configs). They use `strict`, `noUncheckedIndexedAccess` and `verbatimModuleSyntax`, with `types` set explicitly, because TypeScript 6 defaults it to `[]`.
+- **Vitest:** two projects. `domain` runs `src/domain/**` and `test/**/*.test.ts` in Node. `ui` runs `src/ui/**` and `src/storage/**` in jsdom with `test/setup.ts`, which also runs Testing Library `cleanup`, because Vitest globals are off. TZ is set both at the top of the config and through `test.env`.
+- **Playwright:**
+  - `forbidOnly: true` always, as a mechanical backstop for the "never `.only`" rule;
+  - `retries: 0` locally, so flakes are visible, and 2 only in smoke mode against the live site;
+  - `locale: 'en-GB'` and `timezoneId: 'Asia/Karachi'`.
+  - **Tests must navigate with `page.goto('./')`**, not `'/'`, so they work under the GitHub Pages sub-path.
+- **ESLint:** `--max-warnings 0`.
+  - The layer rule, the "`decimal.js` only in `money.ts`" rule and bans on `Intl`, `parseFloat` and `toLocale*` apply in `src/`.
+  - React and react-dom are also banned in `domain/` and `storage/`.
+- **Prettier:** no semicolons, single quotes, trailing commas, width 100. Markdown, `docs/`, `transcripts/` and `.claude/` are excluded, so owner documents are never reformatted.
+- **Line endings:** a `.gitattributes` with `* text=auto eol=lf`.
+- **CI:**
+  - `ci.yml` runs on push (except `main`) and on pull requests, and `deploy.yml` calls it via `workflow_call`, so pushes to `main` aren't verified twice;
+  - the action majors used are checkout v5, setup-node v5, upload-artifact v4, configure-pages v5, upload-pages-artifact v4 and deploy-pages v4;
+  - the build stamps `<meta name="build-id" content="<commit SHA>">` into `index.html`, so the smoke job waits until Pages serves that exact commit.
+- **Page title:** `index.html` `<title>` holds `Loan EMI Calculator` as static text, because it's needed before any JS runs. It duplicates `copy.app.title`, and a test should keep the two equal.
+
+---
+
 ## Change history
 | Date | Change | By |
 |---|---|---|
 | 2026-10-17 | Initial draft | Claude (claude.ai) for M. Arslan |
 | 2026-10-17 | Planning phase: D-05 approved (2 dp); D-13 to D-24 added and approved; AC-8.5 and AC-12.2 text updated | Claude Code (Opus 5.5) for M. Arslan, owner-approved |
 | 2026-10-17 | Gate G1: D-01 to D-04 and D-06 to D-12 approved (with Decision lines on D-02, D-10, D-12, D-24); D-25 to D-40 added; ACs 1.12, 2.1, 2.12, 2.15, 5.2, 5.3, 8.1, 8.5, 9.1, 10.8, 11.2, 11.5 and 11.10 reworded; AC-2.17 and AC-12.7 added | Claude Code (Opus 5.5) for M. Arslan, owner-approved |
+| 2026-10-17 | Phase 2: D-41 (toolchain version conflict) and D-42 (scaffold choices) added as Proposed for G2; spec §2 and §13 notes updated | Claude Code (Opus 5.5) for M. Arslan, pending G2 |
