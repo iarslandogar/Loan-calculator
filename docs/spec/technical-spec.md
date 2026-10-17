@@ -1,6 +1,6 @@
 # Technical Specification: Loan EMI Calculator (v1)
 
-**Status:** Draft for human approval (Gate G1)
+**Status:** Approved at Gate G1 (2026-10-17), including the G1 amendments (decision log D-25 to D-40)
 **Sources of truth, in priority order:**
 1. `docs/user-stories.md` (acceptance criteria)
 2. this document
@@ -45,7 +45,7 @@ Use exact versions installed at scaffold time (no `^latest` tags in docs), and l
 
 ```
 src/
-  domain/          Pure TypeScript. No React, no DOM, no storage. 100% unit-tested.
+  domain/          Pure TypeScript. No React, no DOM, no storage. Every export unit-tested.
     money.ts         Decimal setup, round2(), money/number formatting
     parse.ts         Raw string → normalised value (trim, commas, %)
     validate.ts      Field rules → typed result or error codes
@@ -139,7 +139,7 @@ Transitions:
 
 | Event | Effect |
 |---|---|
-| Edit any input or change unit | Update `inputs`. Clear **only that field's** error. If `results.status === 'shown'`, set it to `stale`. |
+| Edit any input or change unit | Update `inputs`. Clear **only that field's** error (changing the unit clears the tenure error). If `results.status === 'shown'`, set it to `stale`; `idle` stays `idle`. Editing a value back to its original text still leaves results `stale`. |
 | Calculate with any invalid field | Set all field errors, set `results` to `idle` (removes old results), focus the first invalid field in order amount → rate → tenure. |
 | Calculate with all fields valid | Clear errors, compute, set `results` to `shown`, add a history entry (§9.3). |
 | Reset | Empty inputs, unit = `years`, clear errors, set `results` to `idle`, focus **Loan amount**. Settings and history are untouched. |
@@ -154,13 +154,13 @@ Inputs are `<input type="text">`, **not** `type="number"`. `type="number"` behav
 
 | Field | Steps |
 |---|---|
-| Loan amount | Trim whitespace, then remove **all** `,` characters (accepts `1,000,000` and lakh-style `10,00,000`). |
+| Loan amount | Trim whitespace. If the value contains `,`, remove the commas **only if** the part before any `.` (after an optional leading `-`) matches western grouping `^\d{1,3}(,\d{3})+$` or lakh grouping `^\d{1,2}(,\d{2})*,\d{3}$`, and no `,` appears after the `.`. Otherwise leave the commas in, so the value fails the number pattern with `AMOUNT_NAN` (D-26). Accepts `1,000,000`, `10,00,000`, `1,00,000` and `1,000.50`; rejects `1,,000`, `1000,50`, `1,5`, `,1000` and `10,0000`. |
 | Interest rate | Trim, remove **one** trailing `%`, trim again. |
 | Loan tenure | Trim. |
 
 ### 4.2 Rules (checked in this order, stopping at the first failure per field)
 
-Number pattern: `^-?(\d+(\.\d*)?|\.\d+)$`. It rejects `1e6`, `+5`, `1.2.3`, `abc` and the empty string. "Decimal places" means the count of digits after `.`, so `5.` has 0. **All comparisons use `Decimal`**, never `Number`, so 40-digit inputs compare correctly.
+Number pattern: `^-?(\d+(\.\d*)?|\.\d+)$`, where `\d` means the ASCII digits `0`–`9` only, so Arabic-Indic (`١٢`) and full-width (`１２`) digits are "not a number". It rejects `1e6`, `+5`, `1.2.3`, `abc` and the empty string. "Decimal places" means the count of digits after `.`, so `5.` has 0. **All comparisons use `Decimal`**, never `Number`, so 40-digit inputs compare correctly.
 
 | Field | 1. Empty | 2. Format | 3. Precision | 4. Range |
 |---|---|---|---|---|
@@ -170,16 +170,32 @@ Number pattern: `^-?(\d+(\.\d*)?|\.\d+)$`. It rejects `1e6`, `+5`, `1.2.3`, `abc
 
 A negative number passes the format check and fails on range, so `-500` gets the range message (AC-2.4).
 
+**Input table for `[SPEC-§4.2]` tests** (raw text → result; other fields valid):
+
+| Field | Raw | Result |
+|---|---|---|
+| Amount | `1000`, `1000.00`, `1000000000` | valid |
+| Amount | `1000.500` | `AMOUNT_DECIMALS` (trailing zeros count) |
+| Amount | `5000000000.555` | `AMOUNT_DECIMALS` (precision is checked before range) |
+| Amount | `.5`, `00012` | `AMOUNT_RANGE` |
+| Amount | `１２`, `١٢`, `1,,000`, `1000,50` | `AMOUNT_NAN` |
+| Rate | `5.`, `-0`, `12 %` | valid (5, 0, 12) |
+| Rate | `%` | `RATE_REQUIRED` (empty after normalisation) |
+| Rate | `12%%` | `RATE_NAN` |
+| Rate | 40 nines | `RATE_RANGE` |
+| Tenure | `012` (Years) | valid (12 years) |
+| Tenure | 40 nines (Years / Months) | `TENURE_RANGE_YEARS` / `TENURE_RANGE_MONTHS` |
+
 ### 4.3 Derived values
 
 - `P` = loan amount as `Decimal`
 - `n` = tenure × 12 when the unit is years, otherwise the tenure (an integer from 1 to 480)
 - `annualRate` = `Decimal`
-- `r = annualRate / 1200` (monthly rate as a fraction, kept exact)
+- `r = annualRate / 1200` (monthly rate as a fraction, held to 40 significant digits; used in the EMI formula)
 
 ## 5. Calculation algorithm (normative)
 
-Configure `Decimal.set({ precision: 40, rounding: Decimal.ROUND_HALF_UP })`. `round2(x)` = `x.toDecimalPlaces(2, Decimal.ROUND_HALF_UP)`.
+Use the configured constructor exported by `src/domain/money.ts`: `Decimal = DecimalJs.clone({ precision: 40, rounding: DecimalJs.ROUND_HALF_UP })` (D-36). Never call the global `Decimal.set`. `round2(x)` = `x.toDecimalPlaces(2, Decimal.ROUND_HALF_UP)`.
 
 ### 5.1 EMI function
 
@@ -193,7 +209,7 @@ EMI(B, r, m) = B / m                                if r = 0
 ```
 balance ← P
 for k = 1 … n:
-    interest_k ← round2(balance × r)
+    interest_k ← round2(balance × annualRate / 1200)      // multiply first: exact (D-37)
     if k < n:
         payment_k   ← round2(EMI(balance, r, n − k + 1))
         principal_k ← payment_k − interest_k
@@ -203,6 +219,8 @@ for k = 1 … n:
     balance ← balance − principal_k
     row_k ← { month: k, payment_k, interest_k, principal_k, balance }
 ```
+
+Why multiply first: `balance × annualRate` has at most 4 decimal places, so dividing by 1,200 gives the exact value whenever that value is a half-cent tie, and the half-up rounding is then exact. With `round2(balance × r)`, `r` is rounded to 40 digits first. An exhaustive check of 23,234 tie cases (every rate, smallest and largest balances) found no difference, but that holds by measurement, not by proof.
 
 Outputs:
 - **Monthly payment** (headline) = `payment_1` (the standard EMI rounded to 2 dp)
@@ -223,7 +241,7 @@ Re-computing the instalment from the remaining balance each month stops the erro
 For every valid (P, rate, n):
 1. Number of rows = n.
 2. For every row: `payment = interest + principal` exactly.
-3. For every row: `interest = round2(opening × r)`, where opening is P for row 1 and the previous row's balance after that.
+3. For every row: `interest = round2(opening × annualRate / 1200)`, where opening is P for row 1 and the previous row's balance after that.
 4. For every row: `0 ≤ principal ≤ opening` and `balance ≥ 0`.
 5. Final balance = 0.00 exactly. Σ principal = P exactly.
 6. For every row: `|payment − payment_1| ≤ 0.01`.
@@ -231,6 +249,8 @@ For every valid (P, rate, n):
 8. Results are identical when the same tenure is entered as years or as the equivalent number of months.
 
 If a property test finds a counterexample: **stop, record it, and report it to the human.** Do not change the algorithm or loosen an invariant without approval.
+
+Generators must be biased towards the corners (D-38): at least a quarter of runs draw from small amounts (1,000 to 20,000), rates of 30–50% and tenures of 300–480 months, where rounding errors are largest. Every exact bound (1,000; 1,000,000,000; 0%; 50%; 1 month; 480 months) must also appear.
 
 ### 5.5 Reference values (must be reproduced exactly)
 
@@ -240,6 +260,9 @@ Use the reference loans table in `docs/user-stories.md`, plus these schedule row
 - L-A row 12: `12 | 88,848.78 | 879.69 | 87,969.09 | 0.00`
 - L-A payments equal 88,848.78 in rows 9, 10 and 12, and 88,848.79 in all other rows
 - L-Z3 rows: `333.33/0.00/333.33/666.67`, `333.34/0.00/333.34/333.33`, `333.33/0.00/333.33/0.00`
+- `[SPEC-§5.3]` regression loans, where the fixed-instalment method fails:
+  - `10000`, `36`, `359` months: headline `300.01`; exactly 359 rows; final balance `0.00`; every payment within 0.01 of `300.01`. (The fixed method pays off at month 352.)
+  - `10000.82`, `30`, `360` months: headline `250.05`; exactly 360 rows; final balance `0.00`; every payment within 0.01 of `250.05`. (The fixed method's final instalment is `1,767.73`.)
 
 ## 6. Formatting
 
@@ -253,6 +276,8 @@ Custom, deterministic formatters. **Do not use `Intl.NumberFormat` or `toLocaleS
 | Tenure (history) | Unit as entered: `1 year`, `N years`, `1 month`, `N months` | `5 years`, `12 months` |
 | Canonical input (restore) | Amount and rate as a normalised decimal without grouping or trailing zeros; tenure as an integer | `2500000`, `18`, `1500.5` |
 | Date-time (history) | Local time `D Mon YYYY, HH:mm`, 24-hour clock, English 3-letter months | `17 Oct 2026, 20:45`, `5 Jan 2027, 09:05` |
+
+Formatter contract: `formatMoney` and `formatAmount` receive non-negative values. A value with more than 2 dp is first rounded with `round2`. They never use exponent notation, whatever the size.
 
 ## 7. Copy deck (all user-visible text; keep in `ui/copy.ts`)
 
@@ -275,15 +300,17 @@ Custom, deterministic formatters. **Do not use `Intl.NumberFormat` or `toLocaleS
 | summary.interest | `Total interest` |
 | summary.total | `Total amount payable` |
 | note.rounding | `Some payments differ by 0.01 because amounts are rounded to 2 decimal places.` |
-| schedule.title | `Repayment schedule` |
+| schedule.title | `Repayment schedule` (also the accessible name of the scroll region and of the table) |
 | schedule.cols | `Month`, `Payment (Rs)`, `Interest (Rs)`, `Principal (Rs)`, `Balance (Rs)` (`($)` for USD) |
 | history.title | `Saved calculations` |
 | history.empty | `No saved calculations yet.` |
 | history.unavailable | `Saved calculations aren't available in this browser. Calculations still work.` |
 | history.entry.line1 | `{amount} at {rate} for {tenure}` |
 | history.entry.line2 | `{monthly} per month` |
-| history.restore | `Restore` (accessible name: `Restore calculation from {datetime}`) |
-| history.delete | `Delete` (accessible name: `Delete calculation from {datetime}`) |
+| history.entry.line3 | `{datetime}` |
+| history.restore | `Restore` (accessible name: `Restore {line1}, saved {datetime}`, e.g. `Restore Rs 1,000,000.00 at 12% for 1 year, saved 17 Oct 2026, 20:45`) (D-29) |
+| history.delete | `Delete` (accessible name: `Delete {line1}, saved {datetime}`) |
+| history.removeFailed | `Couldn't remove saved calculations from this browser. To be sure, clear this site's data in your browser settings.` (D-28) |
 | history.clearAll | `Clear all` |
 | dialog.clear.text | `Clear all saved calculations? This can't be undone.` |
 | dialog.clear.hint | `This doesn't clear the form. Select Reset to do that.` |
@@ -302,34 +329,34 @@ Custom, deterministic formatters. **Do not use `Intl.NumberFormat` or `toLocaleS
 | err.TENURE_RANGE_MONTHS | `Loan tenure must be between 1 and 480 months.` |
 | fatal | `Something went wrong. Please reload the page.` |
 
-The apostrophes in `can't`, `aren't` and `doesn't` are the ASCII `'` character.
+The apostrophes in `can't`, `aren't`, `doesn't`, `Couldn't` and `site's` are the ASCII `'` character.
 
 ## 8. UI behaviour
 
 ### 8.1 Layout (DOM order = visual order = tab order)
 
 1. **Header:** title, tagline, **Theme** select (right-aligned on wide screens).
-2. **Form card:** **Currency** select and its note, **Loan amount**, **Annual interest rate**, **Loan tenure** + **Tenure unit**, then **Calculate** (primary) and **Reset** (secondary). It is a `<form noValidate>`, so Enter submits.
-3. **Results card:** idle text, or the stale message, or the summary (Monthly payment shown prominently, Total interest, Total amount payable), the rounding note when applicable, and the **Repayment schedule**.
+2. **Form card:** **Currency** select and its note, **Loan amount**, **Annual interest rate**, **Loan tenure** + **Tenure unit**, then **Calculate** (primary, `type="submit"`) and **Reset** (secondary, `type="button"`). It is a `<form noValidate>`, so Enter submits. The dialog buttons are also `type="button"`.
+3. **Results card:** idle text (shown whenever `results` is `idle`, including next to field errors; D-27), or the stale message, or the summary (Monthly payment shown prominently, Total interest, Total amount payable), the rounding note when applicable, and the **Repayment schedule**.
 4. **Saved calculations card:** heading (`tabindex="-1"` so focus can move there), the list or the empty/unavailable text, and **Clear all**.
 
 Breakpoints: **≥ 769 px**: the form and results cards side by side (form roughly 40%, results roughly 60%) with Saved calculations full-width below; max content width 1200 px. **≤ 768 px**: a single column in DOM order. Never allow horizontal page scroll at any width ≥ 360 px. Long amounts wrap (`overflow-wrap: anywhere`) rather than overflow.
 
 ### 8.2 Schedule table
 
-A semantic `<table>` with `<thead>` and `<th scope="col">`, inside a wrapper with `role="region"`, `aria-label="Repayment schedule"`, `tabindex="0"`, `overflow: auto` and `max-height: min(60vh, 480px)`. The header row is sticky. Number cells are right-aligned with `font-variant-numeric: tabular-nums`. On narrow screens the wrapper scrolls horizontally if needed; the page does not.
+A semantic `<table>` with `<thead>` and `<th scope="col">`, inside a wrapper with `role="region"`, `aria-label` = `schedule.title`, `tabindex="0"`, `overflow: auto` and `max-height: min(60vh, 480px)`. The `<table>` has `aria-labelledby` pointing at the visible `schedule.title` heading, so tests can find both `getByRole('region', { name: 'Repayment schedule' })` and `getByRole('table', { name: 'Repayment schedule' })`. The header row is sticky. Number cells are right-aligned with `font-variant-numeric: tabular-nums`. On narrow screens the wrapper scrolls horizontally if needed; the page does not.
 
 ### 8.3 Errors and focus
 
 - Each error renders in an element with an id. The input gets `aria-invalid="true"` and `aria-describedby` pointing to it, and the error text sits in an `aria-live="polite"` container.
 - On a failed Calculate, focus moves to the first invalid field. On Reset, focus moves to **Loan amount**. On Delete, focus moves per AC-12.1. On Restore, focus stays on the Restore button.
-- **Confirm dialog:** native `<dialog>` opened with `showModal()`, with `autofocus` on **Cancel**. Escape (the `cancel` event) closes it without action and returns focus to **Clear all**. `aria-labelledby` points to the `dialog.clear.text` element and `aria-describedby` to `dialog.clear.hint`. **No JS focus trap** (D-20): Tab may leave the dialog to the browser's own UI, but must never reach page content behind the dialog (AC-8.5).
+- **Confirm dialog:** native `<dialog>` opened with `showModal()`. Focus targets are set **explicitly in code**, not with React's `autoFocus` (which fires at mount, not at `showModal()`) and not left to the browser's return-focus (macOS Safari and Firefox don't focus buttons on click). After `showModal()`, focus **Cancel**. **Cancel** or Escape (the `cancel` event) closes it without action and focuses **Clear all**. **Clear** clears the history and focuses the **Saved calculations** heading, because **Clear all** is now disabled (D-30). `aria-labelledby` points to the `dialog.clear.text` element and `aria-describedby` to `dialog.clear.hint`. **No JS focus trap** (D-20): Tab may leave the dialog to the browser's own UI, but must never reach page content behind the dialog (AC-8.5).
 
 ### 8.4 Theme
 
 Resolved theme = the user's choice, or `prefers-color-scheme` when set to `system`. Apply it as `data-theme="light|dark"` on `<html>`. A tiny inline script in `index.html` applies the saved theme before first paint (wrapped in try/catch) so there is no flash of the wrong theme. Listen for `matchMedia('(prefers-color-scheme: dark)')` changes while `system` is selected.
 
-Starting tokens (tests must prove ≥ 4.5:1 for text pairs):
+Starting tokens. Tests must prove ≥ 4.5:1 for these text pairs in both themes: text/bg, text/surface, text-muted/bg, text-muted/surface, error/bg, error/surface, on-primary/primary. The contrast tests read the **computed** custom properties (`getComputedStyle(document.documentElement)`) under each `data-theme` in the running app, not the values in this table (D-39).
 
 | Token | Light | Dark |
 |---|---|---|
@@ -351,11 +378,11 @@ Tap targets are at least 44 × 44 px. Body font is the system font stack (no web
 
 ### 9.1 Safe storage
 
-`safeStorage` checks availability once at start-up (set and remove a probe key inside try/catch). Every read and write is wrapped. Failures return `{ ok: false }` and are never thrown to the UI. If storage is unavailable: settings work in memory for the visit (AC-6.6), and history shows `history.unavailable` (AC-11.9).
+`safeStorage` checks availability once at start-up (set and remove a probe key inside try/catch). Every read and write is wrapped, **including the access to `window.localStorage` itself**, which throws in Safari when storage is blocked. Failures return `{ ok: false }` and are never thrown to the UI. If storage is unavailable: settings work in memory for the visit (AC-6.6), and history shows `history.unavailable` (AC-11.9).
 
 ### 9.2 Keys and schemas (version 1)
 
-- `emi-calc.v1.settings` → `{ "currency": "PKR" | "USD", "theme": "system" | "light" | "dark" }`. Defaults: `PKR`, `system`.
+- `emi-calc.v1.settings` → `{ "currency": "PKR" | "USD", "theme": "system" | "light" | "dark" }`. Defaults: `PKR`, `system`. On load, if the value is not valid JSON or not an object, use both defaults. Each field that is missing or not an allowed value falls back to its own default, and the other field is kept. The inline theme script in `index.html` applies the same rule. Nothing throws.
 - `emi-calc.v1.history` → array (newest first, at most 20) of:
 
 ```json
@@ -369,7 +396,7 @@ Tap targets are at least 44 × 44 px. Body font is the system font stack (no web
 ```
 
 Only these fields are stored, never the schedule. **If the value is not valid JSON or not an array, treat the history as empty.** On load, an element is kept only if **all** of these hold, and otherwise it is dropped (D-14):
-1. A type guard passes: string `id`; `createdAt` with `!isNaN(Date.parse(createdAt))`; `currency` is `PKR` or `USD`; `input.amount` and `input.rate` are strings; `Number.isInteger(input.tenure)`; `input.unit` is `years` or `months`; string `monthlyPayment`.
+1. A type guard passes: the element and its `input` are non-null objects; string `id`; `createdAt` with `!isNaN(Date.parse(createdAt))` and a year from 2000 to 9999; `currency` is `PKR` or `USD`; `input.amount` and `input.rate` are strings; `Number.isInteger(input.tenure)`; `input.unit` is `years` or `months`; string `monthlyPayment`.
 2. `validateInputs({ ...input, tenure: String(input.tenure) })` returns `ok`.
 3. `toCanonical(value)` deep-equals the stored `input`, so only canonical entries are restored.
 4. The stored `monthlyPayment` equals `round2(emi(P, r, n))` as a `Decimal`. Use `emi`, not a full schedule, so loading 20 entries stays cheap.
@@ -381,10 +408,11 @@ After that, later duplicates of an `id` are dropped and the list is truncated to
 - Save only after a successful calculation.
 - Skip the save if the newest entry has the same canonical `input` **and** `currency` (AC-11.5).
 - Insert at index 0 and truncate to 20 (AC-11.6).
-- If the write fails (for example, quota exceeded), switch to the unavailable state for the rest of the visit.
+- If a **save** fails (for example, quota exceeded), switch to the unavailable state for the rest of the visit.
+- If a **delete or Clear all** fails to write, never show it as done (D-28). Keep the entries on screen as they were and show `history.removeFailed` in the Saved calculations card. The message stays until the next successful change.
 - **Clear all** removes the key entirely (AC-12.4).
 - **Two tabs (D-13):** every save, delete and clear-all **re-reads storage first** and then writes, so stale in-memory state is never written back. The duplicate check compares against the newest entry as just re-read. Delete works by `id`, never by index.
-- Listen for the `storage` event on the history key and reload the list. `newValue === null` means the list is now empty. If the entry that had focus is removed this way, focus moves to the **Saved calculations** heading.
+- Listen for the `storage` event on the history key and reload the list. `newValue === null` means the list is now empty. An event with `key === null` (another tab called `localStorage.clear()`) also reloads it. Read-then-write narrows the two-tab window but cannot close it completely; the spec does not claim more. If the entry that had focus is removed this way, focus moves to the **Saved calculations** heading.
 - These rules are proven by `[SPEC-§9.3]` tests.
 
 ## 10. Error handling
@@ -397,12 +425,12 @@ After that, later duplicates of an `id` are dropped and the list is truncated to
 
 | ID | Requirement |
 |---|---|
-| NFR-1 | Works in the current stable Chrome, Edge, Firefox and Safari (CI runs Chromium, Firefox and WebKit). |
+| NFR-1 | Tested on the Chromium, Firefox and WebKit engines (Playwright). Chromium covers Chrome and Edge; WebKit approximates Safari. The 3-browser evidence that counts is the Linux CI run; a local run on Windows uses Playwright's Windows WebKit build. |
 | NFR-2 | A fresh clone runs with `npm ci && npm run dev` on Node 24. No accounts, keys or services. |
-| NFR-3 | No network requests after initial load (asserted in one E2E test via request interception). |
-| NFR-4 | Calculate-to-rendered under 1 s for L-MAX on CI (AC-10.8). |
+| NFR-3 | No network requests after initial load (asserted in one E2E test via request interception, **after** a calculation). The same test asserts `document.cookie === ''` and that the context holds no cookies (NFR-7). |
+| NFR-4 | L-MAX: from the Calculate click to the 480th schedule row being in the DOM, ≤ 1,000 ms, measured inside the page with `performance.now()`, in each browser. Checked locally from G4.3 and on CI by G4.6 (AC-10.8; D-32). |
 | NFR-5 | Production JS bundle under 150 KB gzipped (checked in `verify`). |
-| NFR-6 | No `any` types, no `@ts-ignore`, and no ESLint warnings in committed code. |
+| NFR-6 | No `any` types, no `@ts-ignore`, and no ESLint warnings in committed code (`eslint --max-warnings 0`). |
 | NFR-7 | Data stays in the browser. No cookies. |
 
 ## 12. Testing strategy
@@ -419,7 +447,11 @@ After that, later duplicates of an `id` are dropped and the list is truncated to
 
 **Time zone (D-15):** every Playwright context uses `timezoneId: 'Asia/Karachi'`, and clock times are given with an explicit offset (for example `2026-10-17T20:45:00+05:00`). `vitest.config.ts` sets `process.env.TZ = 'Asia/Karachi'` before anything else runs. A `[SPEC-§12.1]` test asserts that `new Date('2026-10-17T15:45:00Z').getHours() === 20`, which proves the zone is applied on every OS, Windows included.
 
-Dialog behaviour (AC-8.5, AC-12.2 to AC-12.4) is tested in E2E only, because jsdom does not implement `showModal()`. The Vitest setup file `test/setup.ts` stubs `matchMedia`.
+Dialog behaviour (AC-8.5, AC-12.2 to AC-12.4) is tested in E2E only, because jsdom does not implement `showModal()`. The Vitest setup file `test/setup.ts` stubs `matchMedia`, and gives `HTMLDialogElement` minimal `showModal()`/`close()` stubs so component tests that open the dialog don't crash. Those stubs prove nothing about dialog behaviour.
+
+**Seeding saved calculations (D-35).** Tests that need entries already in storage (AC-11.6, AC-11.7, AC-12.x) either create them by driving the UI, or seed **0% loans**, whose payment is known by hand: amount `12000 × k` over `12` months gives `1000 × k` per month (for example `12000` gives `1000.00` and `240000` gives `20000.00`). They never compute `monthlyPayment` with the code under test.
+
+**Phase 3 exceptions.** Tests whose only assertions are negative (for example, "no loan-amount message is shown" in AC-2.5, "the note is not shown" in AC-10.6), and the `[SPEC-§12.1]` time-zone test, may pass before implementation. The test-designer lists every such test in its report.
 
 ### 12.2 Naming
 
@@ -429,7 +461,7 @@ Every test that proves an acceptance criterion has a title starting `[AC-x.y]`. 
 
 - Tests must not depend on order.
 - E2E tests start from a clean `localStorage` unless the test is about persistence.
-- To simulate blocked storage, stub `Storage.prototype` methods to throw (`addInitScript`).
+- To simulate blocked storage, stub `Storage.prototype` methods to throw (`addInitScript`). Also cover Safari's behaviour, where reading `window.localStorage` itself throws: redefine the getter to throw.
 
 ### 12.4 Tests are the contract
 
@@ -445,7 +477,7 @@ git log -p g3-tests-approved..HEAD -- e2e/ 'src/**/*.test.*' test/ playwright.co
 1. Parses `app-roles.md` (R-ids), `jobs-to-be-done.md` (J-ids and their role) and `user-stories.md` (S-ids with role, job, scope and status, plus AC-ids).
 2. Fails if a story references an unknown role or job, a job references an unknown role, or a job has no story.
 3. Scans `src/**/*.test.ts(x)` and `e2e/**/*.spec.ts` for `[AC-x.y]` tags. It fails if any **v1** AC has no test or if a test references an unknown AC. It warns if a Backlog AC has a test.
-4. With `--results`, it reads `reports/vitest.json` and `reports/playwright.json` (JSON reporters) and fails if any story marked `Implemented` has an AC whose tests did not all pass in all three browsers.
+4. With `--results`, it reads `reports/vitest.json` and `reports/playwright.json` (JSON reporters). It fails if any story marked `Implemented` has an AC that breaks either rule: (a) every test tagged with that AC, in Vitest or Playwright, passed; (b) every **Playwright** test tagged with it passed in all three browser projects. An AC proven only in Vitest (for example the property-test ACs) needs only rule (a) (D-31).
 5. Prints a table: story, ACs, tests, pass/fail.
 
 ## 13. npm scripts
@@ -455,9 +487,9 @@ git log -p g3-tests-approved..HEAD -- e2e/ 'src/**/*.test.*' test/ playwright.co
 | `dev` | Vite dev server |
 | `build` | `tsc -b && vite build` |
 | `preview` | Serve `dist/` on port 4173 |
-| `lint` / `format:check` / `typecheck` | ESLint / Prettier check / `tsc --noEmit` |
-| `test` | Vitest run, writes `reports/vitest.json` |
-| `test:e2e` | Playwright (builds and serves via `webServer`), writes `reports/playwright.json` |
+| `lint` / `format:check` / `typecheck` | ESLint (`--max-warnings 0`) / Prettier check / `tsc` over app, tests and configs without emitting |
+| `test` | Vitest run, writes `reports/vitest.json` (`passWithNoTests`, so Phase 2 can be green) |
+| `test:e2e` | Playwright (builds and serves via `webServer`), writes `reports/playwright.json` (`--pass-with-no-tests`) |
 | `trace` | §12.5 |
 | `size` | Fails if the gzipped JS exceeds 150 KB |
 | **`verify`** | `lint && format:check && typecheck && test && build && size && test:e2e && trace --results` (D-18). **This is the loop's exit condition.** |
@@ -484,6 +516,7 @@ The build tsconfig excludes `*.test.*`, `test/` and `e2e/`, so the app builds wh
 - Payment frequencies other than monthly; flat-rate loans; variable rates.
 - Fees, insurance, taxes, processing charges and grace periods.
 - Calendar dates for payments (rows are numbered by month).
+- Flat-rate and markup-based quotes, common for Pakistani car loans and Islamic financing. The README states plainly that the app's figures will not match such quotes (D-33).
 - Currency conversion (the symbol only changes).
 - Accounts, sync across devices, server storage.
 - Languages other than English; right-to-left layouts.

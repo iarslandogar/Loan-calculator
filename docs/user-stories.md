@@ -68,7 +68,7 @@
 - **AC-1.9** Given values with leading or trailing spaces (`␣1000000␣`, `␣12␣`, `␣1␣`), when I Calculate, then the spaces are ignored and the result is the same as AC-1.1.
 - **AC-1.10** Given the rate is typed with a trailing percent sign (`12%`), when I Calculate with `1000000` and `1` **Years**, then the result is the same as AC-1.1.
 - **AC-1.11** Given I have just calculated L-A, when I Calculate again without changing anything, then the same results are shown again.
-- **AC-1.12** Given a first visit, when the page loads, then the tenure unit is **Years**, all three inputs are empty, and no results are shown.
+- **AC-1.12** Given a first visit, when the page loads, then the tenure unit is **Years**, all three inputs are empty, no results are shown, and the results area shows `Enter your loan details and select Calculate.`
 
 ## S-2 Clear messages for invalid input
 **Role:** R-1 Prospective Borrower · **Serves:** J-1 · **Scope:** v1 · **Status:** Not implemented
@@ -77,7 +77,7 @@
 
 Error messages appear directly below the field they refer to. While any error is shown, no results are shown.
 
-- **AC-2.1** Given an empty form, when I Calculate, then I see `Enter a loan amount.`, `Enter an interest rate.` and `Enter a loan tenure.` under the matching fields, no results are shown, and focus moves to **Loan amount**.
+- **AC-2.1** Given an empty form, when I Calculate, then I see `Enter a loan amount.`, `Enter an interest rate.` and `Enter a loan tenure.` under the matching fields, no results are shown, the results area shows `Enter your loan details and select Calculate.`, and focus moves to **Loan amount**.
 - **AC-2.2** Given loan amount `abc` (rate `12`, tenure `1` **Years**), when I Calculate, then I see `Loan amount must be a number.` and no results.
 - **AC-2.3** Given loan amount `1e6`, when I Calculate, then I see `Loan amount must be a number.` (scientific notation is not accepted).
 - **AC-2.4** Given loan amount `0`, `-500` or `999.99` (each tried separately), when I Calculate, then I see `Loan amount must be between 1,000 and 1,000,000,000.`
@@ -88,11 +88,12 @@ Error messages appear directly below the field they refer to. While any error is
 - **AC-2.9** Given tenure `2.5` with unit **Years**, when I Calculate, then I see `Loan tenure must be a whole number.`
 - **AC-2.10** Given unit **Years** and tenure `0` or `41`, when I Calculate, then I see `Loan tenure must be between 1 and 40 years.`; given unit **Months** and tenure `0` or `481`, I see `Loan tenure must be between 1 and 480 months.`; and tenure `40` **Years** or `480` **Months** shows no tenure message.
 - **AC-2.11** Given an invalid loan amount and an invalid rate with a valid tenure, when I Calculate, then both messages are shown at the same time and focus moves to **Loan amount** (the first invalid field).
-- **AC-2.12** Given results for L-A are showing, when I change the loan amount to `abc` and Calculate, then the previous results and schedule are removed and only the error message is shown.
+- **AC-2.12** Given results for L-A are showing, when I change the loan amount to `abc` and Calculate, then the previous results and schedule are removed, `Loan amount must be a number.` is shown under **Loan amount**, and the results area shows `Enter your loan details and select Calculate.`
 - **AC-2.13** Given a message is showing under **Loan amount** and another under **Annual interest rate**, when I type in the **Loan amount** field, then the loan-amount message disappears and the rate message stays until the next Calculate.
 - **AC-2.14** Given any error is showing, when I correct the input to L-A values and Calculate, then the L-A results are shown and no error messages remain.
-- **AC-2.15** Given a loan amount of 40 nines (`9999999999999999999999999999999999999999`), when I Calculate, then I see `Loan amount must be between 1,000 and 1,000,000,000.` and the page stays responsive.
+- **AC-2.15** Given a loan amount of 40 nines (`9999999999999999999999999999999999999999`), when I Calculate, then I see `Loan amount must be between 1,000 and 1,000,000,000.`, and when I then correct the inputs to L-A values and Calculate, the L-A results are shown.
 - **AC-2.16** Given any invalid input in this story, when I Calculate, then the page never shows a blank screen or a browser error, and no uncaught error is raised in the browser console.
+- **AC-2.17** Given loan amount `1,,000`, `1000,50`, `1,5`, `,1000` or `10,0000` (each tried separately, with rate `12` and tenure `1` **Years**), when I Calculate, then I see `Loan amount must be a number.` and no results. *(Commas are accepted only as thousands or lakh separators in the whole-number part.)*
 
 ## S-3 See total interest and total amount payable
 **Role:** R-1 Prospective Borrower · **Serves:** J-2 · **Scope:** v1 · **Status:** Not implemented
@@ -122,8 +123,8 @@ Error messages appear directly below the field they refer to. While any error is
 "As a Prospective Borrower, I want the calculator to work well on my phone, so that I can check an offer wherever I am."
 
 - **AC-5.1** Given a viewport 360 px wide, when the page loads and after I calculate L-MAX (480 schedule rows), then the page never scrolls horizontally (document width ≤ viewport width).
-- **AC-5.2** Given a viewport 360 px wide, then every input, select and button is at least 44 × 44 CSS px and fully visible without zooming.
-- **AC-5.3** Given a viewport 360 px wide and L-A results, when I scroll the schedule, then the schedule scrolls inside its own area and its column headers stay visible while scrolling.
+- **AC-5.2** Given a viewport 360 px wide, then every input, select and button is at least 44 × 44 CSS px, and its bounding box lies horizontally within the viewport (from 0 to 360 px).
+- **AC-5.3** Given a viewport 360 × 740 px and L-B results (60 rows), when I scroll the schedule, then the schedule scrolls inside its own area and its column headers stay visible while scrolling.
 - **AC-5.4** Given any device, then **Loan amount** and **Annual interest rate** have `inputmode="decimal"` and **Loan tenure** has `inputmode="numeric"`, so that phones show a number keypad.
 - **AC-5.5** Given a viewport 1280 px wide, then the form and the results sit side by side; given a viewport 768 px wide or narrower, they are stacked with the form above the results.
 - **AC-5.6** Given a viewport 360 px wide and L-MAX results, then every amount in the summary is fully visible (wrapping onto a new line is allowed; clipping is not).
@@ -156,11 +157,11 @@ Error messages appear directly below the field they refer to. While any error is
 
 "As a Loan Advisor, I want to do everything from the keyboard, so that I can produce quotes quickly without reaching for the mouse."
 
-- **AC-8.1** Given the page has loaded, when I press Tab repeatedly, then focus moves in this order: **Theme** → **Currency** → **Loan amount** → **Annual interest rate** → **Loan tenure** → **Tenure unit** → **Calculate** → **Reset** → the schedule area (only when results are shown) → for each saved calculation, its **Restore** then its **Delete** → **Clear all** (only when enabled). Shift+Tab moves in reverse.
+- **AC-8.1** Given a first visit with no saved calculations, when I press Tab repeatedly, then focus moves in this order: **Theme** → **Currency** → **Loan amount** → **Annual interest rate** → **Loan tenure** → **Tenure unit** → **Calculate** → **Reset** (**Clear all** is disabled and skipped). Given L-A results are showing and two calculations are saved, the order continues after **Reset**: the schedule area → for each saved calculation, its **Restore** then its **Delete** → **Clear all**. In both cases Shift+Tab moves in reverse.
 - **AC-8.2** Given valid L-A values, when I press Enter while focus is in **Loan amount**, **Annual interest rate** or **Loan tenure**, then the app calculates exactly as if I had selected **Calculate**.
 - **AC-8.3** Given either theme, when any interactive element has keyboard focus, then a visible focus outline at least 2 px thick is shown around it.
 - **AC-8.4** Given L-B results (60 rows), when the schedule area has focus, then the Up/Down arrow keys and Page Up/Page Down scroll it.
-- **AC-8.5** Given the **Clear all** confirmation is open, then focus starts on **Cancel**; pressing Tab or Shift+Tab never moves focus to anything on the page behind the dialog; Escape closes it without clearing and returns focus to **Clear all**; and pressing Enter on **Clear** clears the history.
+- **AC-8.5** Given the **Clear all** confirmation is open, then focus starts on **Cancel**; pressing Tab or Shift+Tab never moves focus to anything on the page behind the dialog; **Cancel** or Escape closes it without clearing and moves focus to **Clear all**; and pressing Tab from **Cancel** to reach **Clear**, then Enter, clears the history and moves focus to the **Saved calculations** heading.
 - **AC-8.6** Given only a keyboard, when I enter L-A, calculate, enter L-B, calculate, restore the L-A entry, delete the L-B entry and clear all history, then every step succeeds without a mouse. *(One end-to-end keyboard-only test.)*
 
 ## S-9 Start a fresh quote in one step
@@ -168,7 +169,7 @@ Error messages appear directly below the field they refer to. While any error is
 
 "As a Loan Advisor, I want to clear the form in one step, so that I can start the next quote immediately."
 
-- **AC-9.1** Given inputs, results and/or error messages are showing, when I select **Reset**, then all three inputs are empty, the unit returns to **Years**, results, schedule, stale-results message and error messages are removed, and focus moves to **Loan amount**.
+- **AC-9.1** Given inputs, results and/or error messages are showing, when I select **Reset**, then all three inputs are empty, the unit returns to **Years**, results, schedule, stale-results message and error messages are removed, the results area shows `Enter your loan details and select Calculate.`, and focus moves to **Loan amount**.
 - **AC-9.2** Given currency `USD ($)`, theme `Dark` and two saved calculations, when I select **Reset**, then currency, theme and saved calculations are unchanged.
 - **AC-9.3** Given an already empty form, when I select **Reset**, then the form stays empty and no error is shown.
 
@@ -184,7 +185,7 @@ Error messages appear directly below the field they refer to. While any error is
 - **AC-10.5** Given any valid inputs, then every row's Payment differs from the **Monthly payment** shown in the summary by at most 0.01. *(Property test.)*
 - **AC-10.6** Given L-A (where some payments are 88,848.78), then the note `Some payments differ by 0.01 because amounts are rounded to 2 decimal places.` is shown below the summary; given L-C (all payments 10,000.00), the note is not shown.
 - **AC-10.7** Given L-Z3 (`1000`, `0`, `3` **Months**), then the rows read `1 | 333.33 | 0.00 | 333.33 | 666.67`, `2 | 333.34 | 0.00 | 333.34 | 333.33`, `3 | 333.33 | 0.00 | 333.33 | 0.00`.
-- **AC-10.8** Given L-MAX, when I Calculate, then all 480 rows are shown and the results appear within 1 second of selecting Calculate on the CI test machine.
+- **AC-10.8** Given L-MAX, when I Calculate, then all 480 rows are shown, and the 480th row is in the page within 1 second of selecting Calculate. The time is measured inside the page, in each browser, both locally and on the CI test machine.
 
 ## S-11 Recall earlier calculations
 **Role:** R-2 Loan Advisor · **Serves:** J-6 · **Scope:** v1 · **Status:** Not implemented
@@ -194,15 +195,15 @@ Error messages appear directly below the field they refer to. While any error is
 Saved calculations are stored only in this browser on this device. They are never sent anywhere.
 
 - **AC-11.1** Given no saved calculations, then the **Saved calculations** area shows `No saved calculations yet.`
-- **AC-11.2** Given I calculate L-A successfully at 20:45 on 17 Oct 2026 in PKR, then an entry appears at the top of **Saved calculations** reading `Rs 1,000,000.00 at 12% for 1 year` / `Rs 88,848.79 per month` / `17 Oct 2026, 20:45`.
+- **AC-11.2** Given I calculate L-A successfully at 20:45 on 17 Oct 2026 in PKR (local time, Asia/Karachi in tests), then an entry appears at the top of **Saved calculations** with three lines: `Rs 1,000,000.00 at 12% for 1 year`, `Rs 88,848.79 per month` and `17 Oct 2026, 20:45`.
 - **AC-11.3** Given a Calculate that shows error messages, then no entry is saved.
 - **AC-11.4** Given I calculate L-A and then L-B, then L-B is listed first and L-A second.
-- **AC-11.5** Given the newest entry is L-A in PKR, when I calculate L-A again in PKR, then no new entry is added. Given the entries are L-B (newest) and L-A, when I calculate L-A again, then a new L-A entry is added at the top and the older one stays.
+- **AC-11.5** Given the newest entry is L-A in PKR, when I calculate L-A again in PKR, then no new entry is added. Given the entries are L-B (newest) and L-A, when I calculate L-A again, then a new L-A entry is added at the top and the older one stays. Given the newest entry is L-A in PKR, when I switch to `USD ($)` and calculate L-A again, then a new L-A entry in USD is added at the top.
 - **AC-11.6** Given 20 saved entries, when I make a 21st different calculation, then the new entry is added at the top, the oldest is removed, and 20 entries remain.
 - **AC-11.7** Given saved entries, when I reload the page, then the same entries are shown in the same order.
 - **AC-11.8** Given the form shows different values and a saved L-B entry made in PKR while the current currency is USD, when I select **Restore** on that entry, then the inputs show `2500000`, `18`, `5` with **Years**, the currency switches to `PKR (Rs)`, the L-B results and schedule are shown, and no new entry is added.
 - **AC-11.9** Given the browser blocks storage, when I calculate, then the results are shown normally and the **Saved calculations** area shows `Saved calculations aren't available in this browser. Calculations still work.`
-- **AC-11.10** Given the stored history data is corrupted (not valid JSON, or the wrong shape), when the page loads, then it shows `No saved calculations yet.` without any error, and the next successful calculation is saved normally.
+- **AC-11.10** Given the stored history data is not valid JSON, is valid JSON but not a list, or is `[null]`, when the page loads, then it shows `No saved calculations yet.` without any error, and the next successful calculation is saved normally. Given a stored list where some entries are valid and others are not (the wrong shape, or a saved monthly payment that does not match the recalculated one), when the page loads, then only the valid entries are shown, in their stored order, without any error.
 - **AC-11.11** Tenure is described in entries as `1 year`, `N years`, `1 month` or `N months`, and the rate with no trailing zeros (`12%`, `21.5%`, `0.01%`).
 
 ## S-12 Delete saved calculations
@@ -216,6 +217,7 @@ Saved calculations are stored only in this browser on this device. They are neve
 - **AC-12.4** Given the confirmation is open, when I select **Clear**, then the list shows `No saved calculations yet.`, the stored history is removed from the browser, and after a reload the list is still empty.
 - **AC-12.5** Given no saved entries, then **Clear all** is disabled.
 - **AC-12.6** Given results are showing, when I clear all history, then the current inputs and results stay on screen (clearing the form is **Reset**'s job, S-9).
+- **AC-12.7** Given saved entries are shown and the browser then refuses to change stored data, when I select **Delete** on an entry or confirm **Clear all**, then the entries stay on screen as they were and I see `Couldn't remove saved calculations from this browser. To be sure, clear this site's data in your browser settings.`
 
 ## S-13 See the balance remaining after each payment
 **Role:** R-3 Existing Borrower · **Serves:** J-8 · **Scope:** v1 · **Status:** Not implemented

@@ -47,12 +47,12 @@ Phase 4 Build loop (per story) ──G4──► Phase 5 Independent review ─�
 
 ---
 
-## Phase 2: Scaffold + CI + traceability (exit: `verify` green on an empty shell)
+## Phase 2: Scaffold + CI + traceability (exit: every `verify` step green on an empty shell except `trace`)
 
 **Your prompt:**
-> Phase 2. Scaffold the project exactly per technical-spec §2, §3, §13 and §14: Vite + React + TS strict, decimal.js, Vitest, Testing Library, fast-check, Playwright with 3 browsers, ESLint (with the layer-boundary rule) and Prettier, the npm scripts including `verify` and `size`, the scripts/trace.mjs traceability checker per §12.5, .nvmrc, and both GitHub Actions workflows. Render only an empty App shell with the title. No features. Then loop until `npm run verify` exits 0, except that `trace` is expected to report every v1 AC as missing a test. Show me the output. Stop at Gate G2.
+> Phase 2. Scaffold the project exactly per technical-spec §2, §3, §13 and §14: Vite + React + TS strict, decimal.js, Vitest, Testing Library, fast-check, Playwright with 3 browsers, ESLint (with the layer-boundary rule) and Prettier, the npm scripts including `verify` and `size`, the scripts/trace.mjs traceability checker per §12.5, .nvmrc, and both GitHub Actions workflows. Render only an empty App shell with the title. No features. Also create: the throwing domain stubs with the exact §3.1.1 signatures (D-16); `process.env.TZ = 'Asia/Karachi'` in `vitest.config.ts` and `timezoneId` in `playwright.config.ts` (D-15); `test/setup.ts` with the `matchMedia` and dialog stubs; `passWithNoTests` / `--pass-with-no-tests`. Then loop until every `verify` step exits 0 on its own, except `trace`, which is expected to report every v1 AC as missing a test. Show me the output. Stop at Gate G2.
 
-**Loop:** `/goal npm run lint, typecheck, test, build and size all exit 0 and npm run trace runs and lists every v1 AC as untested` (budget: about 10 turns).
+**Loop:** `/goal npm run lint, format:check, typecheck, test, build, size and test:e2e all exit 0 and npm run trace runs and lists every v1 AC as untested` (budget: about 10 turns). The configs are frozen at G3 (D-23), so check them carefully at G2.
 
 **🚦 Gate G2, what you check:**
 - Run `npm ci && npm run dev` yourself, and open the page.
@@ -66,7 +66,7 @@ Phase 4 Build loop (per story) ──G4──► Phase 5 Independent review ─�
 **Your prompt:**
 > Phase 3. Use the test-designer subagent to write tests for every v1 AC, following its instructions. The tests must fail for the right reason, because nothing is implemented yet. Then show me: tests per story, the trace output, and 3 sample tests I should read closely (pick the ones with the most edge cases). Stop at Gate G3.
 
-**Exit condition:** `npm run trace` shows 0 untested v1 ACs. All AC tests fail, and none fail because of a broken fixture or a syntax error.
+**Exit condition:** `npm run trace` shows 0 untested v1 ACs. All AC tests fail, and none fail because of a broken fixture or a syntax error. The only exceptions are the negative-only tests and the TZ test allowed by spec §12.1, each listed in the test-designer's report.
 
 **🚦 Gate G3, what you check:**
 - Read the sample tests against their ACs. Are the expected values hard-coded from the ACs, not computed?

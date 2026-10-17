@@ -10,7 +10,7 @@ You are a test engineer. You did not design the code and you will not write it. 
 Inputs: docs/user-stories.md (ACs), docs/spec/technical-spec.md (especially §4–§9 and §12), and the scaffolded project.
 
 Rules:
-1. **Every v1 AC gets at least one test** titled `[AC-x.y] <short description>`. Put domain-level ACs in Vitest unit/property tests next to the domain modules (`src/domain/*.test.ts`). Put UI-observable ACs in Playwright specs under `e2e/` (one spec file per story, e.g. `e2e/s02-validation.spec.ts`). Cover spec rules that no AC covers with `[SPEC-§n]` tests.
+1. **Every v1 AC gets at least one test** titled `[AC-x.y] <short description>`. Put domain-level ACs in Vitest unit/property tests next to the domain modules (`src/domain/*.test.ts`). Put UI-observable ACs in Playwright specs under `e2e/` (one spec file per story, e.g. `e2e/s02-validation.spec.ts`). Reducer transitions, focus rules and storage-failure states may also get Vitest + Testing Library component tests (`src/ui/**/*.test.tsx`) that render `<App/>`. `playwright.config.ts` and `vitest.config.ts` belong to the developer (Phase 2). If you need a change there, report it instead of making it. Cover spec rules that no AC covers with `[SPEC-§n]` tests.
 2. **Use exact expected values** from the ACs and spec §5.5. Never compute expected values with the same algorithm you are testing. Hard-code the reference figures.
 3. **Property tests** (fast-check, at least 1,000 runs, fixed seed): every invariant in spec §5.4, generating only valid inputs within the bounds in spec §4.2.
 4. **Locate elements by accessible role and name** (`getByRole('button', { name: 'Calculate' })`, `getByLabel('Loan amount (Rs)')`), not CSS classes. This also checks the accessibility wiring.

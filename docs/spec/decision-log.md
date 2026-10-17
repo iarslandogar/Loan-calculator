@@ -14,18 +14,18 @@ Each decision is **Approved** or **Proposed — needs owner approval**. Claude C
 | D-00e | Requirements written in claude.ai; that chat is exported as `transcripts/session-00-requirements` | Approved (owner) |
 | D-00f | Models: Opus 5.5 builds; Sonnet 5.5 designs tests and reviews, so the models challenge each other | Approved (owner) |
 | D-00g | v1 extras: mobile responsive, full keyboard, history in browser, PKR/USD, dark mode | Approved (owner) |
-| D-01 | Three roles: Prospective Borrower, Loan Advisor, Existing Borrower | **Proposed** |
-| D-02 | Input bounds | **Proposed** |
-| D-03 | Schedule rounding method (re-amortising) | **Proposed** |
-| D-04 | Explicit Calculate button; results hidden when inputs change | **Proposed** |
+| D-01 | Three roles: Prospective Borrower, Loan Advisor, Existing Borrower | Approved (owner, Gate G1), 2026-10-17 |
+| D-02 | Input bounds | Approved (owner, Gate G1), 2026-10-17 |
+| D-03 | Schedule rounding method (re-amortising) | Approved (owner, Gate G1), 2026-10-17 |
+| D-04 | Explicit Calculate button; results hidden when inputs change | Approved (owner, Gate G1), 2026-10-17 |
 | D-05 | Currency defaults and format | Approved (owner), 2026-10-17 |
-| D-06 | Changing tenure unit keeps the number | **Proposed** |
-| D-07 | History rules | **Proposed** |
-| D-08 | Theme default = System | **Proposed** |
-| D-09 | Plain CSS, no UI library | **Proposed** |
-| D-10 | Lenient input: commas, lakh style, trailing % | **Proposed** |
-| D-11 | Loan model assumptions | **Proposed** |
-| D-12 | Tests are frozen after Gate G3 | **Proposed** |
+| D-06 | Changing tenure unit keeps the number | Approved (owner, Gate G1), 2026-10-17 |
+| D-07 | History rules | Approved (owner, Gate G1), 2026-10-17 |
+| D-08 | Theme default = System | Approved (owner, Gate G1), 2026-10-17 |
+| D-09 | Plain CSS, no UI library | Approved (owner, Gate G1), 2026-10-17 |
+| D-10 | Lenient input: commas, lakh style, trailing % | Approved (owner, Gate G1), 2026-10-17 |
+| D-11 | Loan model assumptions | Approved (owner, Gate G1), 2026-10-17 |
+| D-12 | Tests are frozen after Gate G3 | Approved (owner, Gate G1), 2026-10-17 |
 | D-13 | Two-tab-safe history (re-read before every write) | Approved (owner), 2026-10-17 |
 | D-14 | Restore clears errors and persists currency; stored entries fully validated | Approved (owner), 2026-10-17 |
 | D-15 | Tests pinned to the Asia/Karachi time zone | Approved (owner), 2026-10-17 |
@@ -38,6 +38,22 @@ Each decision is **Approved** or **Proposed — needs owner approval**. Claude C
 | D-22 | Version control: local git now, GitHub remote later | Approved (owner), 2026-10-17 |
 | D-23 | Freeze scope covers test configs; group-scoped reviews | Approved (owner, via plan), 2026-10-17 |
 | D-24 | This log is append-only and records every decision | Approved (owner), 2026-10-17 |
+| D-25 | Phase 1 run in the planning session | Approved (owner), 2026-10-17 |
+| D-26 | Commas accepted only as valid thousands/lakh grouping | Approved (owner, Gate G1), 2026-10-17 |
+| D-27 | Idle text shows next to field errors | Approved (owner, Gate G1), 2026-10-17 |
+| D-28 | A failed delete or Clear all is never shown as done | Approved (owner, Gate G1), 2026-10-17 |
+| D-29 | History button names include the loan summary | Approved (owner, Gate G1), 2026-10-17 |
+| D-30 | Explicit focus targets around the Clear-all dialog | Approved (owner, Gate G1), 2026-10-17 |
+| D-31 | 3-browser rule applies to Playwright tests only | Approved (owner, Gate G1), 2026-10-17 |
+| D-32 | AC-10.8 measured in-page, locally and on CI | Approved (owner, Gate G1), 2026-10-17 |
+| D-33 | Flat-rate/markup quotes stay out of scope; README says so | Approved (owner, Gate G1), 2026-10-17 |
+| D-34 | J-7 mapping left as is; D-21 hint is the mitigation | Approved (owner, Gate G1), 2026-10-17 |
+| D-35 | Saved-entry test fixtures use 0% loans or the UI | Approved (owner, Gate G1), 2026-10-17 |
+| D-36 | One configured `Decimal` (clone), no global `set` | Approved (owner, Gate G1), 2026-10-17 |
+| D-37 | Interest computed multiply-first | Approved (owner, Gate G1), 2026-10-17 |
+| D-38 | Property generators biased to corners; §5.3 regression tests | Approved (owner, Gate G1), 2026-10-17 |
+| D-39 | Contrast tests read computed styles | Approved (owner, Gate G1), 2026-10-17 |
+| D-40 | Batch of Gate G1 spec, AC and process fixes | Approved (owner, Gate G1), 2026-10-17 |
 
 **How this log is kept (D-24):** every decision is recorded here, however small. Entries are never deleted or rewritten. A changed decision gets a new dated **Decision** line under its entry, or a new entry that names the one it supersedes, and a row in the change history.
 
@@ -52,6 +68,7 @@ Each decision is **Approved** or **Proposed — needs owner approval**. Claude C
 - **Proposal:** Loan amount 1,000 to 1,000,000,000 (up to 2 dp); rate 0 to 50% (up to 2 dp); tenure 1 to 40 years or 1 to 480 months (whole numbers).
 - **Why:** These cover consumer, car and home loans in Pakistan and the US with headroom (PKR property loans run into the hundreds of millions; Pakistan's policy rate peaked at 22% in 2023). The upper limits stop absurd inputs, and the calculation has been proven correct across the whole range (D-03).
 - **Alternative:** Tighter limits, such as 30 years and 36%. These are simpler to explain but reject some edge-case real loans.
+- **Decision (owner, Gate G1, 2026-10-17):** Approved. Correction to the wording above: "proven correct across the whole range" over-claims. The method was **verified** over about 1,700 cases (spec §5.3), and Claude Code's check of 23,234 half-cent ties found no difference from exact arithmetic. That is evidence from measurement, not a proof.
 
 ### D-03 Schedule rounding method
 - **Proposal:** Re-compute the instalment from the remaining balance each month, rounding to 2 dp (tech spec §5.2). The headline monthly payment is the standard EMI. Individual months may differ by at most 0.01, and the app says so when they do.
@@ -88,6 +105,7 @@ Each decision is **Approved** or **Proposed — needs owner approval**. Claude C
 ### D-10 Lenient input
 - **Proposal:** Accept `1,000,000`, lakh-style `10,00,000`, surrounding spaces, and a trailing `%` on the rate. Reject scientific notation (`1e6`).
 - **Why:** Pakistani users often write lakh grouping; rejecting it would feel broken.
+- **Decision (owner, Gate G1, 2026-10-17):** Approved, narrowed by **D-26**: commas are accepted only in valid western or lakh grouping in the whole-number part.
 
 ### D-11 Loan model assumptions
 - **Proposal:** Reducing-balance loan, monthly payments, monthly compounding (annual rate ÷ 12), payments at the end of each month, no fees, no dates.
@@ -96,6 +114,9 @@ Each decision is **Approved** or **Proposed — needs owner approval**. Claude C
 ### D-12 Tests frozen after Gate G3
 - **Proposal:** Once you approve the tests, the building agent may not edit them. If a test seems wrong, it stops and asks you.
 - **Why:** Otherwise the loop can "pass" by weakening tests. This is a classic agent failure mode and a good story for the transcript.
+- **Decision (owner, Gate G1, 2026-10-17):** Approved. The freeze scope is widened by **D-23** (spec §12.4).
+
+The other Proposed decisions (D-01, D-03, D-04, D-06, D-07, D-08, D-09 and D-11) were approved at Gate G1 on 2026-10-17 without change. The spec-critic found no conflict with them.
 
 ---
 
@@ -157,6 +178,108 @@ These came from Claude Code's pre-read review of the pack. The owner decided eac
 ### D-24 This log is append-only and records every decision
 - **Decision:** Every decision goes into this log, however small. Nothing is deleted or rewritten; changes are added as dated Decision lines or superseding entries.
 - **Why:** The owner's instruction. The log is part of the evidence of how the work was directed.
+- **Decision (owner, Gate G1, 2026-10-17):** Clarified: the **Status** column of the index table may be updated in place (for example, Proposed to Approved). The entries' text may not.
+
+---
+
+## Gate G1 decisions (2026-10-17)
+
+Source: Phase 1. The `spec-critic` subagent reported 38 findings, and Claude Code added its own. The owner approved every recommendation ("seems good, let's move to phase 2"). One critic finding (#12, "CLAUDE.md not updated for the freeze scope") was **rejected as incorrect**: CLAUDE.md line 28 already points to spec §12.4.
+
+### D-25 Phase 1 run in the planning session
+- **Decision:** The owner started Phase 1 in the same Claude Code session as the planning phase, instead of a new one. The transcript `session-00b-planning` therefore covers both.
+
+### D-26 Commas only as valid grouping (narrows D-10)
+- **Decision:** In the loan amount, commas are removed only if the whole-number part matches western (`1,000,000`) or lakh (`10,00,000`) grouping and no comma follows the `.`. Otherwise the value is "not a number" (spec §4.1; new AC-2.17).
+- **Why:** Removing every comma turned `1000,50` into 100050 and `1,5` into 15. A decimal-comma keypad can produce those, so the user would get a confident figure for the wrong loan, which R-1 forbids.
+
+### D-27 Idle text next to field errors
+- **Decision:** When results are `idle`, including after a failed Calculate, the results area shows `Enter your loan details and select Calculate.` AC-1.12, AC-2.1, AC-2.12 and AC-9.1 now say so.
+- **Why:** AC-2.12's "only the error message is shown" contradicted the state machine (§3.2, §8.1).
+
+### D-28 A failed delete or Clear all is never shown as done
+- **Decision:** If storage refuses a delete or Clear all, the entries stay on screen and `history.removeFailed` is shown (spec §7, §9.3; new AC-12.7).
+- **Why:** Showing an empty list while the data is still on the device breaks R-2's privacy guarantee.
+
+### D-29 History button names include the loan summary
+- **Decision:** The accessible names become `Restore {line1}, saved {datetime}` and `Delete {line1}, saved {datetime}` (spec §7).
+- **Why:** With minute-resolution times, two entries saved in the same minute had identical names. That's ambiguous for screen-reader users and fails Playwright's strict locators (AC-8.6).
+
+### D-30 Explicit focus around the Clear-all dialog
+- **Decision:** Focus is set in code. After opening, **Cancel** is focused. **Cancel** or Escape focuses **Clear all**. After **Clear**, focus goes to the **Saved calculations** heading. React's `autoFocus` and browser return-focus are not relied on (spec §8.3; AC-8.5 reworded).
+- **Why:** After Clear, **Clear all** is disabled and can't take focus. React's `autoFocus` fires at mount, not at `showModal()`. macOS Safari and Firefox don't focus a button on click, so return-focus would be lost.
+
+### D-31 3-browser rule applies to Playwright tests only
+- **Decision:** For `trace --results`, every test tagged with an AC must pass, and Playwright tests must pass in all 3 browser projects. ACs proven only in Vitest need only rule (a) (spec §12.5).
+- **Why:** Vitest runs in Node/jsdom, never in three browsers. The old rule made the property-test ACs impossible to mark Implemented.
+
+### D-32 AC-10.8 measured in the page, locally and on CI
+- **Decision:** L-MAX is timed from the Calculate click until the 480th row is in the DOM, ≤ 1,000 ms, using `performance.now()` inside the page, in each browser. It's checked locally from G4.3 and on CI by G4.6 (AC-10.8, NFR-4).
+- **Why:** The measurement start and end were undefined, and CI won't exist until the GitHub remote does (D-22).
+
+### D-33 Flat-rate and markup quotes stay out of scope
+- **Decision:** No scope change. Spec §16 and the README state that figures won't match flat-rate or markup-based quotes, such as many Pakistani car loans and Islamic financing.
+- **Why:** R-1 includes car-loan shoppers, who might otherwise compare the app's figure with a flat-rate quote and assume one of them is wrong.
+
+### D-34 J-7 mapping left as is
+- **Decision:** S-9 (Reset) stays mapped to J-4 only. J-7 is served by S-12, and the D-21 dialog hint points users to Reset.
+- **Why:** Changing the mapping means editing `jobs-to-be-done.md`, which only the owner may do, and the hint already covers the gap.
+
+### D-35 Saved-entry test fixtures use 0% loans or the UI
+- **Decision:** Tests that need entries already in storage either create them through the UI or seed 0% loans (`12000 × k` over 12 months gives `1000 × k` per month), so no expected value is computed by the code under test (spec §12.1).
+- **Why:** §9.2 drops entries whose stored payment doesn't match the recalculated one. Hand-written seeds therefore need payments known by hand, and test-designer rule 2 forbids computing them.
+
+### D-36 One configured `Decimal`
+- **Decision:** `money.ts` exports `DecimalJs.clone({ precision: 40, rounding: ROUND_HALF_UP })`. The global `Decimal.set` is never used, and ESLint blocks `decimal.js` imports elsewhere (spec §3.1, §5).
+- **Why:** The spec described two mechanisms. A stray import of the global `Decimal` would silently use the default precision of 20.
+
+### D-37 Interest computed multiply-first
+- **Decision:** `interest_k = round2(balance × annualRate / 1200)` (spec §5.2, invariant 3).
+- **Why:** This is exact by construction at half-cent ties. The previous `balance × r` form gave identical results in an exhaustive check of 23,234 ties, but only by measurement. Results do not change.
+
+### D-38 Corner-biased generators; §5.3 regression tests
+- **Decision:** At least a quarter of property-test runs draw from small amounts, high rates and long tenures, and every exact bound appears. The two §5.3 loans become `[SPEC-§5.3]` tests with hard-coded values (spec §5.4, §5.5).
+- **Why:** Uniform random sampling rarely reaches the corner where rounding errors matter.
+
+### D-39 Contrast tests read computed styles
+- **Decision:** Contrast tests read `getComputedStyle` custom properties in the running app under each `data-theme`, for the listed text pairs (spec §8.4).
+- **Why:** Checking the spec's table would prove the table, not the app.
+
+### D-40 Batch of G1 fixes
+Each item is approved as written in the spec or AC text it names:
+- **Settings:** settings are validated on load, with each invalid field falling back to its default; the inline theme script uses the same rule (§9.2).
+- **Storage access:** reading `window.localStorage` itself is wrapped, because Safari throws there, and tests stub the getter (§9.1, §12.3).
+- **Storage event:** `key === null` reloads the history, and the spec doesn't claim the two-tab window is fully closed (§9.3).
+- **Load guard:** the history type guard checks for non-null objects and a `createdAt` year from 2000 to 9999 (§9.2).
+- **Input edge cases:** a `[SPEC-§4.2]` table of input cases, with `\d` meaning ASCII digits only (§4.2).
+- **Edit rules:** changing the unit clears the tenure error; editing while `idle` stays `idle`; editing back to the original text stays `stale` (§3.2).
+- **Formatters:** non-negative input, with more than 2 dp rounded first and no exponent notation (§6).
+- **Copy and buttons:**
+  - new keys `history.entry.line3` and `history.removeFailed`;
+  - the apostrophe list extended;
+  - `schedule.title` used as the accessible name of the region and the table;
+  - Reset and the dialog buttons are `type="button"` (§7, §8.1, §8.2).
+- **jsdom:** `test/setup.ts` stubs `showModal`/`close` for jsdom (§12.1).
+- **Phase 3 exceptions:** negative-only tests and the TZ test may pass in Phase 3, and must be listed (§12.1).
+- **NFR wording:**
+  - "100% unit-tested" becomes "every export unit-tested";
+  - `eslint --max-warnings 0`;
+  - the NFR-3 test also checks for no cookies;
+  - NFR-1 is worded per engine, with the Linux CI run as the authority (§3.1, §11, §13).
+- **Passing with no tests:** `test` uses `passWithNoTests` and `test:e2e` uses `--pass-with-no-tests`, so Phase 2 can be green (§13).
+- **AC wording:**
+  - AC-2.15 and AC-5.2 made observable;
+  - AC-5.3 uses L-B at 360 × 740;
+  - AC-8.1 split into an empty state and a populated state;
+  - AC-11.2 states the time zone and the three lines;
+  - AC-11.5 adds the different-currency case;
+  - AC-11.10 split into cases.
+- **Process:**
+  - the loop-plan Phase 2 prompt names the stubs, TZ config, `test/setup.ts` and pass-with-no-tests, and exits on individual scripts;
+  - the reviewer gets the Edit tool so it can append findings;
+  - the developer owns the configs;
+  - test-designer rule 1 includes component tests.
+- **Node 24:** pinned deliberately. Node 26 becomes Active LTS around now, and Node 24 stays a supported LTS line until April 2028.
 
 ---
 
@@ -165,3 +288,4 @@ These came from Claude Code's pre-read review of the pack. The owner decided eac
 |---|---|---|
 | 2026-10-17 | Initial draft | Claude (claude.ai) for M. Arslan |
 | 2026-10-17 | Planning phase: D-05 approved (2 dp); D-13 to D-24 added and approved; AC-8.5 and AC-12.2 text updated | Claude Code (Opus 5.5) for M. Arslan, owner-approved |
+| 2026-10-17 | Gate G1: D-01 to D-04 and D-06 to D-12 approved (with Decision lines on D-02, D-10, D-12, D-24); D-25 to D-40 added; ACs 1.12, 2.1, 2.12, 2.15, 5.2, 5.3, 8.1, 8.5, 9.1, 10.8, 11.2, 11.5 and 11.10 reworded; AC-2.17 and AC-12.7 added | Claude Code (Opus 5.5) for M. Arslan, owner-approved |
