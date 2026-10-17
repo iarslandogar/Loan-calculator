@@ -45,6 +45,9 @@ export default defineConfig([
         { object: 'Number', property: 'parseFloat', message: 'Money is never a JS number.' },
       ],
       'no-restricted-imports': ['error', noDirectDecimal],
+      // Spec §8.2 / AC-8.4: the scrollable schedule region must be focusable so the
+      // arrow and Page keys scroll it (D-49). Only role="region" is allowed.
+      'jsx-a11y/no-noninteractive-tabindex': ['error', { tags: [], roles: ['tabpanel', 'region'] }],
     },
   },
   {
