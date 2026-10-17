@@ -44,6 +44,7 @@ function checkTenure(text: string, unit: RawInputs['unit']): FieldResult<number>
   if (value.lt(1) || value.gt(TENURE_MAX[unit])) {
     return { ok: false, error: unit === 'years' ? 'TENURE_RANGE_YEARS' : 'TENURE_RANGE_MONTHS' }
   }
+  // Safe only because the range check above has already bounded the value to 1..480.
   return { ok: true, value: value.toNumber() }
 }
 
