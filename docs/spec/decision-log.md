@@ -58,7 +58,9 @@ Each decision is **Approved** or **Proposed — needs owner approval**. Claude C
 | D-42 | Phase 2 scaffold choices | Approved (owner, Gate G2), 2026-10-17 |
 | D-43 | Test-facing DOM contract (roles and names) | Approved (owner, Gate G3), 2026-10-18 |
 | D-44 | Test-designer interpretations frozen with the tests | Approved (owner, Gate G3), 2026-10-18 |
-| D-45 | Handling of the G4.1 review's Minor findings | **Proposed**: developer decision, owner to review at G4.1 |
+| D-45 | Handling of the G4.1 review's Minor findings | Approved (owner, G4.1), 2026-10-18 |
+| D-46 | Post-G3 test fix: AC-9.2 expected currency | Approved (owner), 2026-10-18 |
+| D-47 | Group 2 builds the schedule table; cross-group ACs reported as pending | Developer decision (owner informed), 2026-10-18 |
 
 **How this log is kept (D-24):** every decision is recorded here, however small. Entries are never deleted or rewritten. A changed decision gets a new dated **Decision** line under its entry, or a new entry that names the one it supersedes, and a row in the change history.
 
@@ -367,6 +369,18 @@ The code-reviewer reported `BLOCKING FINDINGS: 0` for group 1 (domain), with thr
 1. **`checkTenure` relies on the range check running before `toNumber()`:** fixed with a comment at that line.
 2. **`e2e/review/domain-probe.spec.ts` asserts nothing but would run in all three browsers:** the reviewer was asked to delete its own file, because `e2e/review/` is its area.
 3. **`formatDateTime` doesn't zero-pad years below 1000:** **won't fix.** It's unreachable: stored entries must have a year from 2000 to 9999 (§9.2), and new entries use the current clock.
+- **Decision (owner, G4.1, 2026-10-18):** Approved ("approved").
+
+### D-46 Post-G3 test fix: AC-9.2 expected currency (owner-approved change to a frozen test)
+- **Found by:** Claude Code, while reading the group 2 specs before writing any UI code. The developer stopped and raised it, per CLAUDE.md.
+- **Defect:** in `e2e/s09-reset.spec.ts`, `[AC-9.2]` switches to USD, *then* calculates L-A and L-B, but expects the entries to read `Rs 2,500,000.00 …` and `Rs 1,000,000.00 …`. Under spec §9.2 and AC-7.5, entries keep the currency they were calculated in, so a correct app shows `$2,500,000.00 at 18% for 5 years` and `$1,000,000.00 at 12% for 1 year`. The AC is right; the test's expected strings are wrong.
+- **Decision (owner, 2026-10-18):** Change only those two expected strings to the `$` form; the setup stays as it is. The `test-designer` (not the developer) makes the edit, and the owner sees the diff. The reviewer's freeze check will show this change after `g3-tests-approved`; this entry is its authorisation.
+- **Rejected alternative:** calculate in PKR first, then switch to USD.
+
+### D-47 Group 2 builds the schedule table; cross-group ACs reported as pending
+- **Decision:** The shared helper `expectResultsShown` requires the schedule table, so group 2 builds `ScheduleTable` too; group 3 then verifies S-10 and S-13. AC-4.4 needs the Theme and Currency selects (group 4), and AC-9.2 needs saved calculations (group 5), so they are reported at G4.2 as **pending later groups**, not as done.
+
+---
 
 ---
 

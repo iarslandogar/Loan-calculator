@@ -84,8 +84,8 @@ test.describe('S-9 Reset', () => {
     expect(await selectedText(themeSel(page))).toBe('Dark')
     await expectTheme(page, 'dark')
     await expect(historyItems(page)).toHaveCount(2)
-    await expect(historyItems(page).nth(0)).toContainText('Rs 2,500,000.00 at 18% for 5 years')
-    await expect(historyItems(page).nth(1)).toContainText('Rs 1,000,000.00 at 12% for 1 year')
+    await expect(historyItems(page).nth(0)).toContainText('$2,500,000.00 at 18% for 5 years')
+    await expect(historyItems(page).nth(1)).toContainText('$1,000,000.00 at 12% for 1 year')
   })
 
   test('[AC-9.3] Reset on an empty form changes nothing and shows no error', async ({ page }) => {
