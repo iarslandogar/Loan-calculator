@@ -386,6 +386,15 @@ The code-reviewer reported `BLOCKING FINDINGS: 0` for group 1 (domain), with thr
 - **Decision (owner, 2026-10-18):** In `e2e/fixtures.ts`, the `summary()` helper changes from `getByRole('definition', { name, exact: true })` to `getByLabel(name, { exact: true })`. Spec §8.3.1 is updated to match. The `test-designer` makes the test edit, and the owner sees the diff. No assertion on the figures changes.
 - **Rejected alternative:** render each figure as `<output>` (`status` role, nameable). That makes three live regions announcing every recalculation, and it's a larger change.
 
+### D-49 Group 2 implementation choices (Proposed, owner to review at G4.2)
+1. **Currency select:** built in group 2 (in memory only), because AC-1.12 checks it's present. Persistence comes with S-7 in group 4.
+2. **Idle and stale texts** sit in an `aria-live="polite"` container, so screen-reader users hear "Your inputs have changed…" (the G1 batch asked for this choice to be stated).
+3. **ESLint `jsx-a11y/no-noninteractive-tabindex`:** allows `tabIndex` on `role="region"`, because spec §8.2 requires the scrollable schedule region to be focusable (AC-8.4).
+4. **Schedule wrapper:** the heading and table sit in a `<div>`, not a `<section>`, so only one element has the region name "Repayment schedule". Two would break `getByRole('region', …)`.
+5. **Inputs:** each input has its own `useRef`; the React Hooks rule forbids reading a ref from an object during render.
+6. **Styling:** basic light-theme CSS and layout now. Dark tokens come with S-6, and breakpoints and tap targets are refined with S-5.
+7. **Local E2E runs use `CI=1`.** A leftover `vite preview` on port 4173 served an old build, and `reuseExistingServer: !process.env.CI` made Playwright reuse it, which can give false results either way. `CI=1` forces a fresh build. A permanent fix needs a change to the frozen `playwright.config.ts` (`reuseExistingServer: false`), and that is for the owner to decide.
+
 ### D-47 Group 2 builds the schedule table; cross-group ACs reported as pending
 - **Decision:** The shared helper `expectResultsShown` requires the schedule table, so group 2 builds `ScheduleTable` too; group 3 then verifies S-10 and S-13. AC-4.4 needs the Theme and Currency selects (group 4), and AC-9.2 needs saved calculations (group 5), so they are reported at G4.2 as **pending later groups**, not as done.
 
