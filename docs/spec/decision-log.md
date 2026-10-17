@@ -57,6 +57,7 @@ Each decision is **Approved** or **Proposed — needs owner approval**. Claude C
 | D-41 | TypeScript 6.0.3 and ESLint 9.39.5 instead of the newest majors | Approved (owner, Gate G2), 2026-10-17 (recommendation (a) stands; see entry) |
 | D-42 | Phase 2 scaffold choices | Approved (owner, Gate G2), 2026-10-17 |
 | D-43 | Test-facing DOM contract (roles and names) | **Proposed**: added before Phase 3, owner to review at G3 |
+| D-44 | Test-designer interpretations frozen with the tests | **Proposed**: owner to review at G3 |
 
 **How this log is kept (D-24):** every decision is recorded here, however small. Entries are never deleted or rewritten. A changed decision gets a new dated **Decision** line under its entry, or a new entry that names the one it supersedes, and a row in the change history.
 
@@ -340,6 +341,21 @@ Each item is approved as written in the spec or AC text it names:
   - a named history list of `<li>` entries;
   - a named dialog.
 - **Why:** The spec defined the copy but not the structure. Left open, the test-designer would have invented a DOM shape, and freezing the tests at G3 would lock it in without anyone deciding it.
+
+### D-44 Test-designer interpretations (Proposed, owner to review at G3)
+These readings were made while writing the tests. They become binding when the tests freeze.
+1. **AC-8.1:** "the schedule area" is exactly one tab stop, the `role="region"` wrapper. Table cells are not focusable.
+2. **AC-8.5:** "never moves focus to anything on the page behind the dialog" is checked as: after every Tab or Shift+Tab, the active element is inside the open dialog, or is `body`/`document` (focus has left to the browser UI, which a test can't observe).
+3. **AC-5.2:** "every input, select and button" includes the disabled **Clear all** and every Restore/Delete button, measured after one calculation.
+4. **AC-5.5:** "side by side" at 1280 px means the results text sits to the right of the Loan amount input and overlaps the form vertically. "Stacked" at 768 px and 360 px means the results start below the **Calculate** button.
+5. **AC-11.2:** each history `<li>` shows its three lines as separate lines of `innerText`, in order (line1, line2, line3). The Restore/Delete labels are ignored.
+6. **AC-11.5, third case:** "switch to USD and calculate L-A again" means pressing Calculate without editing the inputs.
+7. **AC-3.6:** "plus all reference loans" means the seven reference loans plus both §5.3 regression loans, checked against invariants 1 to 7.
+8. **AC-10.8:** the timing ends when 481 `<tr>` elements (header plus 480 rows) are in the table, measured with a `MutationObserver` from the Calculate click.
+9. **§4.1 `normaliseAmount`:** returns the trimmed text unchanged when the grouping is invalid. With valid grouping it removes only the commas, without stripping zeros (`'1,000.50'` gives `'1000.50'`, `'1,000.'` gives `'1000.'`).
+10. **§6 formatters:** a value with more than 2 dp is rounded half-up first (`999.999` gives `$1,000.00`).
+11. **Two-tab tests:** use a popup tab (`window.open`), because Playwright's WebKit doesn't deliver `storage` events between two `context.newPage()` pages. The "Clear in B, then Calculate in A" test suppresses `storage` events in tab A, so only re-read-before-write (D-13) can pass it.
+12. **Fixture timeouts:** the E2E page fixture sets an 8 s action timeout and a 30 s navigation timeout, so a red run takes minutes rather than hours. It also counts as frozen test code.
 
 ---
 
