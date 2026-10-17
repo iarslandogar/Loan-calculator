@@ -11,6 +11,7 @@ export function CurrencySelect() {
       <label htmlFor="currency">{copy.currency.label}</label>
       <select
         id="currency"
+        aria-describedby="currency-note"
         value={state.settings.currency}
         onChange={(e) => dispatch({ type: 'setCurrency', currency: e.target.value as Currency })}
       >
@@ -20,7 +21,9 @@ export function CurrencySelect() {
           </option>
         ))}
       </select>
-      <p className="hint">{copy.currency.note}</p>
+      <p id="currency-note" className="hint">
+        {copy.currency.note}
+      </p>
     </div>
   )
 }
