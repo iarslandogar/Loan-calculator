@@ -200,7 +200,7 @@ export const clearAllBtn = (p: Page) => p.getByRole('button', { name: 'Clear all
 export const summary = (
   p: Page,
   name: 'Monthly payment' | 'Total interest' | 'Total amount payable',
-) => p.getByRole('definition', { name, exact: true })
+) => p.getByLabel(name, { exact: true })
 export const scheduleTable = (p: Page) => p.getByRole('table', { name: 'Repayment schedule' })
 export const scheduleRegion = (p: Page) => p.getByRole('region', { name: 'Repayment schedule' })
 export const historyHeading = (p: Page) =>

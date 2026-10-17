@@ -61,6 +61,8 @@ Each decision is **Approved** or **Proposed — needs owner approval**. Claude C
 | D-45 | Handling of the G4.1 review's Minor findings | Approved (owner, G4.1), 2026-10-18 |
 | D-46 | Post-G3 test fix: AC-9.2 expected currency | Approved (owner), 2026-10-18 |
 | D-47 | Group 2 builds the schedule table; cross-group ACs reported as pending | Developer decision (owner informed), 2026-10-18 |
+| D-48 | Post-G3 fix: summary figures located with `getByLabel` (supersedes part of D-43) | Approved (owner), 2026-10-18 |
+| D-49 | Group 2 implementation choices | **Proposed**: developer decisions, owner to review at G4.2 |
 
 **How this log is kept (D-24):** every decision is recorded here, however small. Entries are never deleted or rewritten. A changed decision gets a new dated **Decision** line under its entry, or a new entry that names the one it supersedes, and a row in the change history.
 
@@ -345,6 +347,7 @@ Each item is approved as written in the spec or AC text it names:
   - a named dialog.
 - **Why:** The spec defined the copy but not the structure. Left open, the test-designer would have invented a DOM shape, and freezing the tests at G3 would lock it in without anyone deciding it.
 - **Decision (owner, Gate G3, 2026-10-18):** Approved ("approved").
+- **Decision (owner, 2026-10-18), superseded in part by D-48:** the "Summary figures" row was wrong. Playwright, following WAI-ARIA, never gives the `definition` (or `term`) role an accessible name, so `getByRole('definition', { name: 'Monthly payment' })` can match nothing, whatever the markup. The markup stays the same; tests locate the figures with `getByLabel` instead (D-48). This was the developer's error in writing D-43.
 
 ### D-44 Test-designer interpretations (Proposed, owner to review at G3)
 These readings were made while writing the tests. They become binding when the tests freeze.
@@ -376,6 +379,12 @@ The code-reviewer reported `BLOCKING FINDINGS: 0` for group 1 (domain), with thr
 - **Defect:** in `e2e/s09-reset.spec.ts`, `[AC-9.2]` switches to USD, *then* calculates L-A and L-B, but expects the entries to read `Rs 2,500,000.00 …` and `Rs 1,000,000.00 …`. Under spec §9.2 and AC-7.5, entries keep the currency they were calculated in, so a correct app shows `$2,500,000.00 at 18% for 5 years` and `$1,000,000.00 at 12% for 1 year`. The AC is right; the test's expected strings are wrong.
 - **Decision (owner, 2026-10-18):** Change only those two expected strings to the `$` form; the setup stays as it is. The `test-designer` (not the developer) makes the edit, and the owner sees the diff. The reviewer's freeze check will show this change after `g3-tests-approved`; this entry is its authorisation.
 - **Rejected alternative:** calculate in PKR first, then switch to USD.
+
+### D-48 Post-G3 fix: summary figures located with `getByLabel` (owner-approved change to a frozen test)
+- **Found by:** Claude Code in group 2. The first run with real UI rendered the right figures (Rs 88,848.79 / Rs 66,185.45 / Rs 1,066,185.45), but no named `definition` existed.
+- **Evidence:** Playwright's name computation lists `definition` and `term` among the roles that prohibit naming. A probe page with `<dt id>` / `<dd aria-labelledby>` returned 0 matches for `getByRole('definition', { name })`, and exactly 1 (the `<dd>`) for `getByLabel(name, { exact: true })`, in Chromium, Firefox and WebKit alike. Unnamed `getByRole('definition')` counts still work, so "no results shown" checks are unaffected.
+- **Decision (owner, 2026-10-18):** In `e2e/fixtures.ts`, the `summary()` helper changes from `getByRole('definition', { name, exact: true })` to `getByLabel(name, { exact: true })`. Spec §8.3.1 is updated to match. The `test-designer` makes the test edit, and the owner sees the diff. No assertion on the figures changes.
+- **Rejected alternative:** render each figure as `<output>` (`status` role, nameable). That makes three live regions announcing every recalculation, and it's a larger change.
 
 ### D-47 Group 2 builds the schedule table; cross-group ACs reported as pending
 - **Decision:** The shared helper `expectResultsShown` requires the schedule table, so group 2 builds `ScheduleTable` too; group 3 then verifies S-10 and S-13. AC-4.4 needs the Theme and Currency selects (group 4), and AC-9.2 needs saved calculations (group 5), so they are reported at G4.2 as **pending later groups**, not as done.

@@ -361,7 +361,7 @@ Tests locate elements only by role and accessible name. The app must provide:
 | Title | `<h1>` = `app.title` | `getByRole('heading', { level: 1 })` |
 | Inputs and selects | `<label>` text from §7 | `getByLabel('Loan amount (Rs)')`, `getByLabel('Annual interest rate (%)')`, `getByLabel('Loan tenure')`, `getByLabel('Tenure unit')`, `getByLabel('Currency')`, `getByLabel('Theme')` |
 | Field errors | Error element linked with `aria-describedby` | `expect(input).toHaveAccessibleDescription('Enter a loan amount.')` and `toHaveAttribute('aria-invalid', 'true')` |
-| Summary figures | `<dl>`; each `<dd>` has `aria-labelledby` pointing at its `<dt>` (`summary.monthly`, `summary.interest`, `summary.total`) | `getByRole('definition', { name: 'Monthly payment' })` has text `Rs 88,848.79` |
+| Summary figures | `<dl>`; each `<dd>` has `aria-labelledby` pointing at its `<dt>` (`summary.monthly`, `summary.interest`, `summary.total`) | `getByLabel('Monthly payment', { exact: true })` has text `Rs 88,848.79`. Playwright never names the `definition` role, so `getByRole('definition', { name })` cannot work (D-48). |
 | Idle, stale and rounding texts | Plain text in the results card | `getByText(...)` with the exact §7 string |
 | Schedule | `<h2>` = `schedule.title`; region and table named by it (§8.2); `<th scope="col">` per §7 | `getByRole('table', { name: 'Repayment schedule' })`, `getByRole('row')`, `getByRole('columnheader')`, `getByRole('cell')` |
 | Saved calculations | `<h2 tabindex="-1">` = `history.title`; `<ul aria-labelledby>` that heading; one `<li>` per entry holding three lines (§7 line1, line2, line3) | `getByRole('list', { name: 'Saved calculations' })`, `getByRole('listitem')` |
