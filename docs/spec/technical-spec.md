@@ -22,7 +22,7 @@ A single-page, client-only web app that calculates the equal monthly instalment 
 
 | Concern | Choice | Notes |
 |---|---|---|
-| Runtime for tooling | Node.js 24 LTS | Pinned in `.nvmrc` and `package.json` `engines`. Verify it is still an LTS line at scaffold time; if not, use the current Active LTS and record it in the decision log. |
+| Runtime for tooling | Node.js 24 LTS | Pinned in `.nvmrc` and `package.json` `engines`. Verify it is still an LTS line at scaffold time; if not, use the current Active LTS and record it in the decision log. Checked 2026-10-17: Node 24 is still an LTS line (24.16.0 installed). |
 | Package manager | npm | `package-lock.json` committed; CI uses `npm ci`. |
 | UI | React (latest stable) + TypeScript (latest stable, `strict: true`) | Function components and hooks only. |
 | Build/dev server | Vite (latest stable) | Static output in `dist/`. |
@@ -31,6 +31,7 @@ A single-page, client-only web app that calculates the equal monthly instalment 
 | Property tests | `fast-check` | For invariants in §5.4. |
 | End-to-end tests | `@playwright/test` | Chromium, Firefox, WebKit. Edge is Chromium-based and is covered by the Chromium project; Safari by WebKit. |
 | Lint/format | ESLint (flat config, typescript-eslint, eslint-plugin-react-hooks, eslint-plugin-jsx-a11y) + Prettier | |
+| Pre-approved tooling (D-17) | `@vitejs/plugin-react`, `@types/react`, `@types/react-dom`, `@types/node`, `@eslint/js`, `globals`, `eslint-config-prettier` | May be added without asking. `@testing-library/jest-dom` is **not** used; tests use plain assertions. |
 | Styling | Plain CSS with custom properties (one global stylesheet plus per-component CSS files) | No CSS framework, no UI library. |
 | State | React `useReducer` + context | No state library, no router. |
 | CI/CD | GitHub Actions | |
@@ -67,7 +68,60 @@ e2e/               Playwright specs
 scripts/trace.mjs  Traceability checker (§12.5)
 ```
 
-**Rule:** `domain/` must not import from `ui/` or `storage/`, and `storage/` must not import from `ui/`. Enforce this with an ESLint `no-restricted-imports` rule.
+**Rule:** `domain/` must not import from `ui/` or `storage/`, and `storage/` must not import from `ui/`. Enforce this with an ESLint `no-restricted-imports` rule. The same rule forbids importing `decimal.js` anywhere except `src/domain/money.ts`.
+
+### 3.1.1 Domain public API (D-16; frozen with the tests at Gate G3)
+
+Domain tests call **only** these exports. UI and storage behaviour is tested only through the rendered `<App/>` (component tests) and E2E, so reducer and storage internals stay free to change. In Phase 2 the developer writes `types.ts` and the configured `Decimal` in full, and every other function below with this exact signature and the body `throw new Error('NOT_IMPLEMENTED')`, so that Phase 3 tests fail for the right reason.
+
+```ts
+// types.ts
+type Unit = 'years' | 'months'
+type Currency = 'PKR' | 'USD'
+type Field = 'amount' | 'rate' | 'tenure'
+type ErrorCode =
+  | 'AMOUNT_REQUIRED' | 'AMOUNT_NAN' | 'AMOUNT_DECIMALS' | 'AMOUNT_RANGE'
+  | 'RATE_REQUIRED' | 'RATE_NAN' | 'RATE_DECIMALS' | 'RATE_RANGE'
+  | 'TENURE_REQUIRED' | 'TENURE_WHOLE' | 'TENURE_RANGE_YEARS' | 'TENURE_RANGE_MONTHS'
+interface RawInputs { amount: string; rate: string; tenure: string; unit: Unit }
+interface LoanInput { amount: Decimal; annualRate: Decimal; tenure: number; unit: Unit; months: number }
+  // months = unit === 'years' ? tenure * 12 : tenure. Tests obtain a LoanInput only via validateInputs.
+interface CanonicalInput { amount: string; rate: string; tenure: number; unit: Unit }
+type ValidationResult =
+  | { ok: true; value: LoanInput }
+  | { ok: false; errors: Partial<Record<Field, ErrorCode>> }
+interface ScheduleRow { month: number; payment: Decimal; interest: Decimal; principal: Decimal; balance: Decimal }
+interface CalculatedLoan {
+  input: LoanInput; monthlyPayment: Decimal; totalInterest: Decimal; totalPayable: Decimal
+  showRoundingNote: boolean; rows: ScheduleRow[]
+}
+
+// money.ts
+export const Decimal = DecimalJs.clone({ precision: 40, rounding: DecimalJs.ROUND_HALF_UP })
+round2(x: Decimal): Decimal
+formatMoney(x: Decimal, currency: Currency): string   // "Rs 88,848.79", "$88,848.79"
+formatAmount(x: Decimal): string                        // "921,151.21" (no symbol)
+
+// parse.ts
+normaliseAmount(raw: string): string
+normaliseRate(raw: string): string
+normaliseTenure(raw: string): string
+
+// validate.ts
+validateInputs(raw: RawInputs): ValidationResult        // never throws
+
+// loan.ts
+emi(balance: Decimal, monthlyRate: Decimal, months: number): Decimal   // §5.1, unrounded
+calculateLoan(input: LoanInput): CalculatedLoan                        // §5.2
+
+// format.ts
+formatRate(rate: Decimal): string                       // "12%", "21.5%"
+formatTenure(tenure: number, unit: Unit): string        // "1 year", "12 months"
+formatDateTime(date: Date): string                      // "17 Oct 2026, 20:45" (local time)
+toCanonical(input: LoanInput): CanonicalInput           // never exponent notation; -0 becomes 0
+```
+
+`tenure`, `months` and `month` are counts, not money, so they may be JS `number`s. For §5.4 invariant 8, compare `rows`, the three totals and `showRoundingNote`, not `input`.
 
 ### 3.2 Application state (reducer)
 
@@ -90,7 +144,7 @@ Transitions:
 | Calculate with all fields valid | Clear errors, compute, set `results` to `shown`, add a history entry (§9.3). |
 | Reset | Empty inputs, unit = `years`, clear errors, set `results` to `idle`, focus **Loan amount**. Settings and history are untouched. |
 | Change currency or theme | Update settings and persist. Results status is unchanged. |
-| Restore entry | Set inputs from the entry (canonical strings, §9.2) and currency from the entry, recompute (do not trust stored figures), set `results` to `shown`. No new history entry. |
+| Restore entry | Set inputs from the entry (canonical strings, §9.2), clear **all** field errors, and set the currency from the entry and **persist** it like any currency change. Recompute (do not trust stored figures) and set `results` to `shown`. No new history entry. (D-14) |
 
 ## 4. Input parsing and validation
 
@@ -232,6 +286,7 @@ Custom, deterministic formatters. **Do not use `Intl.NumberFormat` or `toLocaleS
 | history.delete | `Delete` (accessible name: `Delete calculation from {datetime}`) |
 | history.clearAll | `Clear all` |
 | dialog.clear.text | `Clear all saved calculations? This can't be undone.` |
+| dialog.clear.hint | `This doesn't clear the form. Select Reset to do that.` |
 | dialog.cancel / dialog.confirm | `Cancel` / `Clear` |
 | err.AMOUNT_REQUIRED | `Enter a loan amount.` |
 | err.AMOUNT_NAN | `Loan amount must be a number.` |
@@ -247,7 +302,7 @@ Custom, deterministic formatters. **Do not use `Intl.NumberFormat` or `toLocaleS
 | err.TENURE_RANGE_MONTHS | `Loan tenure must be between 1 and 480 months.` |
 | fatal | `Something went wrong. Please reload the page.` |
 
-The apostrophes in `can't` and `aren't` are the ASCII `'` character.
+The apostrophes in `can't`, `aren't` and `doesn't` are the ASCII `'` character.
 
 ## 8. UI behaviour
 
@@ -268,7 +323,7 @@ A semantic `<table>` with `<thead>` and `<th scope="col">`, inside a wrapper wit
 
 - Each error renders in an element with an id. The input gets `aria-invalid="true"` and `aria-describedby` pointing to it, and the error text sits in an `aria-live="polite"` container.
 - On a failed Calculate, focus moves to the first invalid field. On Reset, focus moves to **Loan amount**. On Delete, focus moves per AC-12.1. On Restore, focus stays on the Restore button.
-- **Confirm dialog:** native `<dialog>` opened with `showModal()`, with `autofocus` on **Cancel**. Escape (the `cancel` event) closes it without action and returns focus to **Clear all**.
+- **Confirm dialog:** native `<dialog>` opened with `showModal()`, with `autofocus` on **Cancel**. Escape (the `cancel` event) closes it without action and returns focus to **Clear all**. `aria-labelledby` points to the `dialog.clear.text` element and `aria-describedby` to `dialog.clear.hint`. **No JS focus trap** (D-20): Tab may leave the dialog to the browser's own UI, but must never reach page content behind the dialog (AC-8.5).
 
 ### 8.4 Theme
 
@@ -284,8 +339,11 @@ Starting tokens (tests must prove ≥ 4.5:1 for text pairs):
 | --text-muted | #4A5568 | #A9B4C2 |
 | --primary (button bg) / --on-primary | #1D4ED8 / #FFFFFF | #7AA2FF / #0F141B |
 | --error | #B42318 | #FF8A80 |
-| --border | #CBD2DC | #2E3A4A |
+| --border (decorative lines only) | #CBD2DC | #2E3A4A |
+| --input-border (inputs and selects) | #7E8898 | #66768C |
 | --focus (2px outline, 2px offset) | #1D4ED8 | #7AA2FF |
+
+`--input-border` must have a contrast ratio of at least 3:1 against both `--bg` and `--surface` (WCAG 1.4.11; D-19). Starting values: light 3.58:1 on bg and 3.34:1 on surface; dark 3.99:1 on bg and 3.54:1 on surface. Prove it with a `[SPEC-§8.4]` test.
 
 Tap targets are at least 44 × 44 px. Body font is the system font stack (no web-font downloads).
 
@@ -310,7 +368,13 @@ Tap targets are at least 44 × 44 px. Body font is the system font stack (no web
 }
 ```
 
-Only these fields are stored, never the schedule. On load, validate each element with a type guard. **If the value is not valid JSON or not an array, treat the history as empty.** Invalid elements are dropped. Nothing throws (AC-11.10).
+Only these fields are stored, never the schedule. **If the value is not valid JSON or not an array, treat the history as empty.** On load, an element is kept only if **all** of these hold, and otherwise it is dropped (D-14):
+1. A type guard passes: string `id`; `createdAt` with `!isNaN(Date.parse(createdAt))`; `currency` is `PKR` or `USD`; `input.amount` and `input.rate` are strings; `Number.isInteger(input.tenure)`; `input.unit` is `years` or `months`; string `monthlyPayment`.
+2. `validateInputs({ ...input, tenure: String(input.tenure) })` returns `ok`.
+3. `toCanonical(value)` deep-equals the stored `input`, so only canonical entries are restored.
+4. The stored `monthlyPayment` equals `round2(emi(P, r, n))` as a `Decimal`. Use `emi`, not a full schedule, so loading 20 entries stays cheap.
+
+After that, later duplicates of an `id` are dropped and the list is truncated to 20. History line 2 (`{monthly} per month`) shows the recomputed value. Nothing throws (AC-11.10).
 
 ### 9.3 Saving rules
 
@@ -319,6 +383,9 @@ Only these fields are stored, never the schedule. On load, validate each element
 - Insert at index 0 and truncate to 20 (AC-11.6).
 - If the write fails (for example, quota exceeded), switch to the unavailable state for the rest of the visit.
 - **Clear all** removes the key entirely (AC-12.4).
+- **Two tabs (D-13):** every save, delete and clear-all **re-reads storage first** and then writes, so stale in-memory state is never written back. The duplicate check compares against the newest entry as just re-read. Delete works by `id`, never by index.
+- Listen for the `storage` event on the history key and reload the list. `newValue === null` means the list is now empty. If the entry that had focus is removed this way, focus moves to the **Saved calculations** heading.
+- These rules are proven by `[SPEC-§9.3]` tests.
 
 ## 10. Error handling
 
@@ -350,6 +417,10 @@ Only these fields are stored, never the schedule. On load, validate each element
 | E2E | Playwright (Chromium, Firefox, WebKit) | Every UI-observable AC, run against `vite preview` of the production build. Viewports set per test (360×740, 768×1024, 1280×800). Dark mode via `colorScheme`. Time fixed via Playwright's clock API (AC-11.2). |
 | Smoke (deployed) | Playwright, tag `@smoke` | AC-1.1, AC-2.1, AC-7.2 and AC-11.2 against the live GitHub Pages URL. |
 
+**Time zone (D-15):** every Playwright context uses `timezoneId: 'Asia/Karachi'`, and clock times are given with an explicit offset (for example `2026-10-17T20:45:00+05:00`). `vitest.config.ts` sets `process.env.TZ = 'Asia/Karachi'` before anything else runs. A `[SPEC-§12.1]` test asserts that `new Date('2026-10-17T15:45:00Z').getHours() === 20`, which proves the zone is applied on every OS, Windows included.
+
+Dialog behaviour (AC-8.5, AC-12.2 to AC-12.4) is tested in E2E only, because jsdom does not implement `showModal()`. The Vitest setup file `test/setup.ts` stubs `matchMedia`.
+
 ### 12.2 Naming
 
 Every test that proves an acceptance criterion has a title starting `[AC-x.y]`. One test may prove several criteria (`[AC-3.1][AC-10.2] ...`). Tests that prove spec rules only use `[SPEC-§n]`.
@@ -362,7 +433,11 @@ Every test that proves an acceptance criterion has a title starting `[AC-x.y]`. 
 
 ### 12.4 Tests are the contract
 
-After Gate G3 (tests approved), the developer must not change test files. If a test looks wrong, stop and raise it with the human, who decides. The reviewer checks `git log -p -- e2e/ 'src/**/*.test.*'` for changes made after G3.
+After Gate G3 (tests approved, tag `g3-tests-approved`), the developer must not change anything in the **freeze scope**: `src/**/*.test.ts(x)`, `e2e/**` (except `e2e/review/**`, which the reviewer adds to), `test/**`, `playwright.config.ts`, `vitest.config.ts` and `scripts/trace.mjs`. If a test looks wrong, stop and raise it with the human, who decides. The reviewer checks for changes made after G3 with:
+
+```
+git log -p g3-tests-approved..HEAD -- e2e/ 'src/**/*.test.*' test/ playwright.config.ts vitest.config.ts scripts/trace.mjs ':!e2e/review/'
+```
 
 ### 12.5 Traceability script (`npm run trace`)
 
@@ -385,7 +460,9 @@ After Gate G3 (tests approved), the developer must not change test files. If a t
 | `test:e2e` | Playwright (builds and serves via `webServer`), writes `reports/playwright.json` |
 | `trace` | §12.5 |
 | `size` | Fails if the gzipped JS exceeds 150 KB |
-| **`verify`** | `lint && format:check && typecheck && test && build && size && test:e2e && trace`. **This is the loop's exit condition.** |
+| **`verify`** | `lint && format:check && typecheck && test && build && size && test:e2e && trace --results` (D-18). **This is the loop's exit condition.** |
+
+The build tsconfig excludes `*.test.*`, `test/` and `e2e/`, so the app builds while tests are red. A separate tsconfig makes `typecheck` cover the tests too.
 
 ## 14. CI/CD and deployment
 
@@ -399,7 +476,7 @@ After Gate G3 (tests approved), the developer must not change test files. If a t
 1. Every AC has at least one `[AC-x.y]` test, and all pass in Chromium, Firefox and WebKit.
 2. `npm run verify` exits 0.
 3. The reviewer subagent reports no blocking findings for the story.
-4. The human has checked each AC by hand in the running app (checklist in `docs/process/loop-plan.md`).
+4. The human has checked each AC by hand in the running app (checklist in `docs/process/manual-test-checklist.md`).
 5. Only then is the story's status changed to `Implemented`, by the human or with their explicit approval.
 
 ## 16. Out of scope (v1), stated as assumptions in the README

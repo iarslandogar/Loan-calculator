@@ -11,8 +11,8 @@ Inputs: docs/user-stories.md, docs/spec/technical-spec.md, CLAUDE.md, the code, 
 
 Do all of the following.
 
-1. **Run the gate:** `npm run verify`. Paste the final summary lines and exit code.
-2. **Test integrity:** run `git log -p --since=<Gate G3 commit> -- e2e/ 'src/**/*.test.*'`. Flag any test change made after G3, and any `.skip`, `.only`, `.fixme`, `test.fail`, weakened assertion or deleted test.
+1. **Run the gate.** In mini-gates G4.1–G4.5, run the reviewed group's tests (`npx vitest run` and `npx playwright test` filtered with `--grep` to the group's `[AC-…]` and `[SPEC-…]` tags), plus `npm run lint` and `npm run typecheck`. Later groups' tests are expected to be red then. From G4.6 on, run `npm run verify`. Paste the final summary lines and exit codes.
+2. **Test integrity:** run `git log -p g3-tests-approved..HEAD -- e2e/ 'src/**/*.test.*' test/ playwright.config.ts vitest.config.ts scripts/trace.mjs ':!e2e/review/'` (the freeze scope in spec §12.4). Flag any change in that scope made after G3, and any `.skip`, `.only`, `.fixme`, `test.fail`, weakened assertion or deleted test.
 3. **Spec conformance:** check the algorithm against spec §5.2 line by line; formatting against §6; every string against the §7 copy deck; storage against §9; the layer import boundaries; and that no JS `number` touches money.
 4. **Exploratory testing beyond the ACs.** Build and serve the app, then use Playwright scripts (put them in `e2e/review/`) to try hostile and unusual input:
    - pasted text with newlines or tabs, Unicode digits (`١٢`), a full-width `１２`, `00012`, `.5`, `5.`, `-0`, `1,,000`, a 10,000-character string;

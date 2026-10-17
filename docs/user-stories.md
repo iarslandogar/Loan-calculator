@@ -160,7 +160,7 @@ Error messages appear directly below the field they refer to. While any error is
 - **AC-8.2** Given valid L-A values, when I press Enter while focus is in **Loan amount**, **Annual interest rate** or **Loan tenure**, then the app calculates exactly as if I had selected **Calculate**.
 - **AC-8.3** Given either theme, when any interactive element has keyboard focus, then a visible focus outline at least 2 px thick is shown around it.
 - **AC-8.4** Given L-B results (60 rows), when the schedule area has focus, then the Up/Down arrow keys and Page Up/Page Down scroll it.
-- **AC-8.5** Given the **Clear all** confirmation is open, then focus starts on **Cancel**, Tab and Shift+Tab stay within the dialog, Escape closes it without clearing and returns focus to **Clear all**, and pressing Enter on **Clear** clears the history.
+- **AC-8.5** Given the **Clear all** confirmation is open, then focus starts on **Cancel**; pressing Tab or Shift+Tab never moves focus to anything on the page behind the dialog; Escape closes it without clearing and returns focus to **Clear all**; and pressing Enter on **Clear** clears the history.
 - **AC-8.6** Given only a keyboard, when I enter L-A, calculate, enter L-B, calculate, restore the L-A entry, delete the L-B entry and clear all history, then every step succeeds without a mouse. *(One end-to-end keyboard-only test.)*
 
 ## S-9 Start a fresh quote in one step
@@ -211,7 +211,7 @@ Saved calculations are stored only in this browser on this device. They are neve
 "As a Loan Advisor, I want to delete one saved calculation or all of them, so that the next customer cannot see the previous customer's figures."
 
 - **AC-12.1** Given entries L-B and L-A, when I select **Delete** on L-B, then L-B disappears from the list and stays gone after a reload, L-A is unchanged, and focus moves to the **Restore** button of the next entry (or the previous entry if it was last, or the **Saved calculations** heading if the list is now empty).
-- **AC-12.2** Given at least one entry, when I select **Clear all**, then a confirmation dialog shows `Clear all saved calculations? This can't be undone.` with the buttons **Cancel** and **Clear**.
+- **AC-12.2** Given at least one entry, when I select **Clear all**, then a confirmation dialog shows `Clear all saved calculations? This can't be undone.` and `This doesn't clear the form. Select Reset to do that.` with the buttons **Cancel** and **Clear**.
 - **AC-12.3** Given the confirmation is open, when I select **Cancel** or press Escape, then nothing is deleted.
 - **AC-12.4** Given the confirmation is open, when I select **Clear**, then the list shows `No saved calculations yet.`, the stored history is removed from the browser, and after a reload the list is still empty.
 - **AC-12.5** Given no saved entries, then **Clear all** is disabled.

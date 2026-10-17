@@ -28,6 +28,7 @@ Phase 4 Build loop (per story) ──G4──► Phase 5 Independent review ─�
 3. Install Node 24 LTS and Claude Code. Run `claude` in the repo folder.
 4. Confirm the main model is Opus 5.5 (`/model`). The subagents choose Sonnet themselves through their `model: sonnet` setting.
 5. Commit: `chore: add requirements pack and agent definitions`.
+   - *As done (D-22):* the repo was created locally at the planning phase. The owner creates the public GitHub repo later and Claude adds the remote and pushes. The remote should exist **by G4.6**, because AC-10.8 needs a CI run and the G2 CI/Pages checks wait for it.
 6. **Transcripts:** use **one Claude Code session per phase** where you can. Before you `/clear` or close a session, run `/export transcripts/session-0N-<phase>.md`. Subagent conversations may not appear in full in the main export; at the end, also copy the raw session logs for this project from `~/.claude/projects/` into `transcripts/raw/`. Remove secrets and change nothing else.
 
 ---
@@ -56,7 +57,7 @@ Phase 4 Build loop (per story) ──G4──► Phase 5 Independent review ─�
 **🚦 Gate G2, what you check:**
 - Run `npm ci && npm run dev` yourself, and open the page.
 - Run `npm run trace` and confirm it lists the ACs. Break a story's job ID on purpose (for example change `J-1` to `J-99`), confirm `trace` fails, then undo it. *This is a good transcript moment: you are testing the tester.*
-- Push to GitHub. Set **Settings → Pages → Source: GitHub Actions**. Confirm CI runs.
+- Push to GitHub. Set **Settings → Pages → Source: GitHub Actions**. Confirm CI runs. *(If the remote doesn't exist yet (D-22), these checks move to whenever it is created, and no later than G4.6.)*
 
 ---
 
@@ -116,7 +117,7 @@ Work **one story group at a time**, in this order, with a short mini-gate after 
 ## Phase 6: Release (exit: live URL passes smoke tests; package complete)
 
 **Your prompt:**
-> Phase 6. (1) Update the statuses in docs/user-stories.md exactly as I approved. (2) Write README.md per the checklist in loop-plan.md. (3) Merge to main, let the deploy workflow publish to GitHub Pages, and confirm the @smoke tests pass against the live URL. (4) Run `npm run trace -- --results` and show me the output. Stop at Gate G6.
+> Phase 6. (1) Update the statuses in docs/user-stories.md exactly as I approved. (2) Run `npm run trace -- --results` and show me the output, before anything is written or pushed. (3) Write README.md per the checklist in loop-plan.md. (4) Push, merge to main, let the deploy workflow publish to GitHub Pages, and confirm the @smoke tests pass against the live URL. Stop at Gate G6.
 
 **README must contain** (assignment requirement plus our additions):
 - [ ] What the app is and who it is for (the 3 roles in one paragraph each), and **why a loan/EMI calculator**

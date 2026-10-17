@@ -18,6 +18,6 @@ Rules:
 6. **Run the suite.** At this phase every test must **fail for the right reason** (a missing element or function), not because of a syntax error or a broken fixture. Report any test that passes before implementation, because that means it tests nothing.
 7. Run `npm run trace`. Every v1 AC must show at least one test.
 8. Write `docs/process/manual-test-checklist.md`: one checkbox line per v1 AC, written as the exact manual steps and expected result, for the human to tick in the browser.
-9. **Do not edit anything under `src/` except `*.test.ts(x)` files.** Do not create implementation stubs.
+9. **Do not edit anything under `src/` except `*.test.ts(x)` files.** Do not create implementation stubs; the developer already created the throwing stubs for the domain API in spec §3.1.1. Call only that API in domain tests, and test UI and storage only through the rendered `<App/>` and E2E. You may also write the Vitest setup file in `test/**` (for example a `matchMedia` stub).
 
 Finish with a report covering: number of tests per story, ACs that were hard to automate and how you handled them, any AC you believe is ambiguous (quote it), and the final output of `npm test` and `npm run test:e2e` (expected: all red).
