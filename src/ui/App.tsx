@@ -1,10 +1,21 @@
-import { copy } from './copy'
+import { AppProvider } from './AppContext'
+import { ErrorBoundary } from './components/ErrorBoundary'
+import { Header } from './components/Header'
+import { LoanForm } from './components/LoanForm'
+import { ResultsPanel } from './components/ResultsPanel'
 
-// Phase 2 shell: renders the title only. No features yet.
 export function App() {
   return (
-    <header>
-      <h1>{copy.app.title}</h1>
-    </header>
+    <ErrorBoundary>
+      <AppProvider>
+        <div className="page">
+          <Header />
+          <main className="layout">
+            <LoanForm />
+            <ResultsPanel />
+          </main>
+        </div>
+      </AppProvider>
+    </ErrorBoundary>
   )
 }

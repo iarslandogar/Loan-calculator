@@ -1,0 +1,214 @@
+/* Layout and components (spec §8). Responsive breakpoints are refined with S-5. */
+*,
+*::before,
+*::after {
+  box-sizing: border-box;
+}
+
+html,
+body {
+  margin: 0;
+}
+
+body {
+  background: var(--bg);
+  color: var(--text);
+  font-family: var(--font);
+  font-size: 16px;
+  line-height: 1.5;
+}
+
+.page {
+  max-width: 1200px;
+  margin: 0 auto;
+  padding: var(--gap);
+}
+
+.app-header h1 {
+  margin: 0;
+  font-size: 1.75rem;
+}
+
+.tagline {
+  margin: 4px 0 var(--gap);
+  color: var(--text-muted);
+}
+
+.layout {
+  display: grid;
+  gap: var(--gap);
+  grid-template-columns: minmax(0, 2fr) minmax(0, 3fr);
+  align-items: start;
+}
+
+@media (max-width: 768px) {
+  .layout {
+    grid-template-columns: minmax(0, 1fr);
+  }
+}
+
+.card {
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+  padding: var(--gap);
+  min-width: 0;
+}
+
+/* Form */
+.field {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  margin-bottom: 8px;
+}
+
+.field label {
+  font-weight: 600;
+}
+
+.field input,
+.field select {
+  font: inherit;
+  color: var(--text);
+  background: var(--bg);
+  border: 1px solid var(--input-border);
+  border-radius: 6px;
+  min-height: 44px;
+  padding: 8px 10px;
+  width: 100%;
+}
+
+.field input[aria-invalid='true'] {
+  border-color: var(--error);
+}
+
+.field-error {
+  margin: 0;
+  min-height: 1.5em;
+  color: var(--error);
+  font-size: 0.95rem;
+}
+
+.hint {
+  margin: 0;
+  color: var(--text-muted);
+  font-size: 0.9rem;
+}
+
+.tenure-row {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) minmax(0, 1fr);
+  gap: 8px;
+}
+
+.actions {
+  display: flex;
+  gap: 8px;
+  margin-top: 8px;
+}
+
+button {
+  font: inherit;
+  min-height: 44px;
+  min-width: 44px;
+  padding: 8px 16px;
+  border-radius: 6px;
+  cursor: pointer;
+}
+
+button.primary {
+  background: var(--primary);
+  color: var(--on-primary);
+  border: 1px solid var(--primary);
+}
+
+button.secondary {
+  background: var(--bg);
+  color: var(--text);
+  border: 1px solid var(--input-border);
+}
+
+:focus-visible {
+  outline: 2px solid var(--focus);
+  outline-offset: 2px;
+}
+
+/* Results */
+.status {
+  margin: 0;
+  color: var(--text-muted);
+}
+
+.summary {
+  margin: 0 0 var(--gap);
+  display: grid;
+  gap: 8px;
+}
+
+.figure {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: space-between;
+  gap: 4px 12px;
+}
+
+.figure dt {
+  color: var(--text-muted);
+}
+
+.figure dd {
+  margin: 0;
+  font-weight: 600;
+  font-variant-numeric: tabular-nums;
+  overflow-wrap: anywhere;
+}
+
+.figure.headline dd {
+  font-size: 1.5rem;
+}
+
+.rounding-note {
+  margin: 0 0 var(--gap);
+  color: var(--text-muted);
+  font-size: 0.9rem;
+}
+
+/* Schedule (spec §8.2) */
+.schedule h2 {
+  font-size: 1.15rem;
+  margin: 0 0 8px;
+}
+
+.schedule-scroll {
+  overflow: auto;
+  max-height: min(60vh, 480px);
+  border: 1px solid var(--border);
+  border-radius: 6px;
+  background: var(--bg);
+}
+
+.schedule table {
+  width: 100%;
+  border-collapse: collapse;
+  font-variant-numeric: tabular-nums;
+}
+
+.schedule th,
+.schedule td {
+  padding: 6px 10px;
+  text-align: right;
+  white-space: nowrap;
+  border-bottom: 1px solid var(--border);
+}
+
+.schedule th {
+  position: sticky;
+  top: 0;
+  background: var(--surface);
+}
+
+.fatal {
+  padding: var(--gap);
+  color: var(--error);
+}
