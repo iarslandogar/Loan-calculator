@@ -722,6 +722,13 @@ The code-reviewer's visuals report (docs/process/review-findings.md, "Visuals") 
 - **Request:** the owner created the public repo `https://github.com/iarslandogar/Loan-calculator`, set Pages → Source to **GitHub Actions**, and asked to deploy now.
 - **Decision:** `v1` is pushed with the freeze tags and merged into `main`. The push to `main` runs `deploy.yml`: CI `verify` on Linux first, then the Pages deploy, then the `@smoke` tests against the live URL. Any failure stops the deploy.
 - **Change to the loop plan's order:** the plan put Phase 5 (the whole-app review and the owner's hand check) before release. Deploying first is the owner's call. Phase 5 still runs, and can use the live site. **No story Status changes**: every story stays "Not implemented" until the owner decides at G5.
+- **Local timeouts explained (2026-10-18):** after D-72, local `verify` still failed 4 WebKit tests, all 30 s timeouts. The **unchanged committed code** (which had passed 549 of 549 that day) then failed the same tests too, so the code was ruled out. The laptop was **on battery** (37%, CPU throttled). After the owner plugged it in, the full `CI=1 npm run verify` **exited 0**: Vitest 345 of 345, E2E 549 of 549, `trace` OK. Local WebKit runs on battery are not valid evidence.
+- **Result (2026-10-18):**
+  - `v1`, `main` and both freeze tags are pushed to `origin`.
+  - CI run `39150790709` on `v1`: **success** (full `npm run verify` on Linux).
+  - Deploy run `39153885811` on `main`: verify **success**, deploy **success**, smoke **success** (it waited until Pages served commit `182e87d`, then ran the `@smoke` tests on the live URL).
+  - Live: **https://iarslandogar.github.io/Loan-calculator/**, HTTP 200, `build-id` = `182e87de227d470871608c3c4219c91bef94101e`.
+  - This is the first CI evidence for AC-10.8's "on the CI test machine" (D-32): the Linux `verify` includes `[AC-10.8]` in all 3 browsers and passed. Per-test counts weren't read, because GitHub's job logs need a signed-in account.
 - **Note:** the repo name is `Loan-calculator`, not the plan's `muhammad-arslan-calculator`. The workflows take the name from the repository, so the Pages path is `/Loan-calculator/` with no change. `package.json` keeps its old name, which is cosmetic.
 
 ### D-47 Group 2 builds the schedule table; cross-group ACs reported as pending
