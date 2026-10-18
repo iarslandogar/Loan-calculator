@@ -394,6 +394,9 @@ Tests locate elements only by role and accessible name. The app must provide:
 | Charts (D-65) | `<figure>` whose `<figcaption>` is the chart's summary sentence; a heading with the chart title; the `<svg>` is `aria-hidden="true"`; the legend is HTML text | `getByRole('figure', { name: <summary> })`; `getByText(<title>)` |
 | Yearly summary | `<h3>` = `yearly.title`; `<table aria-labelledby>` that heading; `<th scope="col">` per §7 | `getByRole('table', { name: 'Yearly summary' })` |
 | Chart tooltips | An element with `role="tooltip"` shown on pointer hover | `getByRole('tooltip')` |
+| Chart hover areas (D-66) | Inside each hoverable chart's `<figure>`, one element `[data-hit-area]` covering the plot. Months (or years) are spread evenly across its width: item *k* of *n* is under the point at (*k* − 0.5) / *n* of its width, at any height. | `figure.locator('[data-hit-area]')`, then `hover({ position })` |
+| Cost bar segments (D-66) | Two elements `[data-segment="loan"]` and `[data-segment="interest"]` whose rendered widths are proportional to the two percentages | `boundingBox()` widths |
+| Series marks (D-66) | Every filled or stroked chart mark carries `data-series="principal"`, `"interest"`, `"loan"` or `"balance"` | computed `fill` / `stroke` / `background-color` for AC-20.5 |
 
 ### 8.3.2 Charts (D-65)
 

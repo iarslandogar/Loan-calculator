@@ -79,6 +79,7 @@ Each decision is **Approved** or **Proposed — needs owner approval**. Claude C
 | D-63 | Redesign proposals P1–P5 | Approved (owner), 2026-10-18: P1 yes, P2 n/a, P3 yes, P4 already done, P5 declined (backlog) |
 | D-64 | Redesign implementation: deviations from the bundle and verification | **Proposed**: owner to review at the redesign mini-gate |
 | D-65 | Add four visuals: S-20, S-21, S-22 new; S-19 Backlog to v1 | Approved (owner), 2026-10-18 |
+| D-66 | Chart test hooks: `data-hit-area`, `data-segment`, `data-series` | **Proposed**: owner to review at G3b |
 
 **How this log is kept (D-24):** every decision is recorded here, however small. Entries are never deleted or rewritten. A changed decision gets a new dated **Decision** line under its entry, or a new entry that names the one it supersedes, and a row in the change history.
 
@@ -611,6 +612,10 @@ Every S-5 and S-8 test already passed before group 6, apart from the D-59 Firefo
 - **Reference values:** computed independently with exact decimal arithmetic (spec §5.2), and cross-checked: L-B's yearly interest sums to AC-3.2's Rs 1,309,014.14, and its principal to Rs 2,500,000.00.
 - **Process:** the `test-designer` writes the new tests (red), and the owner approves them, frozen under the tag `g3b-visuals-tests-approved`. Then implementation, `verify`, an independent review and a mini-gate, before Phase 5. **Existing frozen tests are not changed.**
 - **Still open from the redesign mini-gate:** D-64 approval, and whether to add the RD-3 forced-colors borders. The owner moved on to this request without answering.
+
+### D-66 Chart test hooks (Proposed, owner to review at G3b)
+- **Decision:** spec §8.3.1 gains three `data-` hooks: `[data-hit-area]` (hover geometry: item *k* of *n* at (*k* − 0.5) / *n* of its width), `[data-segment]` (the cost bar's parts) and `[data-series]` (every chart mark).
+- **Why:** the chart SVG is deliberately `aria-hidden`, because the figcaption and tables carry the data for assistive technology. So role and name locators can't reach the hover areas, the segments or the marks. The hooks are defined before the tests are written, so the test-designer doesn't invent a structure that then gets frozen without anyone deciding it (the D-43 lesson).
 
 ### D-47 Group 2 builds the schedule table; cross-group ACs reported as pending
 - **Decision:** The shared helper `expectResultsShown` requires the schedule table, so group 2 builds `ScheduleTable` too; group 3 then verifies S-10 and S-13. AC-4.4 needs the Theme and Currency selects (group 4), and AC-9.2 needs saved calculations (group 5), so they are reported at G4.2 as **pending later groups**, not as done.
