@@ -226,3 +226,45 @@ Throwaway probe (deleted) importing `src/domain/validate` and `src/domain/loan`,
 No counterexample to the D-55 guarantee was found; no wrong number, crash, data loss or false Implemented claim from this change.
 
 BLOCKING FINDINGS: 0
+
+---
+
+## G4.5 review (2026-10-18): group 5, saved calculations (S-11, S-12)
+
+Reviewer: code-reviewer. Commits ec76864..c0d02c3 (branch v1). Decisions read first: D-13, D-14, D-28, D-29, D-30, D-57.
+
+### Gate
+- `CI=1 npx playwright test <6 specs> --grep "S-11|S-12|§9\.|§3\.2|AC-7\.5\]|AC-9\.2\]|AC-8\.5\]"`: `--list` = 147 tests (49 per browser); run **147 passed (2.2m), exit 0**. Reproduced.
+- Full suite `CI=1 npx playwright test`: **446 passed, 1 failed (6.2m), exit 1**. The failure is `[firefox] [AC-8.1] Tab order on a first visit` at `s08-keyboard.spec.ts:56`, as the developer said.
+- `npx vitest run`: 7 files, 297 passed, exit 0. `npm run lint` 0, `npm run typecheck` 0, `npm run format:check` 0.
+- Port 4173: no listener left.
+
+### The Firefox AC-8.1 failure: the developer's claim is confirmed
+Own neutral-page probe (`<input><button>one</button><button>last</button>`, focus the last button, press Tab, report `document.activeElement`), run in all three browsers:
+`chromium BODY`, `firefox BUTTON#c` (stays on the last button), `webkit BODY`.
+So Playwright's Firefox does not move focus off the last tabbable element on a page with nothing after it, while Chromium and WebKit do. The app part of AC-8.1 passed in Firefox: all eight stops (Theme to Reset) were reached in order and the disabled Clear all was skipped (the failing line is the later `resetBtn not.toBeFocused`). The tab order is not at fault. This is a test-portability defect in a frozen test (the assertion `resetBtn not focused` after Tab past the end). Only the owner may change it (spec §12.4); a portable form would assert only `clearAllBtn not focused`, or compare against `document.activeElement` being outside the page controls. Until then `npm run verify` stays red in Firefox.
+
+### Test integrity
+- `git log -p g3-tests-approved..HEAD -- e2e/ 'src/**/*.test.*' test/ playwright.config.ts vitest.config.ts scripts/trace.mjs ':!e2e/review/'`: three commits only, 749144e (D-46), 5751988 (D-48), 16c8cc8 (D-54/D-55), all authorised. None of the group-5 commits (ec76864, 77c3780, 03d8e1d, c0d02c3) touches the scope. Grep of the whole patch for `.skip`, `.only`, `.fixme`, `test.fail`: no hits. No deleted test.
+
+### Conformance
+- **§9.2 load:** all four checks run in the spec order (type guard incl. year 2000..9999, `validateInputs`, canonical equality, `emi` equality), then dedupe by id, then `slice(0, 20)`. Non-JSON and non-array return empty; `Decimal` construction is in try/catch. Hostile stores tried in 3 browsers (null/number/string/array/`{}` elements, `{"a":1}`, `"str"`, 200,000 nested `[`, `__proto__`, duplicate ids, `monthlyPayment` `1e999999` and `NaN`, extra keys, year 9999): no throw, no console error, valid elements kept, invalid dropped.
+- **§9.3:** `saveEntry`, `deleteEntry`, `clearHistory` all read first or are key-only; duplicate check is against the newest entry as just read; delete is by id; the last delete and Clear all remove the key (probe: key is `null` after deleting 3 of 3 by keyboard); a failed save (probe: `Storage.prototype.setItem` throws) shows the unavailable text and the results still show; a failed delete keeps both entries and shows `history.removeFailed`; the storage listener handles the history key and `key === null`; focus moves to the heading when the focused entry vanishes. Two tabs, interleaved calculate/delete/clear/calculate: final storage has exactly 1 entry (no resurrected entries).
+- **§3.2 Restore:** canonical inputs, errors cleared (probe: field in error, Restore, no `aria-invalid`), currency set and persisted, results recomputed, no new entry, focus on the Restore button, then editing makes results stale.
+- **§7 and D-29:** every history/dialog string in `copy.ts` matches the deck character for character. **§8.3 dialog:** native `showModal`, Cancel focused, Cancel and Escape (pressed twice quickly, also with a dark colour-scheme switch while open) focus Clear all, Clear focuses the heading, `aria-labelledby`/`-describedby` present. **AC-12.1** keyboard Delete of every entry in turn: focus lands on the next entry's Restore each time, then the heading. **AC-12.5** disabled when empty/unavailable.
+- **Layers:** `src/storage/*` imports only `domain` and siblings; nothing imports `ui`. No `any`, no `number` in money (`tenure` is an integer). No `console.*` in the group.
+- **Other probes with no defect:** rapid double-click Calculate gives one entry; 25 calculations leave exactly 20 in the list and in storage; Restore with errors showing and with stale results; 360 px with a 10^15 / 74.99% / 1,200-month entry: no horizontal overflow (0 px); a 10,000-entry (1.4 MB) store loads and caps at 20 in all three browsers without error.
+
+### Findings
+
+| ID | Severity | Story/AC | Evidence | Suggested fix |
+|---|---|---|---|---|
+| G45-1 | Minor | S-12, spec §8.3 / D-30 | `e2e/review/g45.spec.ts` `[REVIEW-1]`, fails in 3 browsers. Open the Clear all dialog with one saved entry, remove the key from a second tab (list becomes empty, **Clear all** becomes disabled), then press Cancel. `pendingFocus = 'clearAll'` targets a disabled button, `focus()` is a no-op and `document.activeElement` is `BODY` (observed in chromium, firefox and webkit). Keyboard and screen-reader users lose their place. | In `HistoryPanel` effect, if `clearAllRef.current` is disabled, fall back to the heading. |
+| G45-2 | Minor | S-11, spec §9.2 | `[REVIEW-2]`, fails in 3 browsers. A stored entry with `createdAt` `9999-12-31T23:59:59.000Z` passes the 2000..9999 year check (UTC) but is shown as `1 Jan 10000, 04:59` in Asia/Karachi (local year used by `formatDateTime`). Needs a tampered store, so low risk; the symmetric case (year 2000 shown as 1999 west of UTC) also exists. | Check the year with local time too (`getFullYear`), or cap at 9998. |
+| G45-3 | Minor | S-11, NFR | Every `parseHistory` validates all stored elements before truncating to 20, as spec §9.2 words it. A 10,000-entry store (about 1.4 MB): page load 0.37 s chromium, 0.83 s firefox, 0.95 s webkit; Calculate (re-read plus write) 0.55 s, 0.57 s, 1.8 s (webkit). Also paid on every `storage` event. Not a crash; only reachable by tampering or a bug elsewhere. | Optional: stop validating once 20 valid, unique entries are collected (the result is identical). |
+| G45-4 | Minor | Frozen test | `[firefox] [AC-8.1]` in `e2e/s08-keyboard.spec.ts:56` asserts `resetBtn not focused` after Tab past the last control. Firefox keeps focus there on a page with nothing after it (probe above). App not at fault. | Owner decision: drop that one assertion or make it portable. Not changed by the reviewer. |
+| G45-5 | Minor | Code quality | `HistoryPanel.onRestore` has an unreachable `if (!result.ok) return` that silently does nothing if ever hit (commented as unreachable); `deleteEntry` conflates "could not read" with "could not write" into the same `removeFailed` message. Both acceptable. | None required. |
+
+No wrong number, crash, data loss or false `Implemented` claim found in this group. D-57 is still `Proposed`; the owner approves or amends it at G4.5. The reviewer tests in `e2e/review/g45.spec.ts` are expected to fail until G45-1 and G45-2 are fixed, so `npm run verify` is red until then (Phase 5 is when Major and Blocker fixes are made; these two are Minor).
+
+BLOCKING FINDINGS: 0

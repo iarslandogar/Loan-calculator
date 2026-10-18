@@ -71,6 +71,7 @@ Each decision is **Approved** or **Proposed — needs owner approval**. Claude C
 | D-55 | Counterexample to invariant 6 / AC-10.5 within the current limits | Approved (owner), 2026-10-18: option A, state it truthfully |
 | D-56 | Test-designer readings for the D-54/D-55 test update | Accepted with the D-54 mini-gate (owner), 2026-10-18 |
 | D-57 | Group 5 implementation choices | **Proposed**: developer decisions, owner to review at G4.5 |
+| D-58 | Handling of the G4.5 review's findings | **Proposed**: owner to review at G4.5 |
 
 **How this log is kept (D-24):** every decision is recorded here, however small. Entries are never deleted or rewritten. A changed decision gets a new dated **Decision** line under its entry, or a new entry that names the one it supersedes, and a row in the change history.
 
@@ -515,6 +516,17 @@ Other incidental changes (each needed because an old "invalid" example became va
 8. **Other tabs:** the `storage` listener reloads on the history key or `key === null`. If the focused entry vanished, focus moves to the heading.
 9. **Markup:** the Saved calculations `<section>` isn't named, so there's no extra landmark. The list (`<ul aria-labelledby>`) carries the name, per §8.3.1.
 10. **IDs:** `crypto.randomUUID()` where available, otherwise timestamp plus counter (§9.2).
+
+### D-58 G4.5 findings (Proposed, owner to review at G4.5)
+The code-reviewer reported `BLOCKING FINDINGS: 0` for group 5, with these findings:
+1. **G45-1, Cancel focuses a Clear all that another tab has just disabled, dropping focus to `body`:** **fixed.** A focus target that can't take focus (a disabled Clear all, or an entry removed meanwhile) falls back to the Saved calculations heading. Proved by `[REVIEW-1]`.
+2. **G45-2, a stored `createdAt` in late 9999 UTC displays as the year 10000 in Karachi:** **fixed.** The year check uses local time, the time that is displayed. This is a reading of §9.2's "a year from 2000 to 9999" as the displayed year. The frozen `[SPEC-§9.2]` 1999 case still drops. Proved by `[REVIEW-2]`.
+   - The reviewer changed its own `[REVIEW-2]` assertion, because the entry is now dropped and `not.toContainText` on a missing item fails. It now asserts that no `10000` appears on the page. That's the reviewer's own file, and the intent is unchanged.
+3. **G45-3, a tampered 10,000-entry store took up to 1.8 s:** **fixed.** `parseHistory` stops after the first 20 valid, unique entries. The result is identical, because the list is truncated to 20 anyway.
+4. **G45-4, the frozen `[AC-8.1]` test fails in Firefox only:** **owner decision.** On a neutral page (no app code), Tab from the last tabbable element leaves focus on that element in Playwright's Firefox, but moves it to `BODY` in Chromium and WebKit. Both developer and reviewer probed this independently. The test's `expect(resetBtn).not.toBeFocused()` after that Tab therefore checks browser behaviour, not the app; the app's tab order is correct, including the disabled Clear all being skipped.
+5. **G45-5, code quality:** an unreachable guard in `onRestore`, and one `removeFailed` message for both read and write failures. **Accepted.**
+
+**Process note:** the developer ran a Playwright suite while the reviewer was also running one. They collided in `test-results/`, giving ENOENT trace errors in Firefox. The clean re-run with nothing else running: **452 of 453 across 3 browsers** (the full frozen suite plus 6 reviewer tests). The only failure is G45-4. From now on, the developer and reviewer never run Playwright at the same time.
 
 ### D-47 Group 2 builds the schedule table; cross-group ACs reported as pending
 - **Decision:** The shared helper `expectResultsShown` requires the schedule table, so group 2 builds `ScheduleTable` too; group 3 then verifies S-10 and S-13. AC-4.4 needs the Theme and Currency selects (group 4), and AC-9.2 needs saved calculations (group 5), so they are reported at G4.2 as **pending later groups**, not as done.
