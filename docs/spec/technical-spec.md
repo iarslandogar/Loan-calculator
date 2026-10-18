@@ -418,6 +418,7 @@ Tests locate elements only by role and accessible name. The app must provide:
 - **One y-axis per chart.** Axes and grid are quiet.
 - **Hover:** a pointer tooltip (`role="tooltip"`) on the balance, payment and yearly charts, with the exact values. Keyboard and screen-reader users get the same values from the tables.
 - **Layout:** fluid width with no fixed pixel widths, and no horizontal page scroll (AC-20.6).
+- **Drawing numbers (D-71):** a chart may turn a dimensionless ratio (value ÷ max, computed in `Decimal`) or a percentage into a JS `number`, only for drawing geometry (path coordinates, widths). Money values never become a JS `number`, and nothing drawn is used in a calculation or shown as text.
 
 ### 8.4 Theme
 

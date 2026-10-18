@@ -77,13 +77,16 @@ Each decision is **Approved** or **Proposed — needs owner approval**. Claude C
 | D-61 | Post-G3 fix: AC-8.4 waits for scrolling to settle | Approved (owner), 2026-10-18 |
 | D-62 | Adopt the "Soft ledger" pastel redesign as a change cycle before Phase 5 | Approved (owner), 2026-10-18 |
 | D-63 | Redesign proposals P1–P5 | Approved (owner), 2026-10-18: P1 yes, P2 n/a, P3 yes, P4 already done, P5 declined (backlog) |
-| D-64 | Redesign implementation: deviations from the bundle and verification | **Proposed**: owner to review at the redesign mini-gate |
+| D-64 | Redesign implementation: deviations from the bundle and verification | Approved (owner, visuals mini-gate), 2026-10-18 |
 | D-65 | Add four visuals: S-20, S-21, S-22 new; S-19 Backlog to v1 | Approved (owner), 2026-10-18 |
 | D-66 | Chart test hooks: `data-hit-area`, `data-segment`, `data-series` | Approved (owner, G3b), 2026-10-18 |
 | D-67 | G3b: visuals tests approved and frozen; three copy gaps closed; test-designer readings | Approved (owner, G3b), 2026-10-18 |
-| D-68 | Visuals implementation choices and evidence | **Proposed**: owner to review at the visuals mini-gate |
-| D-69 | Sticky loan form on wide, tall windows (owner request) | Approved (owner), 2026-10-18; implementation for review at the visuals mini-gate |
-| D-70 | Fixes for the visuals review (F-1 to F-5), forced-colors marks (RD-3) and results memoisation | **Proposed**: owner to review at the visuals mini-gate |
+| D-68 | Visuals implementation choices and evidence | Approved (owner, visuals mini-gate), 2026-10-18 |
+| D-69 | Sticky loan form on wide, tall windows (owner request) | Approved (owner), 2026-10-18; first implementation **failed the owner's check** at the visuals mini-gate and was fixed (see entry) |
+| D-70 | Fixes for the visuals review (F-1 to F-5), forced-colors marks (RD-3) and results memoisation | Approved (owner, visuals mini-gate), 2026-10-18, including the RD-3 borders |
+| D-71 | Spec §8.3.2: drawing ratios and percentages may be JS numbers, for geometry only | Approved (owner, visuals mini-gate), 2026-10-18 |
+| D-72 | Remove the forced layout in the yearly-table overflow check (AC-10.8 regression from D-70) | Developer fix, 2026-10-18; owner informed |
+| D-73 | Deploy to GitHub Pages before Phase 5, at the owner's direction | Approved (owner), 2026-10-18 |
 
 **How this log is kept (D-24):** every decision is recorded here, however small. Entries are never deleted or rewritten. A changed decision gets a new dated **Decision** line under its entry, or a new entry that names the one it supersedes, and a row in the change history.
 
@@ -666,6 +669,10 @@ Every S-5 and S-8 test already passed before group 6, apart from the D-59 Firefo
 - **Decision:** at **≥ 769 px wide and ≥ 820 px tall**, the form card is `position: sticky` (`top: 24px`) and follows the scroll. In shorter windows it scrolls normally, so the bottom of the form (Calculate) can never end up out of reach. Phones and tablets keep the single column.
 - **One wrapper `<div className="layout-main">`** now holds the form and the results. A sticky element can travel to the end of its parent box, and with the whole layout grid as parent, the form **overlapped Saved calculations** at the end of the page (probe: form bottom 568 px against the card top at 511 px). The wrapper has no role or semantics and changes no order. With it, the form stops at the end of the results (form bottom 487 px against the card top at 511 px) in Chromium, Firefox and WebKit.
 - **Not done:** no sticky behaviour on short windows. The 820 px threshold leaves room for the form with all three error messages showing.
+- **Owner's check (visuals mini-gate, 2026-10-18): "Not working".** The developer measured instead of guessing. The form is 544 px tall (601 px with all three errors), but the rule needed a **window** at least 820 px tall. Typical laptop windows (1280 × 800, 1366 × 650, 1536 × 730) were all below that, so the form never stuck; it stuck only at 1920 × 950. The developer's own probe had used a tall window, so it missed this. The threshold was the developer's error.
+- **Decision (developer fix, under the owner's approved request, 2026-10-18):** the height condition is removed. Whenever the form and results are side by side (≥ 769 px wide), the form card is sticky with `max-height: calc(100vh − 48px)` and `overflow-y: auto`. In a window too short for the whole form, the card scrolls on its own, so Calculate is never out of reach, and the old reason for the threshold is gone.
+  - Probe in Chromium, Firefox and WebKit: at 1280 × 800 and 1366 × 650 the form stays 24 px from the top while the results scroll, and stops 24 px above Saved calculations. At 1280 × 480 the card scrolls internally and stays at 24 px. At 768 px the layout is stacked and not sticky, as before. Keyboard focus on Calculate is in view in every side-by-side case.
+  - The full `verify` result is recorded in the visuals mini-gate follow-up.
 
 ### D-70 Visuals review fixes (Proposed, owner to review at the visuals mini-gate)
 The code-reviewer's visuals report (docs/process/review-findings.md, "Visuals") had 0 blocking findings, 2 Majors and 3 Minors. No test or frozen file was changed.
@@ -694,6 +701,29 @@ The code-reviewer's visuals report (docs/process/review-findings.md, "Visuals") 
    - the full `verify` result is in the visuals mini-gate summary.
    - **Result (developer, 2026-10-18):** full `CI=1 npm run verify` **exit 0 on the first run**: lint, format and typecheck clean; Vitest 345 of 345; size 87.4 KB of 150 KB; E2E **549 of 549** across 3 browsers (543 before, plus `[REVIEW-V1]` and `[REVIEW-V2]` in each browser), in 7.9 minutes; `trace --results` OK. No WebKit timeout this run. One clean run is not proof that the F-4 flake is gone.
 
+### D-71 Drawing ratios may be JS numbers (owner, visuals mini-gate, 2026-10-18)
+- **Background:** the reviewer suggested making D-68 item 3 explicit in the spec, so the "money is never a JS `number`" rule can't be misread at the next review.
+- **Decision (owner):** approved. Spec §8.3.2 gains one line: a chart may turn a dimensionless ratio (value ÷ max, computed in `Decimal`) or a percentage into a JS `number`, only for drawing geometry. Money values never become a JS `number`, and nothing drawn is used in a calculation or shown as text.
+
+### Visuals mini-gate (2026-10-18)
+- **Decision (owner):** D-68 approved; D-70 approved, including the RD-3 borders; D-64 approved; D-71 approved. D-69: **"Not working"**. It was fixed as recorded under D-69 and is back with the owner to check by hand.
+
+### D-72 AC-10.8 regression from D-70: forced layout removed (developer fix, 2026-10-18)
+- **Found by:** the full `CI=1 npm run verify` after the D-69 sticky fix **exited 1**: 547 passed and 2 failed, both WebKit. `[AC-1.10]` was the known 8 s click timeout under load. **`[AC-10.8]` measured 1,133 ms against the 1,000 ms limit.**
+- **Cause, measured rather than assumed:** an A/B/C of the L-MAX render, timed in the page exactly as AC-10.8 does, on the production build, WebKit, 8 runs each:
+  - current code: median 223 ms (178–355);
+  - sticky change removed: median 274 ms (235–358), so **sticky is not the cause**;
+  - **D-70's synchronous `scrollWidth` read removed: median 114 ms (102–130).**
+  - React flushes effects synchronously after a click, so that read forced WebKit to lay out the whole page (1,200 rows plus charts) *before* the test's clock stopped. Under the full suite's parallel load that doubled cost crossed 1 s.
+- **Decision:** remove the read. The `ResizeObserver` delivers each element's first observation after layout anyway, so the yearly table still becomes a scroll region only while it overflows. Re-probed in 3 browsers: a region at 180 px, a plain block at 1280 px, no page overflow.
+- **Lesson:** D-70's evidence (one green run) did not show a performance cost that was there all along. Timing-sensitive changes now get a measured A/B, not only a pass/fail run.
+
+### D-73 Deploy before Phase 5 (owner, 2026-10-18)
+- **Request:** the owner created the public repo `https://github.com/iarslandogar/Loan-calculator`, set Pages → Source to **GitHub Actions**, and asked to deploy now.
+- **Decision:** `v1` is pushed with the freeze tags and merged into `main`. The push to `main` runs `deploy.yml`: CI `verify` on Linux first, then the Pages deploy, then the `@smoke` tests against the live URL. Any failure stops the deploy.
+- **Change to the loop plan's order:** the plan put Phase 5 (the whole-app review and the owner's hand check) before release. Deploying first is the owner's call. Phase 5 still runs, and can use the live site. **No story Status changes**: every story stays "Not implemented" until the owner decides at G5.
+- **Note:** the repo name is `Loan-calculator`, not the plan's `muhammad-arslan-calculator`. The workflows take the name from the repository, so the Pages path is `/Loan-calculator/` with no change. `package.json` keeps its old name, which is cosmetic.
+
 ### D-47 Group 2 builds the schedule table; cross-group ACs reported as pending
 - **Decision:** The shared helper `expectResultsShown` requires the schedule table, so group 2 builds `ScheduleTable` too; group 3 then verifies S-10 and S-13. AC-4.4 needs the Theme and Currency selects (group 4), and AC-9.2 needs saved calculations (group 5), so they are reported at G4.2 as **pending later groups**, not as done.
 
@@ -710,3 +740,5 @@ The code-reviewer's visuals report (docs/process/review-findings.md, "Visuals") 
 | 2026-10-17 | Phase 2: D-41 (toolchain version conflict) and D-42 (scaffold choices) added as Proposed for G2; spec §2 and §13 notes updated | Claude Code (Opus 5.5) for M. Arslan, pending G2 |
 | 2026-10-17 | Gate G2 approved: D-41 (recommendation (a)) and D-42 approved; D-43 (DOM contract, spec §8.3.1) added as Proposed for G3 | Claude Code (Opus 5.5) for M. Arslan |
 | 2026-10-18 | Gate G3 approved: D-43 and D-44 approved; tests frozen at tag `g3-tests-approved` | Claude Code (Opus 5.5) for M. Arslan |
+| 2026-10-18 | Visuals mini-gate: D-64, D-68, D-70 and D-71 approved; D-69 failed the owner's check and was fixed; spec §8.3.2 gains the drawing-ratio line | Claude Code (Opus 5.5) for M. Arslan |
+| 2026-10-18 | D-72 AC-10.8 regression fixed; D-73 deploy before Phase 5 | Claude Code (Opus 5.5) for M. Arslan |
