@@ -7,11 +7,12 @@ import type { ErrorCode, Field, RawInputs, ValidationResult } from './types'
 const NUMBER = /^-?(\d+(\.\d*)?|\.\d+)$/
 const WHOLE_NUMBER = /^-?\d+$/
 
-const AMOUNT_MIN = new Decimal(1000)
-const AMOUNT_MAX = new Decimal(1_000_000_000)
+// Limits (spec §4.2, D-54), verified with exact arithmetic against every §5.4 invariant.
+const AMOUNT_MIN = new Decimal(10)
+const AMOUNT_MAX = new Decimal('1000000000000000')
 const RATE_MIN = new Decimal(0)
-const RATE_MAX = new Decimal(50)
-const TENURE_MAX = { years: new Decimal(40), months: new Decimal(480) } as const
+const RATE_MAX = new Decimal(75)
+const TENURE_MAX = { years: new Decimal(100), months: new Decimal(1200) } as const
 
 type FieldResult<T> = { ok: true; value: T } | { ok: false; error: ErrorCode }
 
@@ -44,7 +45,7 @@ function checkTenure(text: string, unit: RawInputs['unit']): FieldResult<number>
   if (value.lt(1) || value.gt(TENURE_MAX[unit])) {
     return { ok: false, error: unit === 'years' ? 'TENURE_RANGE_YEARS' : 'TENURE_RANGE_MONTHS' }
   }
-  // Safe only because the range check above has already bounded the value to 1..480.
+  // Safe only because the range check above has already bounded the value to 1..1,200.
   return { ok: true, value: value.toNumber() }
 }
 

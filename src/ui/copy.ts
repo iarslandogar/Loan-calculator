@@ -39,7 +39,7 @@ export const copy = {
     total: 'Total amount payable',
   },
   note: {
-    rounding: 'Some payments differ by 0.01 because amounts are rounded to 2 decimal places.',
+    rounding: 'Some payments differ by up to 0.02 because amounts are rounded to 2 decimal places.',
   },
   schedule: {
     title: 'Repayment schedule',
@@ -73,15 +73,15 @@ export const copy = {
     AMOUNT_REQUIRED: 'Enter a loan amount.',
     AMOUNT_NAN: 'Loan amount must be a number.',
     AMOUNT_DECIMALS: 'Loan amount can have at most 2 decimal places.',
-    AMOUNT_RANGE: 'Loan amount must be between 1,000 and 1,000,000,000.',
+    AMOUNT_RANGE: 'Loan amount must be between 10 and 1,000,000,000,000,000.',
     RATE_REQUIRED: 'Enter an interest rate.',
     RATE_NAN: 'Interest rate must be a number.',
     RATE_DECIMALS: 'Interest rate can have at most 2 decimal places.',
-    RATE_RANGE: 'Interest rate must be between 0 and 50%.',
+    RATE_RANGE: 'Interest rate must be between 0 and 75%.',
     TENURE_REQUIRED: 'Enter a loan tenure.',
     TENURE_WHOLE: 'Loan tenure must be a whole number.',
-    TENURE_RANGE_YEARS: 'Loan tenure must be between 1 and 40 years.',
-    TENURE_RANGE_MONTHS: 'Loan tenure must be between 1 and 480 months.',
+    TENURE_RANGE_YEARS: 'Loan tenure must be between 1 and 100 years.',
+    TENURE_RANGE_MONTHS: 'Loan tenure must be between 1 and 1,200 months.',
   } satisfies Record<ErrorCode, string>,
   fatal: 'Something went wrong. Please reload the page.',
 } as const
