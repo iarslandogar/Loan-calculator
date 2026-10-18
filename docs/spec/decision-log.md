@@ -69,6 +69,7 @@ Each decision is **Approved** or **Proposed — needs owner approval**. Claude C
 | D-53 | Handling of the G4.4 review's Minor findings | Approved (owner, G4.4), 2026-10-18 |
 | D-54 | Widen the input limits (supersedes D-02's bounds) | Approved (owner), 2026-10-18: amount 10 to 10^15, rate 0 to 75%, 1 to 100 years / 1 to 1,200 months |
 | D-55 | Counterexample to invariant 6 / AC-10.5 within the current limits | Approved (owner), 2026-10-18: option A, state it truthfully |
+| D-56 | Test-designer readings for the D-54/D-55 test update | **Proposed**: owner to review at the D-54 mini-gate |
 
 **How this log is kept (D-24):** every decision is recorded here, however small. Entries are never deleted or rewritten. A changed decision gets a new dated **Decision** line under its entry, or a new entry that names the one it supersedes, and a row in the change history.
 
@@ -477,6 +478,25 @@ The code-reviewer reported `BLOCKING FINDINGS: 0` for group 4, with three Minors
 - **Rule applied:** spec §5.4 says to stop, record and report; don't change the algorithm or loosen the invariant without approval. Nothing has been changed.
 - **Decision (owner, 2026-10-18): option A, state it truthfully.** The algorithm (spec §5.2) is unchanged. The guarantee becomes: **every payment is within 0.01 of the headline payment, except the final payment, which is within 0.02**. This updates spec §5.3 and §5.4 invariant 6, AC-10.5, AC-10.6 and the `note.rounding` copy, and the matching frozen tests through the test-designer, with the owner seeing the diff. It is done together with D-54.
 - **Rejected:** (B) changing the algorithm so every payment stays within 0.01, which is riskier and departs from §5.2; (C) narrowing the limits, which doesn't help because the failures appear at every rate and size.
+
+### D-56 Test-designer readings for the D-54/D-55 test update (Proposed)
+The frozen tests were updated by the test-designer under D-54 and D-55. Its readings:
+1. **A one-row loan** (L-D, L-MIN) counts as the "last row" for AC-10.5, so it gets the 0.02 limit. That's trivially met, because its only payment is the headline.
+2. **On screen, the last row** is found by index (`months − 1`).
+3. **AC-10.8's "1,200th row"** means 1,200 data rows, which is 1,201 `<tr>` elements including the header.
+4. **Gap (accepted):** nothing asserts that fast-check actually drew each exact bound. The bounds are still covered, deterministically, by a grid of 24 bound combinations.
+5. **§4.2:** `00012` is now valid and `.5` is `AMOUNT_RANGE`. Both follow from the minimum of 10.
+6. **Rate `75.001`** gives `RATE_DECIMALS`, not `RATE_RANGE`, because precision is checked before range (existing rule).
+
+Other incidental changes (each needed because an old "invalid" example became valid under D-54):
+- The SPEC-§3.2 unit test changed tenure `41` → `101`.
+- AC-2.11 changed rate `60` → `99`.
+- Validate cases moved: `50.01` → `75.01`, and `1000`/`600` months → `5000`/`1201`.
+- Property-test cents are now `bigint`, because 10^17 cents exceeds 2^53.
+
+**Result after the code change:**
+- Vitest: 297 of 297, including every property at 1,000 runs, seed 20261017, over the new bounds.
+- E2E for groups 1 to 4 (group 5 and group 6 layout tests excluded, the exclusions listed): 282 of 282 across the 3 browsers.
 
 ### D-47 Group 2 builds the schedule table; cross-group ACs reported as pending
 - **Decision:** The shared helper `expectResultsShown` requires the schedule table, so group 2 builds `ScheduleTable` too; group 3 then verifies S-10 and S-13. AC-4.4 needs the Theme and Currency selects (group 4), and AC-9.2 needs saved calculations (group 5), so they are reported at G4.2 as **pending later groups**, not as done.
