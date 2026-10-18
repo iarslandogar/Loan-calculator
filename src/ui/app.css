@@ -1,325 +1,790 @@
-/* Layout and components (spec §8). Responsive breakpoints are refined with S-5. */
+/* Layout and components: the "Soft ledger" pastel redesign (D-62), adapted from
+   design/emi-pastel-redesign/styles/app.css with the deviations recorded in D-64. */
+
+/* ---------- 2. Base ------------------------------------------------------ */
+
 *,
 *::before,
 *::after {
   box-sizing: border-box;
 }
 
-html,
-body {
-  margin: 0;
+html {
+  -webkit-text-size-adjust: 100%;
+  background: var(--bg);
 }
 
 body {
-  background: var(--bg);
-  color: var(--text);
-  font-family: var(--font);
+  margin: 0;
+  font-family: var(--font-sans);
   font-size: 16px;
   line-height: 1.5;
+  color: var(--text);
+  background: var(--bg);
 }
+
+h1,
+h2,
+p,
+dl,
+dd,
+ul {
+  margin: 0;
+}
+
+/* Focus: a real outline (not only box-shadow), ≥ 2px, both themes.
+   :focus (not only :focus-visible) so programmatic focus — e.g. the
+   Saved calculations heading after a delete — is always visible. */
+:focus {
+  outline: 3px solid var(--focus);
+  outline-offset: 3px;
+}
+
+/* ---------- 3. Page + header -------------------------------------------- */
 
 .page {
   max-width: 1200px;
   margin: 0 auto;
-  padding: var(--gap);
+  padding: 36px 40px 56px;
 }
 
 .app-header {
   display: flex;
   flex-wrap: wrap;
+  align-items: flex-end;
   justify-content: space-between;
-  align-items: flex-start;
-  gap: 8px var(--gap);
+  gap: var(--space-4) var(--space-6);
+  margin-bottom: var(--space-7);
 }
 
-.theme-field {
-  min-width: 140px;
+/* Decorative brand mark drawn in CSS (no markup change, not announced). */
+.app-header > div:first-child {
+  position: relative;
+  padding-left: 68px;
+  min-width: 0;
+}
+.app-header > div:first-child::before {
+  content: '';
+  position: absolute;
+  left: 0;
+  top: 50%;
+  width: 52px;
+  height: 52px;
+  margin-top: -26px;
+  border-radius: 16px;
+  background:
+    linear-gradient(var(--primary), var(--primary)) 10px 12px / 8px 28px no-repeat,
+    linear-gradient(#bfe6d3, #bfe6d3) 22px 19px / 8px 21px no-repeat,
+    linear-gradient(#ffcfb0, #ffcfb0) 34px 27px / 8px 13px no-repeat,
+    var(--wash);
+}
+:root[data-theme='dark'] .app-header > div:first-child::before {
+  background:
+    linear-gradient(var(--primary), var(--primary)) 10px 12px / 8px 28px no-repeat,
+    linear-gradient(#9fd9be, #9fd9be) 22px 19px / 8px 21px no-repeat,
+    linear-gradient(#f7be9c, #f7be9c) 34px 27px / 8px 13px no-repeat,
+    var(--wash);
 }
 
 .app-header h1 {
-  margin: 0;
-  font-size: 1.75rem;
+  font-size: 30px;
+  line-height: 1.15;
+  font-weight: 780;
+  letter-spacing: -0.025em;
 }
 
 .tagline {
-  margin: 4px 0 var(--gap);
+  margin-top: var(--space-1);
+  font-size: 15px;
   color: var(--text-muted);
 }
+
+.app-header .theme-field {
+  margin: 0;
+  width: 180px;
+}
+
+/* ---------- 4. Layout ---------------------------------------------------- */
 
 .layout {
   display: grid;
-  gap: var(--gap);
-  grid-template-columns: minmax(0, 2fr) minmax(0, 3fr);
+  grid-template-columns: minmax(0, 4fr) minmax(0, 6fr); /* form left, results right */
+  gap: var(--space-6);
   align-items: start;
 }
 
-@media (max-width: 768px) {
-  .layout {
-    grid-template-columns: minmax(0, 1fr);
-  }
-}
-
 .card {
+  min-width: 0;
   background: var(--surface);
   border: 1px solid var(--border);
-  border-radius: var(--radius);
-  padding: var(--gap);
-  min-width: 0;
+  border-radius: var(--radius-card);
+  padding: var(--space-7);
+  box-shadow: var(--shadow-card);
 }
 
-/* Form */
+.history-card {
+  grid-column: 1 / -1;
+}
+
+/* ---------- 5. Form ------------------------------------------------------ */
+
 .field {
   display: flex;
   flex-direction: column;
-  gap: 4px;
-  margin-bottom: 8px;
+  gap: 6px;
+  margin-bottom: 18px;
+  min-width: 0;
 }
 
-.field label {
-  font-weight: 600;
+label {
+  font-size: 14px;
+  font-weight: 650;
 }
 
-.field input,
-.field select {
+input,
+select {
   font: inherit;
   color: var(--text);
-  background: var(--bg);
-  border: 1px solid var(--input-border);
-  border-radius: 6px;
-  min-height: 44px;
-  padding: 8px 10px;
+  background-color: var(--surface);
+  border: 1.5px solid var(--input-border);
+  border-radius: var(--radius-input);
+  min-height: var(--control-h);
+  padding: 10px 14px;
   width: 100%;
+  max-width: 100%;
+  font-variant-numeric: tabular-nums;
 }
 
-.field input[aria-invalid='true'] {
-  border-color: var(--error);
+input:hover,
+select:hover {
+  border-color: var(--text-muted);
+}
+
+select {
+  appearance: none;
+  -webkit-appearance: none;
+  padding-right: 42px;
+  cursor: pointer;
+  background-image:
+    linear-gradient(45deg, transparent 50%, var(--text-muted) 50%),
+    linear-gradient(135deg, var(--text-muted) 50%, transparent 50%);
+  background-position:
+    calc(100% - 22px) 52%,
+    calc(100% - 16px) 52%;
+  background-size: 6px 6px;
+  background-repeat: no-repeat;
+}
+select option {
+  color: var(--text);
+  background: var(--surface);
+}
+
+/* Invalid: thicker border + rose fill + message with icon (not colour alone). */
+input[aria-invalid='true'] {
+  border: 2px solid var(--error);
+  background-color: var(--rose);
 }
 
 .field-error {
-  margin: 0;
-  min-height: 1.5em;
+  display: flex;
+  gap: var(--space-2);
+  align-items: flex-start;
   color: var(--error);
-  font-size: 0.95rem;
+  font-size: 14px;
+  font-weight: 650;
+  line-height: 1.35;
+}
+.field-error:empty::before {
+  content: none;
+} /* keep the live region; hide only the icon (D-64) */
+.field-error::before {
+  content: '!';
+  content: '!' / ''; /* alt text: not announced where supported */
+  flex: none;
+  display: grid;
+  place-items: center;
+  width: 18px;
+  height: 18px;
+  margin-top: 1px;
+  border-radius: 50%;
+  background: var(--error);
+  color: var(--surface);
+  font-size: 12px;
+  font-weight: 850;
 }
 
 .hint {
-  margin: 0;
+  font-size: 13px;
+  line-height: 1.4;
   color: var(--text-muted);
-  font-size: 0.9rem;
 }
 
 .tenure-row {
   display: grid;
   grid-template-columns: minmax(0, 1fr) minmax(0, 1fr);
-  gap: 8px;
+  gap: var(--space-3);
 }
+
+/* ---------- 6. Buttons --------------------------------------------------- */
 
 .actions {
   display: flex;
   flex-wrap: wrap;
-  gap: 8px;
-  margin-top: 8px;
+  gap: var(--space-3);
+  margin-top: 6px;
 }
 
 button {
   font: inherit;
-  min-height: 44px;
+  font-weight: 680;
+  line-height: 1.2;
+  min-height: var(--control-h);
   min-width: 44px;
-  padding: 8px 16px;
-  border-radius: 6px;
+  max-width: 100%;
+  padding: 10px 22px;
+  border-radius: var(--radius-pill);
   cursor: pointer;
 }
 
 button.primary {
   background: var(--primary);
   color: var(--on-primary);
-  border: 1px solid var(--primary);
+  border: 1.5px solid var(--primary);
+  box-shadow: inset 0 -3px 0 var(--press);
+}
+button.primary:hover {
+  filter: brightness(0.97) saturate(1.1);
+}
+button.primary:active {
+  box-shadow: inset 0 2px 0 var(--press);
 }
 
 button.secondary {
-  background: var(--bg);
+  background: transparent;
   color: var(--text);
-  border: 1px solid var(--input-border);
+  border: 1.5px solid var(--input-border);
+}
+button.secondary:hover {
+  background: var(--wash);
+}
+button.secondary:active {
+  background: var(--border);
 }
 
-:focus-visible {
-  outline: 2px solid var(--focus);
-  outline-offset: 2px;
+.form-card .actions .primary {
+  flex: 1 1 180px;
 }
 
-/* Results */
-.status {
-  margin: 0;
-  color: var(--text-muted);
+button:disabled,
+button:disabled:hover {
+  background: var(--bg);
+  color: var(--text-muted); /* 6.3:1 light / 8.5:1 dark: readable */
+  border: 1.5px dashed var(--input-border);
+  box-shadow: none;
+  filter: none;
+  cursor: not-allowed;
+}
+
+/* ---------- 7. Results --------------------------------------------------- */
+
+/* Idle (default) and stale share .status. Stale needs the modifier class
+   .status-stale (proposal P1) — see PROPOSALS.md. */
+.results-card .status {
+  display: flex;
+  align-items: center;
+  gap: var(--space-4);
+  padding: 22px var(--space-6);
+  border-radius: var(--radius-tile);
+  font-weight: 600;
+  line-height: 1.4;
+  background: var(--wash);
+  border: 1.5px dashed var(--input-border);
+}
+/* Decorative icons are local data: URIs (no network) drawn as a pseudo-element,
+   so the markup and the text are untouched and screen readers skip them. */
+.results-card .status::before {
+  content: '';
+  flex: none;
+  width: 40px;
+  height: 40px;
+  border-radius: 50%;
+  background-color: var(--surface);
+  background-repeat: no-repeat;
+  background-position: center;
+  background-size: 40px 40px;
+  /* calculator */
+  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 40 40' fill='none' stroke='%232A2540' stroke-linecap='round'%3E%3Crect x='12' y='9' width='16' height='22' rx='3.5' stroke-width='2'/%3E%3Cpath d='M16 14h8M16 20h.01M20 20h.01M24 20h.01M16 25h.01M20 25h.01M24 25h.01' stroke-width='2.4'/%3E%3C/svg%3E");
+}
+:root[data-theme='dark'] .results-card .status::before {
+  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 40 40' fill='none' stroke='%23EEEAF8' stroke-linecap='round'%3E%3Crect x='12' y='9' width='16' height='22' rx='3.5' stroke-width='2'/%3E%3Cpath d='M16 14h8M16 20h.01M20 20h.01M24 20h.01M16 25h.01M20 25h.01M24 25h.01' stroke-width='2.4'/%3E%3C/svg%3E");
+}
+.results-card .status.status-stale {
+  background: var(--peach);
+  border: 2px solid var(--text);
+}
+.results-card .status.status-stale::before {
+  /* refresh arrows */
+  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 40 40' fill='none' stroke='%232A2540' stroke-width='2.2' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpath d='M28 16a9 9 0 0 0-15.5-2.5M12 24a9 9 0 0 0 15.5 2.5M12 9v5h5M28 31v-5h-5'/%3E%3C/svg%3E");
+}
+:root[data-theme='dark'] .results-card .status.status-stale::before {
+  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 40 40' fill='none' stroke='%23EEEAF8' stroke-width='2.2' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpath d='M28 16a9 9 0 0 0-15.5-2.5M12 24a9 9 0 0 0 15.5 2.5M12 9v5h5M28 31v-5h-5'/%3E%3C/svg%3E");
 }
 
 .summary {
-  margin: 0 0 var(--gap);
   display: grid;
-  gap: 8px;
+  grid-template-columns: minmax(0, 1fr) minmax(0, 1fr);
+  gap: var(--space-3);
 }
 
 .figure {
-  display: flex;
-  flex-direction: column;
-  gap: 2px;
+  min-width: 0;
+  padding: var(--space-4) var(--space-5);
+  border-radius: var(--radius-tile);
+  background: var(--bg);
 }
 
 .figure dt {
+  font-size: 12px;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.08em;
   color: var(--text-muted);
 }
 
 .figure dd {
-  margin: 0;
-  font-weight: 600;
+  margin-top: var(--space-1);
+  font-size: 22px;
+  line-height: 1.2;
+  font-weight: 720;
   font-variant-numeric: tabular-nums;
-  overflow-wrap: anywhere;
+  overflow-wrap: break-word; /* break opportunities come from the app after each comma */
 }
 
+.figure.headline {
+  grid-column: 1 / -1;
+  background: var(--mint);
+  padding: 22px var(--space-6) var(--space-6);
+}
+.figure.headline dt {
+  font-size: 13px;
+}
 .figure.headline dd {
-  font-size: clamp(1.15rem, 6vw, 1.5rem);
+  margin-top: var(--space-2);
+  font-size: clamp(1.875rem, 1.25rem + 4vw, 3rem); /* 30px … 48px; ~34px on a 360px phone */
+  line-height: 1.05;
+  letter-spacing: -0.03em;
+  font-weight: 800;
 }
 
 .rounding-note {
-  margin: 0 0 var(--gap);
-  color: var(--text-muted);
-  font-size: 0.9rem;
+  display: flex;
+  gap: 10px;
+  align-items: flex-start;
+  margin-top: var(--space-3);
+  padding: var(--space-3) var(--space-4);
+  border-radius: var(--radius-input);
+  background: var(--butter);
+  font-size: 14px;
+  line-height: 1.4;
+}
+.rounding-note::before {
+  content: '';
+  flex: none;
+  width: 8px;
+  height: 8px;
+  margin-top: 6px;
+  border-radius: 50%;
+  background: var(--text);
 }
 
-/* Schedule (spec §8.2) */
+/* ---------- 8. Schedule -------------------------------------------------- */
+
 .schedule h2 {
-  font-size: 1.15rem;
-  margin: 0 0 8px;
+  margin: var(--space-7) 0 var(--space-3);
+  font-size: 18px;
+  font-weight: 750;
+  letter-spacing: -0.01em;
 }
 
 .schedule-scroll {
-  overflow: auto;
   max-height: min(60vh, 480px);
+  overflow: auto;
   border: 1px solid var(--border);
-  border-radius: 6px;
-  background: var(--bg);
+  border-radius: var(--radius-tile);
+  background: var(--surface);
+  overscroll-behavior: contain;
 }
 
 .schedule table {
   width: 100%;
-  border-collapse: collapse;
+  border-collapse: separate; /* keeps sticky header borders in all engines */
+  border-spacing: 0;
+  font-size: 14px;
   font-variant-numeric: tabular-nums;
-}
-
-.schedule th,
-.schedule td {
-  padding: 6px 10px;
-  text-align: right;
-  white-space: nowrap;
-  border-bottom: 1px solid var(--border);
 }
 
 .schedule th {
   position: sticky;
   top: 0;
-  background: var(--surface);
+  z-index: 1;
+  padding: var(--space-3) var(--space-4);
+  background: var(--wash);
+  border-bottom: 1.5px solid var(--input-border);
+  color: var(--text-muted);
+  font-size: 12px;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.06em;
+  text-align: right;
+  white-space: nowrap;
 }
 
-/* Saved calculations (spec §8.1: full width below the form and results) */
-.history-card {
-  grid-column: 1 / -1;
+.schedule td {
+  padding: 10px var(--space-4);
+  border-bottom: 1px solid var(--border);
+  text-align: right;
+  white-space: nowrap;
 }
+
+.schedule th:first-child,
+.schedule td:first-child {
+  text-align: left;
+}
+.schedule td:first-child {
+  color: var(--text-muted);
+  font-weight: 650;
+}
+
+.schedule tbody tr:nth-child(even) td {
+  background: var(--band);
+}
+.schedule tbody tr:nth-child(12n) td {
+  border-bottom: 2px solid var(--primary);
+} /* year ends */
+.schedule tbody tr:last-child td {
+  border-bottom: 0;
+}
+.schedule tbody tr:last-child td:last-child {
+  background: var(--mint);
+  font-weight: 800;
+} /* paid off */
+
+/* ---------- 9. Saved calculations --------------------------------------- */
 
 .history-card h2 {
-  font-size: 1.15rem;
-  margin: 0 0 8px;
+  margin-bottom: var(--space-4);
+  font-size: 20px;
+  font-weight: 750;
+  letter-spacing: -0.01em;
+  border-radius: 8px; /* shapes the focus outline after deletions */
+}
+
+.history-card > .status {
+  margin-bottom: var(--space-4);
+  padding: 18px var(--space-5);
+  border-radius: 18px;
+  background: var(--bg);
+  color: var(--text-muted);
+  line-height: 1.45;
 }
 
 .history-list {
   list-style: none;
-  margin: 0 0 var(--gap);
   padding: 0;
+  margin: 0 0 18px;
   display: grid;
-  gap: 8px;
+  grid-template-columns: repeat(auto-fill, minmax(min(100%, 340px), 1fr));
+  gap: var(--space-3);
 }
 
 .history-entry {
   display: flex;
   flex-wrap: wrap;
-  justify-content: space-between;
   align-items: center;
-  gap: 8px var(--gap);
-  padding: 8px 12px;
-  background: var(--bg);
+  justify-content: space-between;
+  gap: var(--space-3) var(--space-4);
+  padding: var(--space-4) 18px;
   border: 1px solid var(--border);
-  border-radius: 6px;
-}
-
-.entry-text {
+  border-radius: var(--radius-tile);
+  background: var(--bg);
   min-width: 0;
 }
 
+.entry-text {
+  flex: 1 1 200px;
+  min-width: 0;
+}
 .entry-text p {
-  margin: 0;
   overflow-wrap: anywhere;
-}
-
+  font-variant-numeric: tabular-nums;
+} /* long amounts must wrap, never clip */
 .entry-line1 {
-  font-weight: 600;
+  font-weight: 700;
 }
-
 .entry-time {
+  margin-top: 2px;
+  font-size: 13px;
   color: var(--text-muted);
-  font-size: 0.9rem;
 }
 
 .entry-actions {
   display: flex;
   flex-wrap: wrap;
-  gap: 8px;
+  gap: 10px;
+}
+.entry-actions button {
+  padding: 8px 18px;
+}
+/* Delete sits last, outlined in the error colour, away from Restore. */
+.entry-actions button:last-child {
+  color: var(--error);
+  border-color: var(--error);
+}
+.entry-actions button:last-child:hover {
+  background: var(--rose);
 }
 
-button:disabled {
-  cursor: not-allowed;
-  opacity: 0.6;
+/* Removal-failed message inside the card */
+.history-card .field-error {
+  margin-bottom: var(--space-4);
+  padding: var(--space-3) var(--space-4);
+  border-radius: var(--radius-input);
+  background: var(--rose);
 }
+.history-card .field-error:empty {
+  display: none;
+}
+
+/* ---------- 10. Dialog --------------------------------------------------- */
 
 .confirm-dialog {
-  max-width: min(90vw, 420px);
+  width: min(440px, calc(100vw - 32px));
+  max-width: 440px;
+  padding: var(--space-6);
   border: 1px solid var(--border);
-  border-radius: var(--radius);
+  border-radius: 26px;
   background: var(--surface);
   color: var(--text);
-  padding: var(--gap);
+  box-shadow: var(--shadow-dialog);
 }
-
 .confirm-dialog::backdrop {
-  background: rgb(0 0 0 / 50%);
+  background: var(--scrim);
+  -webkit-backdrop-filter: blur(3px);
+  backdrop-filter: blur(3px);
+}
+/* ::backdrop does not inherit custom properties in older engines */
+.confirm-dialog::backdrop {
+  background: rgba(42, 37, 64, 0.42);
+}
+:root[data-theme='dark'] .confirm-dialog::backdrop {
+  background: rgba(6, 5, 10, 0.66);
 }
 
 .dialog-text {
-  margin: 0 0 8px;
-  font-weight: 600;
+  margin-bottom: 6px;
+  font-size: 20px;
+  line-height: 1.3;
+  font-weight: 760;
+  letter-spacing: -0.01em;
+}
+.confirm-dialog .hint {
+  font-size: 14px;
+}
+.confirm-dialog .actions {
+  justify-content: flex-end;
+  margin-top: 22px;
+  gap: 10px;
+}
+.confirm-dialog .actions button {
+  flex: 1 1 120px;
+}
+/* Clear is destructive: rose fill + 2px error border, ink text. */
+.confirm-dialog button.primary {
+  background: var(--rose);
+  color: var(--text);
+  border: 2px solid var(--error);
+  font-weight: 760;
+  box-shadow: none;
 }
 
-/* Very narrow viewports (for example 360 px at 200% zoom = 180 CSS px): stack the tenure pair
-   and tighten spacing so nothing overflows (G4.3/D-54 review D54-2). 360 px and up are unchanged. */
-@media (max-width: 300px) {
+/* ---------- 11. Tablet + phone (≤ 768px) --------------------------------- */
+
+@media (max-width: 768px) {
   .page {
-    padding: 8px;
+    padding: 28px 24px 40px;
+  }
+  .layout {
+    grid-template-columns: minmax(0, 1fr);
+    gap: var(--space-4);
+  }
+  .history-card {
+    grid-column: auto;
+  }
+  .card {
+    padding: var(--space-6);
+    border-radius: 26px;
+  }
+}
+
+@media (max-width: 560px) {
+  .page {
+    padding: 20px 16px 32px;
+  }
+  .app-header {
+    flex-direction: column;
+    align-items: stretch;
+    gap: var(--space-4);
+    margin-bottom: var(--space-5);
+  }
+  .app-header > div:first-child {
+    padding-left: 58px;
+  }
+  .app-header > div:first-child::before {
+    transform: scale(0.85);
+    transform-origin: left center;
+  }
+  .app-header h1 {
+    font-size: 24px;
+    letter-spacing: -0.02em;
+  }
+  .tagline {
+    font-size: 14px;
+    line-height: 1.4;
+  }
+  .app-header .theme-field {
+    width: 100%;
   }
 
   .card {
-    padding: 10px;
+    padding: var(--space-5);
+    border-radius: 22px;
+  }
+  .field {
+    margin-bottom: var(--space-4);
   }
 
+  .results-card .status {
+    flex-direction: column;
+    align-items: flex-start;
+    gap: var(--space-3);
+    padding: var(--space-5);
+  }
+  .summary {
+    grid-template-columns: minmax(0, 1fr);
+    gap: 10px;
+  }
+  .figure {
+    padding: 14px var(--space-4);
+  }
+  .figure dd {
+    font-size: 21px;
+    line-height: 1.25;
+  }
+  .figure.headline {
+    padding: 18px 18px var(--space-5);
+  }
+
+  .schedule h2 {
+    margin-top: var(--space-6);
+  }
+  .schedule th,
+  .schedule td {
+    padding-left: 14px;
+    padding-right: 14px;
+  }
+  /* Month column stays put while the table scrolls sideways (proposal P3; pure CSS). */
+  .schedule th:first-child,
+  .schedule td:first-child {
+    position: sticky;
+    left: 0;
+    z-index: 2;
+  }
+  .schedule th:first-child {
+    z-index: 3;
+  }
+  .schedule td:first-child {
+    background: var(--surface);
+    box-shadow: 1px 0 0 var(--border);
+  }
+  .schedule tbody tr:nth-child(even) td:first-child {
+    background: var(--band);
+  }
+
+  .history-list {
+    grid-template-columns: minmax(0, 1fr);
+  }
+  .history-entry {
+    flex-direction: column;
+    align-items: stretch;
+    padding: var(--space-4);
+  }
+  .entry-text {
+    flex: none;
+  }
+  .entry-actions button {
+    flex: 1 1 0;
+    padding: 8px 14px;
+  }
+}
+
+/* 200% zoom on a 360px phone ≈ 180 CSS px */
+@media (max-width: 300px) {
+  .page {
+    padding: 16px 10px 24px;
+  }
+  .app-header > div:first-child {
+    padding-left: 0;
+    padding-top: 52px;
+  }
+  .app-header > div:first-child::before {
+    top: 0;
+    margin-top: 0;
+  }
+  .card {
+    padding: 14px;
+    border-radius: 18px;
+  }
   .tenure-row {
     grid-template-columns: minmax(0, 1fr);
     gap: 0;
   }
-
-  .theme-field {
-    min-width: 0;
-    width: 100%;
+  .actions button,
+  .entry-actions button {
+    flex: 1 1 100%;
+  }
+  button {
+    padding-left: 14px;
+    padding-right: 14px;
+  }
+  .figure.headline dd {
+    font-size: 26px;
+  }
+  .figure dd {
+    font-size: 18px;
   }
 }
 
+/* ---------- 12. Motion --------------------------------------------------- */
+
+@media (prefers-reduced-motion: no-preference) {
+  button,
+  input,
+  select {
+    transition:
+      background-color 0.12s ease,
+      border-color 0.12s ease;
+  }
+}
+
+/* ---------- 13. Fatal error (handoff step 5) ----------------------------- */
+
 .fatal {
-  padding: var(--gap);
-  color: var(--error);
+  max-width: 280px;
+  margin: 20vh auto 0;
+  padding: var(--space-4);
+  text-align: center;
+  color: var(--text);
+  background: var(--bg);
+  font-size: 18px;
+  font-weight: 650;
 }

@@ -1,37 +1,101 @@
-/* Design tokens (spec §8.4). The resolved theme is set as data-theme on <html>:
-   before first paint by the inline script in index.html, then by the app. */
+/* Design tokens: the "Soft ledger" pastel redesign (D-62), copied from
+   design/emi-pastel-redesign/styles/app.css section 1. Tested token names are unchanged. */
+
+/* ---------- 1. Tokens ---------------------------------------------------- */
+
 :root,
 :root[data-theme='light'] {
   color-scheme: light;
-  --bg: #ffffff;
-  --surface: #f5f7fa;
-  --text: #1a1f2b;
-  --text-muted: #4a5568;
-  --primary: #1d4ed8;
-  --on-primary: #ffffff;
-  --error: #b42318;
-  --border: #cbd2dc;
-  --input-border: #7e8898;
-  --focus: #1d4ed8;
+
+  /* tested tokens */
+  --bg: #f6f3fb; /* page */
+  --surface: #ffffff; /* cards, inputs, dialog */
+  --text: #2a2540; /* 13.3:1 bg · 14.6:1 surface */
+  --text-muted: #5c5672; /*  6.3:1 bg ·  6.9:1 surface */
+  --primary: #cbb9f6; /* lavender */
+  --on-primary: #2a2540; /*  8.2:1 on primary */
+  --error: #a8324b; /*  5.9:1 bg ·  6.5:1 surface · 4.8:1 on rose */
+  --border: #e6e0f1; /* decorative only */
+  --input-border: #867e9e; /*  3.5:1 bg ·  3.8:1 surface */
+  --focus: #6a50d3; /*  5.2:1 bg ·  5.7:1 surface */
+
+  /* added tokens (pastel roles) */
+  --mint: #d6f2e5; /* monthly payment tile, paid-off cell */
+  --peach: #ffe4d1; /* stale results */
+  --butter: #fff2c9; /* rounding note */
+  --rose: #f8d5df; /* invalid field fill, Clear, removal failure */
+  --wash: #efeafb; /* idle prompt, table header */
+  --band: #faf8fe; /* zebra rows */
+  --scrim: rgba(42, 37, 64, 0.42);
+  --shadow-card: 0 1px 2px rgba(42, 37, 64, 0.05), 0 10px 30px rgba(106, 80, 211, 0.08);
+  --shadow-dialog: 0 24px 60px rgba(42, 37, 64, 0.22);
+  --press: rgba(42, 37, 64, 0.1);
+
+  /* scales */
+  --font-sans: system-ui, -apple-system, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif;
+  --space-1: 4px;
+  --space-2: 8px;
+  --space-3: 12px;
+  --space-4: 16px;
+  --space-5: 20px;
+  --space-6: 24px;
+  --space-7: 28px;
+  --space-8: 40px;
+  --radius-card: 28px;
+  --radius-tile: 20px;
+  --radius-input: 14px;
+  --radius-pill: 999px;
+  --control-h: 48px;
 }
 
 :root[data-theme='dark'] {
   color-scheme: dark;
-  --bg: #0f141b;
-  --surface: #18202b;
-  --text: #e7ecf3;
-  --text-muted: #a9b4c2;
-  --primary: #7aa2ff;
-  --on-primary: #0f141b;
-  --error: #ff8a80;
-  --border: #2e3a4a;
-  --input-border: #66768c;
-  --focus: #7aa2ff;
+  --bg: #16141e;
+  --surface: #201d2b;
+  --text: #eeeaf8; /* 15.4:1 bg · 14.0:1 surface */
+  --text-muted: #b4adc9; /*  8.5:1 bg ·  7.7:1 surface */
+  --primary: #c9b8f6;
+  --on-primary: #16141e; /* 10.1:1 on primary */
+  --error: #ff9db2; /*  9.3:1 bg ·  8.4:1 surface · 7.3:1 on rose */
+  --border: #332e43;
+  --input-border: #7f7699; /*  4.3:1 bg ·  3.9:1 surface */
+  --focus: #c9b8f6; /* 10.1:1 bg ·  9.2:1 surface */
+
+  --mint: #1e3a30;
+  --peach: #3d2b22;
+  --butter: #36311d;
+  --rose: #3d2230;
+  --wash: #2a2638;
+  --band: #24212f;
+  --scrim: rgba(6, 5, 10, 0.66);
+  --shadow-card: 0 1px 2px rgba(0, 0, 0, 0.35), 0 10px 30px rgba(0, 0, 0, 0.25);
+  --shadow-dialog: 0 24px 60px rgba(0, 0, 0, 0.5);
+  --press: rgba(0, 0, 0, 0.18);
 }
 
-:root {
-  --radius: 8px;
-  --gap: 16px;
-  --font:
-    system-ui, -apple-system, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, 'Noto Sans', sans-serif;
+/* Fallback before JS sets data-theme ("System" with no attribute yet). */
+@media (prefers-color-scheme: dark) {
+  :root:not([data-theme]) {
+    color-scheme: dark;
+    --bg: #16141e;
+    --surface: #201d2b;
+    --text: #eeeaf8;
+    --text-muted: #b4adc9;
+    --primary: #c9b8f6;
+    --on-primary: #16141e;
+    --error: #ff9db2;
+    --border: #332e43;
+    --input-border: #7f7699;
+    --focus: #c9b8f6;
+    --mint: #1e3a30;
+    --peach: #3d2b22;
+    --butter: #36311d;
+    --rose: #3d2230;
+    --wash: #2a2638;
+    --band: #24212f;
+    --scrim: rgba(6, 5, 10, 0.66);
+    --shadow-card: 0 1px 2px rgba(0, 0, 0, 0.35), 0 10px 30px rgba(0, 0, 0, 0.25);
+    --shadow-dialog: 0 24px 60px rgba(0, 0, 0, 0.5);
+    --press: rgba(0, 0, 0, 0.18);
+  }
 }
