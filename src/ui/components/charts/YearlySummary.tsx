@@ -18,10 +18,12 @@ function useOverflows<T extends HTMLElement>() {
     const el = ref.current
     if (!el || typeof ResizeObserver === 'undefined') return
     const check = () => setOverflows(el.scrollWidth > el.clientWidth)
+    // No synchronous check here: reading scrollWidth in this effect forces a layout of the whole
+    // page (1,200 schedule rows) straight after Calculate. ResizeObserver reports each observed
+    // element once after layout anyway, so the first check comes from it (AC-10.8, D-72).
     const observer = new ResizeObserver(check)
     observer.observe(el)
     if (el.firstElementChild) observer.observe(el.firstElementChild)
-    check()
     return () => observer.disconnect()
   }, [])
   return { ref, overflows }
