@@ -68,7 +68,7 @@ Each decision is **Approved** or **Proposed — needs owner approval**. Claude C
 | D-52 | Group 4 implementation choices | **Proposed**: developer decisions, owner to review at G4.4 |
 | D-53 | Handling of the G4.4 review's Minor findings | **Proposed**: owner to review at G4.4 |
 | D-54 | Owner request: widen the input limits (verified), now, before group 5 | Approved direction (owner), 2026-10-18; exact bounds pending |
-| D-55 | **Counterexample to invariant 6 / AC-10.5 within the current limits** | **Open**: owner decision needed |
+| D-55 | Counterexample to invariant 6 / AC-10.5 within the current limits | Approved (owner), 2026-10-18: option A, state it truthfully |
 
 **How this log is kept (D-24):** every decision is recorded here, however small. Entries are never deleted or rewritten. A changed decision gets a new dated **Decision** line under its entry, or a new entry that names the one it supersedes, and a row in the change history.
 
@@ -457,7 +457,8 @@ The code-reviewer reported `BLOCKING FINDINGS: 0` for group 4, with three Minors
     - `1235400.38`, `50`, `238` months: headline 51,478.12, final payment 51,478.14.
 - **Why the tests didn't catch it:** the frozen property test (fast-check, 1,000 runs, seed 20261017) didn't draw any of these rare cases. The original "about 1,700 cases" verification in §5.3 missed them too.
 - **Rule applied:** spec §5.4 says to stop, record and report; don't change the algorithm or loosen the invariant without approval. Nothing has been changed.
-- **Decision:** pending (owner).
+- **Decision (owner, 2026-10-18): option A, state it truthfully.** The algorithm (spec §5.2) is unchanged. The guarantee becomes: **every payment is within 0.01 of the headline payment, except the final payment, which is within 0.02**. This updates spec §5.3 and §5.4 invariant 6, AC-10.5, AC-10.6 and the `note.rounding` copy, and the matching frozen tests through the test-designer, with the owner seeing the diff. It is done together with D-54.
+- **Rejected:** (B) changing the algorithm so every payment stays within 0.01, which is riskier and departs from §5.2; (C) narrowing the limits, which doesn't help because the failures appear at every rate and size.
 
 ### D-47 Group 2 builds the schedule table; cross-group ACs reported as pending
 - **Decision:** The shared helper `expectResultsShown` requires the schedule table, so group 2 builds `ScheduleTable` too; group 3 then verifies S-10 and S-13. AC-4.4 needs the Theme and Currency selects (group 4), and AC-9.2 needs saved calculations (group 5), so they are reported at G4.2 as **pending later groups**, not as done.
