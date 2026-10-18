@@ -108,3 +108,39 @@ Everything below behaved correctly. The probe specs found no defect and were del
 Pending, not defects: AC-4.4 (needs Theme, group 4) and AC-9.2 (needs Theme and saved calculations, groups 4 and 5). They must not be reported as passing until those groups land.
 
 BLOCKING FINDINGS: 0
+
+---
+
+## 2026-10-18, G4.3 (schedule UI, S-10 and S-13)
+
+Reviewer: code-reviewer. No `src/` or frozen test edited. Group 3 had no new code; the schedule was reviewed as built in group 2 (9f2c633).
+
+### Gate evidence (all with `CI=1`)
+- `CI=1 npx playwright test e2e/s10-schedule.spec.ts e2e/s13-balance.spec.ts`: 54 passed (56.2 s), exit 0. Developer claim confirmed.
+- `CI=1 npx playwright test e2e/spec-rules.spec.ts e2e/s05*.spec.ts e2e/s08*.spec.ts --grep "SPEC-§8\.2|AC-5\.3|AC-8\.4|AC-5\.1|AC-5\.6"`: 15 passed (30.8 s). Developer claim confirmed.
+- `npm run lint`: exit 0. `npm run typecheck`: exit 0.
+- Port 4173: no LISTENING socket after the runs (TIME_WAIT only).
+- Freeze check (`git log -p g3-tests-approved..HEAD` over the §12.4 scope): only two changes, `e2e/fixtures.ts` (`getByRole('definition')` to `getByLabel`, D-48) and `e2e/s09-reset.spec.ts` (Rs to $ expectation, D-46). Both owner-approved, no `.skip/.only/.fixme/test.fail`, no deleted tests, no weakened assertions.
+
+### Spec conformance (schedule)
+- 5.2 outputs: rows render month, payment, interest, principal, balance from `ScheduleRow`; matches. 6: cells use `formatAmount` (no symbol, grouping, 2 dp, half-up). 7: headers from `copy.schedule.cols(currency)` give `Payment (Rs)` / `($)`; verified live that switching to USD updates headers to `($)` and the 480 rows are unchanged.
+- 8.2: `<table>` with `thead`, `th scope="col"`, region with `role`, `aria-label`, `tabIndex=0`, `overflow:auto`, `max-height:min(60vh,480px)`, sticky `th`, right-aligned `tabular-nums`; table `aria-labelledby` the visible h2. 8.3.1 contract matches.
+- AC-10.6: the rounding note renders between the summary and the schedule, i.e. below the summary.
+- No page horizontal scroll: L-MAX at 360 px and at 180 px wide (approximates 200% zoom of 360) gave documentElement scrollWidth equal to clientWidth in all three browsers.
+
+### AC-10.8 timing (L-MAX, click to 481st `tr`, in page, 5 runs per browser, 4 workers in parallel)
+- Chromium: 63, 42, 41, 37, 35 ms. Firefox: 150, 90, 94, 98, 68 ms. WebKit: 141, 92, 86, 87, 57 ms.
+- Worst case 150 ms, about 6.7x headroom, on a parallel-loaded local run. A CI runner would need to be roughly 6x slower than this machine to fail; not a credible risk today. Not flagged. Re-measure at G4.6 on real CI. Note: all 480 rows are rendered unvirtualised, which is acceptable at this size.
+
+### Exploratory (no defects; probes deleted)
+Currency switch with L-MAX shown, recalculating a shorter loan while scrolled (new table starts at scrollTop 0, 3 rows plus header), Home/End on the focused region (End reaches the bottom; Home returns to top once smooth scrolling settles), L-MAX at 360 px and 180 px. No `[REVIEW-n]` tests were needed.
+
+### Findings
+
+| ID | Severity | Story/AC | Evidence | Suggested fix |
+|---|---|---|---|---|
+| (none) | n/a | S-10, S-13 | No Blocker or Major defect found. | n/a |
+| G43-1 | Minor | Code quality | `ScheduleTable` rebuilds 480 `<tr>` on every render of `ResultsPanel` (no `React.memo`); with the non-memoised context value (M-4) a theme/currency change re-renders all rows. Measured cost is small. | Wrap `ScheduleTable` in `memo` if it ever shows in profiling. |
+| G43-2 | Minor | Process | Group 3 delivered no commits, so "group 3 tests pass" is evidence about group 2 code (D-47); the S-10/S-13 Status must still wait for G4.6 `verify` and the owner's hand check. | None; record in the gate summary. |
+
+BLOCKING FINDINGS: 0

@@ -62,8 +62,9 @@ Each decision is **Approved** or **Proposed — needs owner approval**. Claude C
 | D-46 | Post-G3 test fix: AC-9.2 expected currency | Approved (owner), 2026-10-18 |
 | D-47 | Group 2 builds the schedule table; cross-group ACs reported as pending | Developer decision (owner informed), 2026-10-18 |
 | D-48 | Post-G3 fix: summary figures located with `getByLabel` (supersedes part of D-43) | Approved (owner), 2026-10-18 |
-| D-49 | Group 2 implementation choices | **Proposed**: developer decisions, owner to review at G4.2 |
-| D-50 | Handling of the G4.2 review's Minor findings | **Proposed**: developer decision, owner to review at G4.2 |
+| D-49 | Group 2 implementation choices | Approved (owner, G4.2), 2026-10-18 |
+| D-50 | Handling of the G4.2 review's Minor findings | Approved (owner, G4.2), 2026-10-18 |
+| D-51 | Group 3 needed no new code; G4.3 Minor findings | **Proposed**: owner to review at G4.3 |
 
 **How this log is kept (D-24):** every decision is recorded here, however small. Entries are never deleted or rewritten. A changed decision gets a new dated **Decision** line under its entry, or a new entry that names the one it supersedes, and a row in the change history.
 
@@ -395,6 +396,7 @@ The code-reviewer reported `BLOCKING FINDINGS: 0` for group 1 (domain), with thr
 5. **Inputs:** each input has its own `useRef`; the React Hooks rule forbids reading a ref from an object during render.
 6. **Styling:** basic light-theme CSS and layout now. Dark tokens come with S-6, and breakpoints and tap targets are refined with S-5.
 7. **Local E2E runs use `CI=1`.** A leftover `vite preview` on port 4173 served an old build, and `reuseExistingServer: !process.env.CI` made Playwright reuse it, which can give false results either way. `CI=1` forces a fresh build. A permanent fix needs a change to the frozen `playwright.config.ts` (`reuseExistingServer: false`), and that is for the owner to decide.
+- **Decision (owner, G4.2, 2026-10-18):** Approved ("okay let's move on"). The owner didn't answer the `reuseExistingServer` question, so the frozen config stays unchanged, and every local E2E run, by the developer and the reviewer, keeps using `CI=1`. The owner can still decide this later.
 
 ### D-50 G4.2 Minor findings (Proposed, owner to review at G4.2)
 The code-reviewer reported `BLOCKING FINDINGS: 0` for group 2, with six Minors:
@@ -404,6 +406,13 @@ The code-reviewer reported `BLOCKING FINDINGS: 0` for group 2, with six Minors:
 4. **M-4, unmemoised context value, silent `main.tsx` if `#root` is missing, `as Unit` / `as Currency` casts:** **won't fix for now.** The re-renders are cheap. `#root` is static in `index.html`. The casts read the values of `<option>`s the code renders itself.
 5. **M-5, the summary wraps inconsistently at 360 px, and each field reserves an empty error line:** **scheduled for group 6** (S-5 layout). The reserved line is deliberate, so the form doesn't jump when an error appears.
 6. **M-6, the sticky header background versus dark tokens:** **scheduled for group 4** (S-6 theme).
+- **Decision (owner, G4.2, 2026-10-18):** Approved ("okay let's move on").
+
+### D-51 Group 3 needed no new code; G4.3 Minor findings (Proposed, owner to review at G4.3)
+- **Decision:** No code was written for group 3 (S-10, S-13). The schedule built in group 2 (D-47) already passes every S-10 and S-13 test: 54 of 54 across the 3 browsers. The other schedule-related tests also pass: 15 of 15 (§8.2 naming, the AC-5.3 sticky header, AC-8.4 keys, AC-5.1 and AC-5.6 at 360 px).
+- **AC-10.8 headroom:** the reviewer measured L-MAX locally from click to the 480th row. The worst case was 150 ms (Firefox), against a 1,000 ms limit. It will be measured again on real CI at G4.6.
+- **Minor G43-1, the 480 rows re-render on any context change:** **won't fix.** While results are shown, the only context change that can happen is a currency switch, which must re-render the headers anyway. Typing makes the results stale and unmounts the table.
+- **Minor G43-2, group 3 had no commits:** noted. The S-10 and S-13 tests exercise group 2's code (`9f2c633`).
 
 ### D-47 Group 2 builds the schedule table; cross-group ACs reported as pending
 - **Decision:** The shared helper `expectResultsShown` requires the schedule table, so group 2 builds `ScheduleTable` too; group 3 then verifies S-10 and S-13. AC-4.4 needs the Theme and Currency selects (group 4), and AC-9.2 needs saved calculations (group 5), so they are reported at G4.2 as **pending later groups**, not as done.
