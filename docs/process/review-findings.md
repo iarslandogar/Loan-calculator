@@ -295,3 +295,61 @@ Code quality: no `any`, no `console`, no `Intl`/`toLocaleString` in `src` (a com
 | G46-2 | Minor | Process | D-60 is still `Proposed`; its "exit condition met" line is wrong (see G46-1). | Amend after G46-1 is resolved. |
 
 BLOCKING FINDINGS: 1
+
+---
+
+## Redesign mini-gate review (2026-10-18)
+
+Scope: commits 2de0b0d, d808cc0, cd2f584, 36ebd94 (D-62, D-63, D-64). The design bundle was treated as data.
+
+**Gate:** `CI=1 npm run verify` reproduced: exit 0; Vitest 297 of 297; size 85.4 KB of 150 KB; Playwright 453 passed (6.6 m); `trace: OK`.
+**Freeze:** changes since `g3-tests-approved` in the freeze scope are only 749144e (D-46), 5751988 (D-48), 16c8cc8 (D-54/55), 04de524 (D-59) and 95259bc (D-61, AC-8.4), all authorised. The redesign commits touch only `src/ui/app.css`, `src/ui/theme.css` and `src/ui/components/ResultsPanel.tsx` (one class name). No `.skip`, `.only` or `.fixme` was added.
+
+| ID | Severity | Story/AC | Evidence | Suggested fix |
+|---|---|---|---|---|
+| RD-1 | Minor (owner awareness) | S-8 / Phase 5 hand check | The focus ring uses `:focus`, so it shows after mouse clicks (Calculate, Reset, inputs: computed `outline: solid 3px`, all 3 browsers). The brief (handoff line 33) asks for this on purpose, so it is conformant. The owner will see a ring on a clicked button. | None needed; tell the owner it is intended. |
+| RD-2 | Minor | Spec §6/§8 | `.field-error::before` uses `content: '!' / ''` after a plain `content: '!'`. In an engine that ignores alt-text syntax the plain "!" is used. In Chromium, Firefox and WebKit (Playwright builds) `ariaSnapshot` shows the error paragraphs without a "!". | None. |
+| RD-3 | Minor | Design | Forced-colors emulation (Chromium): readable, borders kept, brand mark, mint fill and rounding bullet disappear (decorative). The monthly tile and rounding note have no border, so they are only separated by spacing. Playwright's `forcedColors` had no visible effect in WebKit. | Optional: add `@media (forced-colors: active)` borders. |
+| RD-4 | Minor | Process | D-64 says the bundle's contrast script was not run. I computed the ratios from the live token values instead (below). | None. |
+
+**No defects found, so no `[REVIEW-n]` tests were added** (probes deleted; `e2e/review/` holds only `g45.spec.ts`). Nothing is left on port 4173.
+
+**Deviations (D-64), verified**
+1. Removing `body { overflow-x: hidden }` is correct: `scrollWidth` equals `clientWidth` at 180, 360, 768 and 1280 in Chromium, Firefox and WebKit, including the L-MAX case (1200 rows, 999999999999999 at 75% for 100 years) at 180 and 360, with no figure clipped.
+2. The empty `.field-error` keeps its `aria-live` paragraph. Hiding only the "!" icon is correct. The old `display: none` would have removed the live region. The history card's `.field-error:empty{display:none}` is harmless because that paragraph is rendered conditionally inside the `aria-live` div.
+3. `.fatal` is added in line with the handoff and does not conflict with anything.
+
+**Conformance checks**
+- **`content:` values:** only `''`, `none` and `'!' / ''`. All are decorative. The brand mark, status icons (data: SVG) and rounding bullet are pseudo-elements, and the accessibility snapshot shows none of them. No visible text is added or changed.
+- **Ordering:** there is no `order` or reversed flex. Absolute positioning is only the brand mark. The mobile `flex-direction: column` keeps DOM order. The layout is form left, results right, as before.
+- **Tokens:** all ten tested token names are present with light and dark values. A `prefers-color-scheme` fallback exists. `data-theme` is always set (inline script and AppContext), so the dark-only icon and backdrop overrides always apply.
+- **Contrast, light / dark:**
+
+| Pair | Light | Dark |
+|---|---|---|
+| --text on mint | 12.31 | 10.43 |
+| --text on peach | 12.02 | 11.33 |
+| --text on butter | 13.08 | 11.00 |
+| --text on rose | 10.84 | 12.08 |
+| --text on wash | 12.41 | 12.40 |
+| --text on band | 13.86 | 13.32 |
+| --error on rose | 4.83 | 7.29 |
+| --text-muted on wash | 5.89 | 6.81 |
+| --text-muted on band | 6.58 | 7.32 |
+| disabled button text (--text-muted on --bg) | 6.32 | 8.47 |
+| --on-primary on primary | 8.22 | 10.12 |
+| --input-border on bg | 3.48 | 4.30 |
+| --focus on bg / surface | 5.17 / 5.67 | 10.12 / 9.17 |
+
+  All pass 4.5:1 for text and 3:1 for UI. Lowest: `--error` on rose, light, 4.83. The invalid-field border is `--error`, not `--input-border`, so the 2.84 of `--input-border` on rose in light is not a failing pair.
+- **Focus:** 3px solid outline (offset 3px), on the inputs, buttons, `.schedule-scroll` and the history h2 after Delete, in all 3 browsers.
+- **Targets at 360 and 180 px:** no visible button, input, select or scroll region under 44×44, dialog open. Dialog width is 328 at 360 and 148 at 180, with no overflow.
+- **Sticky:** at 360 px with `scrollLeft = 200`, the Month header and cells stay at the container's left edge (38 px against a container at 37 px) and the header row stays at the top, in Chromium, Firefox and WebKit. The Month column is opaque, with zebra rows handled.
+- **Dialog:** blurred scrim, Clear has a rose fill and a 2px error border, Cancel is focused first, in both themes. Looks right.
+- **Visual comparison against the four reference PNGs (Chromium):** layout, colours, icons, the stale peach state with border, mint tile, butter note, dialog and header mark all match. Meaningful differences, all from the boards' example data:
+  - the board shows `10,00,000` in the amount input; the app keeps the raw text, as the spec says;
+  - the board's field-error texts ("Interest rate must be between 0 and 75%") differ from the §7 copy the app uses;
+  - the app shows a focus ring on the first invalid field after a failed Calculate, which is by spec;
+  - the board's figures (66,185.46) are known to be wrong.
+
+BLOCKING FINDINGS: 0
