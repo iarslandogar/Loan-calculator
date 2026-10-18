@@ -140,3 +140,31 @@ Use the browser's device toolbar (F12, then the device icon) set to 360 x 740, o
 - [ ] **AC-13.1** L-A: Balance after month 6 is `514,921.05`; after month 12 it is `0.00`.
 - [ ] **AC-13.2** L-B entered as `5` Years: the schedule has exactly 60 rows and Balance after month 60 is `0.00`.
 - [ ] **AC-13.3** For L-A, L-B and L-MAX: each Balance equals the previous Balance minus that row's Principal (spot-check at least five rows with a calculator), no Balance is negative, the last Balance is `0.00`, and the number of rows equals the tenure in months (12, 60, 1,200).
+
+## S-19 Yearly summary
+
+- [ ] **AC-19.1** Calculate L-B (2500000, 18, 5 Years). Under **Yearly summary** there are 5 rows. Pick year 2 and add up the Interest column of schedule months 13 to 24 with a calculator: it equals the year 2 Interest. Do the same for Principal.
+- [ ] **AC-19.2** L-B: the **Yearly summary** table has the columns `Year`, `Interest (Rs)`, `Principal (Rs)`, `Balance (Rs)`. The first row reads `1 | 422,945.63 | 338,857.21 | 2,161,142.79` and the last row reads `5 | 69,355.47 | 692,447.31 | 0.00`.
+- [ ] **AC-19.3** Enter `100000`, `10`, `18`, unit **Months**, then Calculate. The yearly summary has 2 rows, and the second reads `2 | 1,028.07 | 35,006.16 | 0.00`.
+- [ ] **AC-19.4** L-B: the yearly chart shows 5 stacked bars (one per year) and a legend naming **Principal** and **Interest**. Hover each bar: a tooltip appears reading `Year n: principal ..., interest ...`.
+
+## S-20 Cost breakdown
+
+- [ ] **AC-20.1** Calculate L-A. A **Cost breakdown** bar with two parts, **Loan amount** and **Interest**, appears, with the text `Interest is 6.2% of the total amount payable.`
+- [ ] **AC-20.2** Calculate L-B: the text reads `Interest is 34.4% of the total amount payable.`
+- [ ] **AC-20.3** Calculate L-C (120000, 0, 12 Months): the text reads `Interest is 0.0% of the total amount payable.` and the bar is all one colour (loan amount only).
+- [ ] **AC-20.4** Calculate L-A: the loan-amount part fills about 93.8% of the bar (use a ruler or browser dev tools; within 1 percentage point).
+- [ ] **AC-20.5** In **Light** and then **Dark** theme, with L-B calculated, all four charts are easy to see against the card: each bar, line and area is clearly distinguishable from the card background, and all chart text (titles, legend, axis labels, summary sentences) is easy to read.
+- [ ] **AC-20.6** Make the browser window 360 px wide (dev tools device toolbar) and calculate L-MAX (1000000000000000, 75, 100 Years). There is no horizontal scroll bar on the page, and every chart stays inside the results card.
+
+## S-21 Balance over time
+
+- [ ] **AC-21.1** Calculate L-A. A **Balance over time** chart appears with the text `The balance falls from Rs 1,000,000.00 to Rs 0.00 over 12 months.`
+- [ ] **AC-21.2** L-A: hover the pointer over month 6 of the chart (about the middle). A tooltip reads `Month 6: Rs 514,921.05`.
+- [ ] **AC-21.3** Enter L-MAX and select Calculate: the schedule and all four charts appear in under 1 second (about instantly), and the page stays responsive.
+
+## S-22 Interest and principal in each payment
+
+- [ ] **AC-22.1** Calculate L-A. The **Interest and principal in each payment** chart appears with a legend naming **Principal** and **Interest**, and the text `Interest is 11.3% of the first payment and 1.0% of the last.`
+- [ ] **AC-22.2** Calculate L-B: the text reads `Interest is 59.1% of the first payment and 1.5% of the last.`
+- [ ] **AC-22.3** L-A: hover the pointer over month 1 of the chart (far left). A tooltip reads `Month 1: principal Rs 78,848.79, interest Rs 10,000.00`.
