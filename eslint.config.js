@@ -14,7 +14,8 @@ const decimalOnlyFromMoney = {
 const noDirectDecimal = { paths: [decimalOnlyFromMoney] }
 
 export default defineConfig([
-  globalIgnores(['dist', 'reports', 'test-results', 'playwright-report', 'node_modules']),
+  // design/ holds external design bundles, kept exactly as received (D-62).
+  globalIgnores(['dist', 'reports', 'test-results', 'playwright-report', 'node_modules', 'design']),
   js.configs.recommended,
   tseslint.configs.recommended,
   {

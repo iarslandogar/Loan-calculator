@@ -1,0 +1,147 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<title>EMI Calculator, desktop light</title>
+</head>
+<body>
+<x-dc>
+<helmet>
+<style>
+body{margin:0}
+.app{--bg:#F6F3FB;--surface:#FFFFFF;--text:#2A2540;--text-muted:#5C5672;--primary:#CBB9F6;--on-primary:#2A2540;--error:#A8324B;--border:#E6E0F1;--input-border:#867E9E;--focus:#6A50D3;--mint:#D6F2E5;--peach:#FFE4D1;--rose:#F8D5DF;--butter:#FFF2C9;--wash:#EFEAFB;--band:#FAF8FE;--shadow:0 1px 2px rgba(42,37,64,.05),0 10px 30px rgba(106,80,211,.08);font-family:system-ui,-apple-system,"Segoe UI",Roboto,sans-serif;font-size:16px;line-height:1.5;color:var(--text);background:var(--bg);box-sizing:border-box;min-height:100%}
+.app[data-theme=dark]{--bg:#16141E;--surface:#201D2B;--text:#EEEAF8;--text-muted:#B4ADC9;--primary:#C9B8F6;--on-primary:#16141E;--error:#FF9DB2;--border:#332E43;--input-border:#7F7699;--focus:#C9B8F6;--mint:#1E3A30;--peach:#3D2B22;--rose:#3D2230;--butter:#36311D;--wash:#2A2638;--band:#24212F;--shadow:0 1px 2px rgba(0,0,0,.35),0 10px 30px rgba(0,0,0,.25)}
+.app *,.app *::before,.app *::after{box-sizing:border-box}
+.page{max-width:1200px;margin:0 auto;padding:36px 40px 56px}
+.app-header{display:flex;flex-wrap:wrap;align-items:flex-end;justify-content:space-between;gap:16px 24px;margin-bottom:28px}
+.brand{display:flex;gap:16px;align-items:center;min-width:0}
+.mark{width:52px;height:52px;flex:none}
+.app h1{margin:0;font-size:30px;line-height:1.15;font-weight:780;letter-spacing:-.025em}
+.tagline{margin:4px 0 0;color:var(--text-muted);font-size:15px}
+.theme-field{margin:0 !important;width:180px}
+.layout{display:grid;grid-template-columns:minmax(0,4fr) minmax(0,6fr);gap:24px;align-items:start}
+.card{background:var(--surface);border:1px solid var(--border);border-radius:28px;padding:28px;box-shadow:var(--shadow);min-width:0}
+.history-card{grid-column:1/-1}
+.field{display:flex;flex-direction:column;gap:6px;margin-bottom:18px;min-width:0}
+.app label{font-size:14px;font-weight:650}
+.app input,.app select{font:inherit;color:var(--text);background-color:var(--surface);border:1.5px solid var(--input-border);border-radius:14px;min-height:48px;padding:10px 14px;width:100%;font-variant-numeric:tabular-nums}
+.app select{appearance:none;padding-right:42px;background-image:linear-gradient(45deg,transparent 50%,var(--text-muted) 50%),linear-gradient(135deg,var(--text-muted) 50%,transparent 50%);background-position:calc(100% - 22px) 52%,calc(100% - 16px) 52%;background-size:6px 6px;background-repeat:no-repeat}
+.app input[aria-invalid=true]{border:2px solid var(--error);background-color:var(--rose)}
+.field-error{margin:0;color:var(--error);font-size:14px;font-weight:650;display:flex;gap:8px;align-items:flex-start;line-height:1.35}
+.field-error::before{content:"!";flex:none;width:18px;height:18px;border-radius:50%;background:var(--error);color:var(--surface);font-size:12px;font-weight:850;display:grid;place-items:center;margin-top:1px}
+.hint{margin:0;font-size:13px;color:var(--text-muted)}
+.tenure-row{display:grid;grid-template-columns:minmax(0,1fr) minmax(0,1fr);gap:12px}
+.actions{display:flex;flex-wrap:wrap;gap:12px;margin-top:6px}
+.app button{font:inherit;font-weight:680;min-height:48px;min-width:44px;padding:10px 22px;border-radius:999px;cursor:pointer;line-height:1.2}
+.primary{background:var(--primary);color:var(--on-primary);border:1.5px solid var(--primary);box-shadow:inset 0 -3px 0 rgba(42,37,64,.10)}
+.secondary{background:transparent;color:var(--text);border:1.5px solid var(--input-border)}
+.form-card .primary{flex:1 1 180px}
+.app button:disabled{background:var(--bg);color:var(--text-muted);border:1.5px dashed var(--input-border);box-shadow:none;cursor:not-allowed}
+.is-focus{outline:3px solid var(--focus);outline-offset:3px}
+.status{margin:0;padding:22px 24px;border-radius:20px;display:flex;gap:16px;align-items:center;font-weight:600;line-height:1.4}
+.status svg{flex:none;width:40px;height:40px}
+.status-idle{background:var(--wash);border:1.5px dashed var(--input-border)}
+.status-stale{background:var(--peach);border:2px solid var(--text);}
+.summary{margin:0;display:grid;grid-template-columns:minmax(0,1fr) minmax(0,1fr);gap:12px}
+.figure{background:var(--bg);border-radius:20px;padding:16px 20px;min-width:0}
+.figure dt{font-size:12px;font-weight:700;color:var(--text-muted);text-transform:uppercase;letter-spacing:.08em}
+.figure dd{margin:4px 0 0;font-size:22px;line-height:1.2;font-weight:720;font-variant-numeric:tabular-nums;overflow-wrap:break-word}
+.figure.headline{grid-column:1/-1;background:var(--mint);padding:22px 24px 24px}
+.figure.headline dt{font-size:13px}
+.figure.headline dd{font-size:48px;line-height:1.05;letter-spacing:-.03em;font-weight:800;margin-top:8px}
+.rounding-note{margin:12px 0 0;background:var(--butter);border-radius:14px;padding:12px 16px;font-size:14px;display:flex;gap:10px;align-items:flex-start;line-height:1.4}
+.rounding-note::before{content:"";flex:none;width:8px;height:8px;border-radius:50%;background:var(--text);margin-top:6px}
+.schedule h2{font-size:18px;margin:28px 0 12px;font-weight:750;letter-spacing:-.01em}
+.schedule-scroll{max-height:min(60vh,480px);overflow:auto;border:1px solid var(--border);border-radius:20px;background:var(--surface)}
+.schedule table{width:100%;border-collapse:separate;border-spacing:0;font-variant-numeric:tabular-nums;font-size:14px}
+.schedule th{position:sticky;top:0;z-index:1;background:var(--wash);text-align:right;font-size:12px;font-weight:700;text-transform:uppercase;letter-spacing:.06em;color:var(--text-muted);padding:12px 16px;border-bottom:1.5px solid var(--input-border);white-space:nowrap}
+.schedule th:first-child,.schedule td:first-child{text-align:left}
+.schedule td{padding:10px 16px;text-align:right;border-bottom:1px solid var(--border);white-space:nowrap}
+.schedule td:first-child{color:var(--text-muted);font-weight:650}
+.schedule tbody tr:nth-child(even) td{background:var(--band)}
+.schedule tbody tr:nth-child(12n) td{border-bottom:2px solid var(--primary)}
+.schedule tbody tr:last-child td{border-bottom:0}
+.schedule tbody tr:last-child td:last-child{font-weight:800;background:var(--mint)}
+.history-card h2{font-size:20px;margin:0 0 16px;font-weight:750;letter-spacing:-.01em;border-radius:8px}
+.history-list{list-style:none;margin:0 0 18px;padding:0;display:grid;grid-template-columns:repeat(auto-fill,minmax(340px,1fr));gap:12px}
+.history-entry{display:flex;flex-wrap:wrap;gap:12px 16px;justify-content:space-between;align-items:center;padding:16px 18px;border:1px solid var(--border);border-radius:20px;background:var(--bg)}
+.entry-text{min-width:0;flex:1 1 200px}
+.entry-text p{margin:0;overflow-wrap:break-word;font-variant-numeric:tabular-nums}
+.entry-line1{font-weight:700}
+.entry-time{font-size:13px;color:var(--text-muted);margin-top:2px !important}
+.entry-actions{display:flex;gap:10px}
+.entry-actions button{padding:8px 18px}
+.entry-actions button:last-child{color:var(--error);border-color:var(--error)}
+.history-card .field-error{margin:0 0 16px;padding:12px 16px;border-radius:14px;background:var(--rose)}
+</style>
+</helmet>
+<div class="app" data-theme="light" style="width: 1280px; height: 1600px">
+<div class="page">
+<header class="app-header">
+<div class="brand">
+<svg class="mark" viewBox="0 0 52 52" aria-hidden="true"><rect width="52" height="52" rx="16" fill="#EFEAFB"></rect><rect x="10" y="12" width="8" height="28" rx="4" fill="#CBB9F6"></rect><rect x="22" y="19" width="8" height="21" rx="4" fill="#BFE6D3"></rect><rect x="34" y="27" width="8" height="13" rx="4" fill="#FFCFB0"></rect></svg>
+<div><h1>Loan EMI Calculator</h1><p class="tagline">Work out the monthly payment, total cost and repayment schedule of a loan.</p></div>
+</div>
+<div class="field theme-field"><label for="theme">Theme</label><select id="theme"><option>System</option><option>Light</option><option>Dark</option></select></div>
+</header>
+<main class="layout">
+<form class="card form-card">
+<div class="field"><label for="currency">Currency</label><select id="currency"><option>PKR (Rs)</option><option>USD ($)</option></select><p class="hint">Changing currency changes the symbol only. Amounts are not converted.</p></div>
+<div class="field"><label for="amount">Loan amount (Rs)</label><input id="amount" type="text" value="10,00,000"></div>
+<div class="field"><label for="rate">Annual interest rate (%)</label><input id="rate" type="text" value="12"></div>
+<div class="tenure-row">
+<div class="field"><label for="tenure">Loan tenure</label><input id="tenure" type="text" value="1"></div>
+<div class="field"><label for="unit">Tenure unit</label><select id="unit"><option>Years</option><option>Months</option></select></div>
+</div>
+<div class="actions"><button type="button" class="primary is-focus">Calculate</button><button type="button" class="secondary">Reset</button></div>
+</form>
+<section class="card results-card">
+<dl class="summary">
+<div class="figure headline"><dt>Monthly payment</dt><dd>Rs 88,<wbr>848.79</dd></div>
+<div class="figure"><dt>Total interest</dt><dd>Rs 66,<wbr>185.46</dd></div>
+<div class="figure"><dt>Total amount payable</dt><dd>Rs 1,<wbr>066,<wbr>185.46</dd></div>
+</dl>
+<p class="rounding-note">Some payments differ by up to 0.02 because amounts are rounded to 2 decimal places.</p>
+<div class="schedule">
+<h2>Repayment schedule</h2>
+<div class="schedule-scroll" role="region" tabindex="0" aria-label="Repayment schedule">
+<table><thead><tr><th>Month</th><th>Payment (Rs)</th><th>Interest (Rs)</th><th>Principal (Rs)</th><th>Balance (Rs)</th></tr></thead>
+<tbody>
+<tr><td>1</td><td>88,848.79</td><td>10,000.00</td><td>78,848.79</td><td>921,151.21</td></tr>
+<tr><td>2</td><td>88,848.79</td><td>9,211.51</td><td>79,637.28</td><td>841,513.93</td></tr>
+<tr><td>3</td><td>88,848.79</td><td>8,415.14</td><td>80,433.65</td><td>761,080.28</td></tr>
+<tr><td>4</td><td>88,848.79</td><td>7,610.80</td><td>81,237.99</td><td>679,842.29</td></tr>
+<tr><td>5</td><td>88,848.79</td><td>6,798.42</td><td>82,050.37</td><td>597,791.92</td></tr>
+<tr><td>6</td><td>88,848.79</td><td>5,977.92</td><td>82,870.87</td><td>514,921.05</td></tr>
+<tr><td>7</td><td>88,848.79</td><td>5,149.21</td><td>83,699.58</td><td>431,221.47</td></tr>
+<tr><td>8</td><td>88,848.79</td><td>4,312.21</td><td>84,536.58</td><td>346,684.89</td></tr>
+<tr><td>9</td><td>88,848.79</td><td>3,466.85</td><td>85,381.94</td><td>261,302.95</td></tr>
+<tr><td>10</td><td>88,848.79</td><td>2,613.03</td><td>86,235.76</td><td>175,067.19</td></tr>
+<tr><td>11</td><td>88,848.79</td><td>1,750.67</td><td>87,098.12</td><td>87,969.07</td></tr>
+<tr><td>12</td><td>88,848.77</td><td>879.70</td><td>87,969.07</td><td>0.00</td></tr>
+</tbody></table>
+</div>
+</div>
+</section>
+<section class="card history-card">
+<h2 tabindex="-1">Saved calculations</h2>
+<ul class="history-list">
+<li class="history-entry"><div class="entry-text"><p class="entry-line1">Rs 1,000,000.00 at 12% for 1 year</p><p>Rs 88,848.79 per month</p><p class="entry-time">17 Oct 2026, 20:45</p></div><div class="entry-actions"><button type="button" class="secondary">Restore</button><button type="button" class="secondary">Delete</button></div></li>
+<li class="history-entry"><div class="entry-text"><p class="entry-line1">Rs 5,000,000.00 at 18% for 20 years</p><p>Rs 77,165.58 per month</p><p class="entry-time">17 Oct 2026, 18:12</p></div><div class="entry-actions"><button type="button" class="secondary">Restore</button><button type="button" class="secondary">Delete</button></div></li>
+<li class="history-entry"><div class="entry-text"><p class="entry-line1">Rs 2,500,000.00 at 15.5% for 60 months</p><p>Rs 60,132.98 per month</p><p class="entry-time">16 Oct 2026, 11:03</p></div><div class="entry-actions"><button type="button" class="secondary">Restore</button><button type="button" class="secondary">Delete</button></div></li>
+</ul>
+<button type="button" class="secondary">Clear all</button>
+</section>
+</main>
+</div>
+</div>
+</x-dc>
+<script type="text/x-dc" data-dc-script data-props='{"$preview":{"width":1280,"height":1600}}'>
+class Component extends DCLogic {
+renderVals() {
+return {};
+}
+}
+</script>
+</body>
+</html>

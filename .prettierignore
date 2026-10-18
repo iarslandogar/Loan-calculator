@@ -10,3 +10,6 @@ package-lock.json
 docs/
 transcripts/
 .claude/
+
+# External design bundles, kept exactly as received (D-62)
+design/

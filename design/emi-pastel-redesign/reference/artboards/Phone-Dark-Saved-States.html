@@ -1,0 +1,72 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<title>Saved calculations states, phone dark</title>
+</head>
+<body>
+<x-dc>
+<helmet>
+<style>
+body{margin:0}
+.app{--bg:#16141E;--surface:#201D2B;--text:#EEEAF8;--text-muted:#B4ADC9;--primary:#C9B8F6;--on-primary:#16141E;--error:#FF9DB2;--border:#332E43;--input-border:#7F7699;--focus:#C9B8F6;--mint:#1E3A30;--peach:#3D2B22;--rose:#3D2230;--butter:#36311D;--wash:#2A2638;--band:#24212F;--shadow:0 1px 2px rgba(0,0,0,.35),0 10px 30px rgba(0,0,0,.25);font-family:system-ui,-apple-system,"Segoe UI",Roboto,sans-serif;font-size:16px;line-height:1.5;color:var(--text);background:var(--bg);box-sizing:border-box}
+.app *,.app *::before,.app *::after{box-sizing:border-box}
+.page{padding:24px 16px 32px;display:flex;flex-direction:column;gap:12px}
+.state-label{margin:12px 0 0;font-size:12px;font-weight:700;letter-spacing:.08em;text-transform:uppercase;color:var(--text-muted)}
+.card{background:var(--surface);border:1px solid var(--border);border-radius:22px;padding:20px;box-shadow:var(--shadow);min-width:0}
+.app button{font:inherit;font-weight:680;min-height:48px;min-width:44px;padding:10px 22px;border-radius:999px;cursor:pointer;line-height:1.2}
+.secondary{background:transparent;color:var(--text);border:1.5px solid var(--input-border)}
+.app button:disabled{background:var(--bg);color:var(--text-muted);border:1.5px dashed var(--input-border);box-shadow:none;cursor:not-allowed}
+.is-focus{outline:3px solid var(--focus);outline-offset:3px}
+.history-card h2{font-size:20px;margin:0 0 12px;font-weight:750;letter-spacing:-.01em;border-radius:8px}
+.history-card .status{margin:0 0 16px;padding:16px 18px;border-radius:18px;background:var(--bg);color:var(--text-muted);line-height:1.45;display:flex;gap:12px;align-items:flex-start}
+.history-card .status svg{flex:none;width:22px;height:22px;margin-top:1px}
+.history-card .status svg .ln{stroke:var(--text-muted);fill:none}
+.history-list{list-style:none;margin:0 0 16px;padding:0;display:grid;grid-template-columns:minmax(0,1fr);gap:10px}
+.history-entry{display:flex;flex-direction:column;gap:12px;padding:16px;border:1px solid var(--border);border-radius:18px;background:var(--bg)}
+.entry-text{min-width:0}
+.entry-text p{margin:0;overflow-wrap:break-word;font-variant-numeric:tabular-nums}
+.entry-line1{font-weight:700}
+.entry-time{font-size:13px;color:var(--text-muted);margin-top:2px !important}
+.entry-actions{display:flex;gap:10px}
+.entry-actions button{flex:1;padding:8px 14px}
+.entry-actions button:last-child{color:var(--error);border-color:var(--error)}
+.field-error{margin:0 0 16px;padding:12px 14px;border-radius:14px;background:var(--rose);color:var(--error);font-size:14px;font-weight:650;display:flex;gap:10px;align-items:flex-start;line-height:1.4}
+.field-error::before{content:"!";flex:none;width:18px;height:18px;border-radius:50%;background:var(--error);color:var(--surface);font-size:12px;font-weight:850;display:grid;place-items:center;margin-top:1px}
+</style>
+</helmet>
+<div class="app" data-theme="dark" style="width: 360px; height: 1500px">
+<div class="page">
+<p class="state-label">Empty</p>
+<section class="card history-card">
+<h2 tabindex="-1">Saved calculations</h2>
+<p class="status"><svg viewBox="0 0 22 22" aria-hidden="true"><rect class="ln" x="3" y="4" width="16" height="14" rx="3" stroke-width="1.8"></rect><path class="ln" d="M7 9h8M7 13h5" stroke-width="1.8" stroke-linecap="round"></path></svg>No saved calculations yet.</p>
+<button type="button" class="secondary" disabled>Clear all</button>
+</section>
+<p class="state-label">Unavailable</p>
+<section class="card history-card">
+<h2 tabindex="-1">Saved calculations</h2>
+<p class="status"><svg viewBox="0 0 22 22" aria-hidden="true"><circle class="ln" cx="11" cy="11" r="8" stroke-width="1.8"></circle><path class="ln" d="M5.5 16.5l11-11" stroke-width="1.8" stroke-linecap="round"></path></svg>Saved calculations aren't available in this browser. Calculations still work.</p>
+<button type="button" class="secondary" disabled>Clear all</button>
+</section>
+<p class="state-label">Removal failed · heading focused after delete</p>
+<section class="card history-card">
+<h2 tabindex="-1" class="is-focus">Saved calculations</h2>
+<ul class="history-list">
+<li class="history-entry"><div class="entry-text"><p class="entry-line1">Rs 1,000,000.00 at 12% for 1 year</p><p>Rs 88,848.79 per month</p><p class="entry-time">17 Oct 2026, 20:45</p></div><div class="entry-actions"><button type="button" class="secondary">Restore</button><button type="button" class="secondary">Delete</button></div></li>
+</ul>
+<div aria-live="polite"><p class="field-error">Couldn't remove saved calculations from this browser. To be sure, clear this site's data in your browser settings.</p></div>
+<button type="button" class="secondary">Clear all</button>
+</section>
+</div>
+</div>
+</x-dc>
+<script type="text/x-dc" data-dc-script data-props='{"$preview":{"width":360,"height":1500}}'>
+class Component extends DCLogic {
+renderVals() {
+return {};
+}
+}
+</script>
+</body>
+</html>

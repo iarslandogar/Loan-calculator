@@ -1,0 +1,141 @@
+<!doctype html>
+<html lang="en" data-theme="light">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Loan EMI Calculator — pastel preview</title>
+<link rel="stylesheet" href="../styles/app.css">
+<style>
+  /* Preview-only state switcher. Not part of the app. */
+  .pv { position: fixed; right: 12px; bottom: 12px; z-index: 50; display: flex; flex-wrap: wrap; gap: 6px; max-width: calc(100vw - 24px);
+        background: #2A2540; color: #fff; padding: 8px; border-radius: 14px; font: 12px/1.2 system-ui, sans-serif; }
+  .pv button { min-height: 32px; padding: 6px 10px; border-radius: 8px; border: 0; background: #4A4466; color: #fff; font-weight: 600; }
+  .pv button[aria-pressed="true"] { background: #CBB9F6; color: #2A2540; }
+  [hidden] { display: none !important; }
+</style>
+</head>
+<body>
+<div class="page">
+  <header class="app-header">
+    <div><h1>Loan EMI Calculator</h1><p class="tagline">Work out the monthly payment, total cost and repayment schedule of a loan.</p></div>
+    <div class="field theme-field"><label for="theme">Theme</label>
+      <select id="theme"><option value="system">System</option><option value="light">Light</option><option value="dark">Dark</option></select></div>
+  </header>
+  <main class="layout">
+    <form class="card form-card" onsubmit="return false">
+      <div class="field"><label for="currency">Currency</label>
+        <select id="currency"><option>PKR (Rs)</option><option>USD ($)</option></select>
+        <p class="hint">Changing currency changes the symbol only. Amounts are not converted.</p></div>
+      <div class="field"><label for="amount">Loan amount (Rs)</label><input id="amount" type="text" value="10,00,000" aria-describedby="amount-error"><p class="field-error" id="amount-error"></p></div>
+      <div class="field"><label for="rate">Annual interest rate (%)</label><input id="rate" type="text" value="12" aria-describedby="rate-error"><p class="field-error" id="rate-error"></p></div>
+      <div class="tenure-row">
+        <div class="field"><label for="tenure">Loan tenure</label><input id="tenure" type="text" value="1" aria-describedby="tenure-error"><p class="field-error" id="tenure-error"></p></div>
+        <div class="field"><label for="unit">Tenure unit</label><select id="unit"><option>Years</option><option>Months</option></select></div>
+      </div>
+      <div class="actions"><button type="submit" class="primary">Calculate</button><button type="button" class="secondary">Reset</button></div>
+    </form>
+
+    <section class="card results-card" aria-label="Results">
+      <div aria-live="polite"><p class="status" id="status" hidden></p></div>
+      <div id="results">
+        <dl class="summary">
+          <div class="figure headline"><dt>Monthly payment</dt><dd>Rs 88,<wbr>848.79</dd></div>
+          <div class="figure"><dt>Total interest</dt><dd>Rs 66,<wbr>185.46</dd></div>
+          <div class="figure"><dt>Total amount payable</dt><dd>Rs 1,<wbr>066,<wbr>185.46</dd></div>
+        </dl>
+        <p class="rounding-note">Some payments differ by up to 0.02 because amounts are rounded to 2 decimal places.</p>
+        <div class="schedule">
+          <h2 id="sched-h">Repayment schedule</h2>
+          <div class="schedule-scroll" role="region" tabindex="0" aria-labelledby="sched-h">
+            <table><thead><tr><th>Month</th><th>Payment (Rs)</th><th>Interest (Rs)</th><th>Principal (Rs)</th><th>Balance (Rs)</th></tr></thead>
+              <tbody id="rows"></tbody></table>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <section class="card history-card" aria-labelledby="saved-h">
+      <h2 id="saved-h" tabindex="-1">Saved calculations</h2>
+      <p class="status" id="saved-status" hidden></p>
+      <ul class="history-list" id="saved-list">
+        <li class="history-entry"><div class="entry-text"><p class="entry-line1">Rs 1,000,000.00 at 12% for 1 year</p><p>Rs 88,848.79 per month</p><p class="entry-time">17 Oct 2026, 20:45</p></div>
+          <div class="entry-actions"><button type="button" class="secondary">Restore</button><button type="button" class="secondary">Delete</button></div></li>
+        <li class="history-entry"><div class="entry-text"><p class="entry-line1">Rs 1,000,000,000,000,000.00 at 75% for 100 years</p><p>Rs 62,500,000,000,000.00 per month</p><p class="entry-time">17 Oct 2026, 18:12</p></div>
+          <div class="entry-actions"><button type="button" class="secondary">Restore</button><button type="button" class="secondary">Delete</button></div></li>
+        <li class="history-entry"><div class="entry-text"><p class="entry-line1">Rs 10.00 at 0.01% for 1 month</p><p>Rs 10.00 per month</p><p class="entry-time">16 Oct 2026, 11:03</p></div>
+          <div class="entry-actions"><button type="button" class="secondary">Restore</button><button type="button" class="secondary">Delete</button></div></li>
+      </ul>
+      <div aria-live="polite"><p class="field-error" id="saved-error"></p></div>
+      <button type="button" class="secondary" id="clear-all">Clear all</button>
+      <dialog class="confirm-dialog" id="dlg">
+        <p class="dialog-text">Clear all saved calculations? This can't be undone.</p>
+        <p class="hint">This doesn't clear the form. Select Reset to do that.</p>
+        <div class="actions"><button type="button" class="secondary" id="dlg-cancel" autofocus>Cancel</button><button type="button" class="primary" id="dlg-clear">Clear</button></div>
+      </dialog>
+    </section>
+  </main>
+</div>
+
+<div class="pv" aria-label="Preview controls">
+  <button data-k="theme" data-v="light" aria-pressed="true">Light</button><button data-k="theme" data-v="dark">Dark</button>
+  <button data-k="res" data-v="shown" aria-pressed="true">Results</button><button data-k="res" data-v="long">1,200 rows</button><button data-k="res" data-v="idle">Idle</button><button data-k="res" data-v="stale">Stale</button><button data-k="res" data-v="errors">Errors</button>
+  <button data-k="saved" data-v="list" aria-pressed="true">Saved</button><button data-k="saved" data-v="empty">Empty</button><button data-k="saved" data-v="unavail">Unavailable</button><button data-k="saved" data-v="failed">Failed</button>
+  <button id="pv-dialog">Dialog</button>
+</div>
+
+<script>
+// Preview-only behaviour. Real app logic lives in the React app.
+const $ = (s) => document.querySelector(s);
+const fmt = (n) => n.toLocaleString("en-US", { minimumFractionDigits: 2, maximumFractionDigits: 2 });
+function schedule(P, annual, n) {
+  const r = annual / 1200, emi = Math.round(P * r / (1 - Math.pow(1 + r, -n)) * 100) / 100;
+  let bal = P; const out = [];
+  for (let m = 1; m <= n; m++) {
+    const i = Math.round(bal * r * 100) / 100; let pr = Math.round((emi - i) * 100) / 100, pay = emi;
+    if (m === n) { pr = Math.round(bal * 100) / 100; pay = Math.round((pr + i) * 100) / 100; }
+    bal = Math.max(0, Math.round((bal - pr) * 100) / 100);
+    out.push(`<tr><td>${m}</td><td>${fmt(pay)}</td><td>${fmt(i)}</td><td>${fmt(pr)}</td><td>${fmt(bal)}</td></tr>`);
+  }
+  return out.join("");
+}
+const STATUS = { idle: "Enter your loan details and select Calculate.", stale: "Your inputs have changed. Select Calculate to see updated results." };
+const ERR = { amount: "Enter a loan amount.", rate: "Interest rate must be between 0 and 75%.", tenure: "Loan tenure must be a whole number." };
+function setRes(v) {
+  const st = $("#status");
+  $("#results").hidden = !(v === "shown" || v === "long");
+  st.hidden = v === "shown" || v === "long";
+  st.className = "status" + (v === "stale" ? " status-stale" : "");
+  st.textContent = v === "stale" ? STATUS.stale : STATUS.idle;
+  for (const k of Object.keys(ERR)) {
+    const inp = $("#" + k), e = $("#" + k + "-error");
+    if (v === "errors") { inp.setAttribute("aria-invalid", "true"); e.textContent = ERR[k]; inp.value = ""; }
+    else { inp.removeAttribute("aria-invalid"); e.textContent = ""; }
+  }
+  $("#rows").innerHTML = v === "long" ? schedule(5000000, 18, 1200) : schedule(1000000, 12, 12);
+}
+function setSaved(v) {
+  const s = $("#saved-status"), l = $("#saved-list");
+  l.hidden = v === "empty" || v === "unavail";
+  s.hidden = !l.hidden;
+  s.textContent = v === "unavail" ? "Saved calculations aren't available in this browser. Calculations still work." : "No saved calculations yet.";
+  $("#clear-all").disabled = l.hidden;
+  $("#saved-error").textContent = v === "failed" ? "Couldn't remove saved calculations from this browser. To be sure, clear this site's data in your browser settings." : "";
+}
+document.querySelectorAll(".pv [data-k]").forEach((b) => b.addEventListener("click", () => {
+  document.querySelectorAll(`.pv [data-k="${b.dataset.k}"]`).forEach((x) => x.setAttribute("aria-pressed", x === b));
+  if (b.dataset.k === "theme") document.documentElement.dataset.theme = b.dataset.v;
+  if (b.dataset.k === "res") setRes(b.dataset.v);
+  if (b.dataset.k === "saved") setSaved(b.dataset.v);
+}));
+$("#theme").addEventListener("change", (e) => {
+  const v = e.target.value;
+  document.documentElement.dataset.theme = v === "system" ? (matchMedia("(prefers-color-scheme: dark)").matches ? "dark" : "light") : v;
+});
+$("#pv-dialog").onclick = () => $("#dlg").showModal();
+$("#clear-all").onclick = () => $("#dlg").showModal();
+$("#dlg-cancel").onclick = () => $("#dlg").close();
+$("#dlg-clear").onclick = () => { $("#dlg").close(); setSaved("empty"); $("#saved-h").focus(); };
+setRes("shown"); setSaved("list");
+</script>
+</body>
+</html>

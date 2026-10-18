@@ -1,0 +1,125 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<title>EMI Calculator, phone USD extremes</title>
+</head>
+<body>
+<x-dc>
+<helmet>
+<style>
+body{margin:0}
+.app{--bg:#F6F3FB;--surface:#FFFFFF;--text:#2A2540;--text-muted:#5C5672;--primary:#CBB9F6;--on-primary:#2A2540;--error:#A8324B;--border:#E6E0F1;--input-border:#867E9E;--focus:#6A50D3;--mint:#D6F2E5;--peach:#FFE4D1;--rose:#F8D5DF;--butter:#FFF2C9;--wash:#EFEAFB;--band:#FAF8FE;--shadow:0 1px 2px rgba(42,37,64,.05),0 10px 30px rgba(106,80,211,.08);font-family:system-ui,-apple-system,"Segoe UI",Roboto,sans-serif;font-size:16px;line-height:1.5;color:var(--text);background:var(--bg);box-sizing:border-box}
+.app *,.app *::before,.app *::after{box-sizing:border-box}
+.page{padding:20px 16px 32px}
+.app-header{display:flex;flex-direction:column;gap:16px;margin-bottom:20px}
+.brand{display:flex;gap:14px;align-items:flex-start;min-width:0}
+.mark{width:44px;height:44px;flex:none}
+.app h1{margin:0;font-size:24px;line-height:1.15;font-weight:780;letter-spacing:-.02em}
+.tagline{margin:4px 0 0;color:var(--text-muted);font-size:14px;line-height:1.4}
+.theme-field{margin:0 !important}
+.layout{display:grid;grid-template-columns:minmax(0,1fr);gap:16px}
+.card{background:var(--surface);border:1px solid var(--border);border-radius:22px;padding:20px;box-shadow:var(--shadow);min-width:0}
+.field{display:flex;flex-direction:column;gap:6px;margin-bottom:16px;min-width:0}
+.app label{font-size:14px;font-weight:650}
+.app input,.app select{font:inherit;color:var(--text);background-color:var(--surface);border:1.5px solid var(--input-border);border-radius:14px;min-height:48px;padding:10px 14px;width:100%;font-variant-numeric:tabular-nums}
+.app select{appearance:none;padding-right:42px;background-image:linear-gradient(45deg,transparent 50%,var(--text-muted) 50%),linear-gradient(135deg,var(--text-muted) 50%,transparent 50%);background-position:calc(100% - 22px) 52%,calc(100% - 16px) 52%;background-size:6px 6px;background-repeat:no-repeat}
+.hint{margin:0;font-size:13px;color:var(--text-muted);line-height:1.4}
+.tenure-row{display:grid;grid-template-columns:minmax(0,1fr) minmax(0,1fr);gap:12px}
+.actions{display:flex;flex-wrap:wrap;gap:12px;margin-top:6px}
+.app button{font:inherit;font-weight:680;min-height:48px;min-width:44px;padding:10px 22px;border-radius:999px;cursor:pointer;line-height:1.2}
+.primary{background:var(--primary);color:var(--on-primary);border:1.5px solid var(--primary);box-shadow:inset 0 -3px 0 rgba(42,37,64,.10)}
+.secondary{background:transparent;color:var(--text);border:1.5px solid var(--input-border)}
+.form-card .primary{flex:1 1 160px}
+.summary{margin:0;display:grid;grid-template-columns:minmax(0,1fr);gap:10px}
+.figure{background:var(--bg);border-radius:18px;padding:14px 16px;min-width:0}
+.figure dt{font-size:12px;font-weight:700;color:var(--text-muted);text-transform:uppercase;letter-spacing:.08em}
+.figure dd{margin:4px 0 0;font-size:21px;line-height:1.25;font-weight:720;font-variant-numeric:tabular-nums;overflow-wrap:break-word}
+.figure.headline{background:var(--mint);padding:18px 18px 20px}
+.figure.headline dd{font-size:38px;line-height:1.08;letter-spacing:-.03em;font-weight:800;margin-top:6px}
+.rounding-note{margin:10px 0 0;background:var(--butter);border-radius:14px;padding:12px 14px;font-size:14px;display:flex;gap:10px;align-items:flex-start;line-height:1.4}
+.rounding-note::before{content:"";flex:none;width:8px;height:8px;border-radius:50%;background:var(--text);margin-top:6px}
+.schedule h2{font-size:18px;margin:24px 0 10px;font-weight:750}
+.schedule-scroll{max-height:min(60vh,480px);overflow:auto;border:1px solid var(--border);border-radius:18px;background:var(--surface)}
+.schedule table{border-collapse:separate;border-spacing:0;font-variant-numeric:tabular-nums;font-size:14px;min-width:100%}
+.schedule th{position:sticky;top:0;z-index:1;background:var(--wash);text-align:right;font-size:12px;font-weight:700;text-transform:uppercase;letter-spacing:.06em;color:var(--text-muted);padding:12px 14px;border-bottom:1.5px solid var(--input-border);white-space:nowrap}
+.schedule th:first-child,.schedule td:first-child{text-align:left;position:sticky;left:0;z-index:2}
+.schedule td:first-child{background:var(--surface);color:var(--text-muted);font-weight:650;box-shadow:1px 0 0 var(--border)}
+.schedule th:first-child{z-index:3}
+.schedule td{padding:10px 14px;text-align:right;border-bottom:1px solid var(--border);white-space:nowrap}
+.schedule tbody tr:nth-child(even) td{background:var(--band)}
+.history-card h2{font-size:20px;margin:0 0 12px;font-weight:750;letter-spacing:-.01em}
+.history-list{list-style:none;margin:0 0 16px;padding:0;display:grid;grid-template-columns:minmax(0,1fr);gap:10px}
+.history-entry{display:flex;flex-direction:column;gap:12px;padding:16px;border:1px solid var(--border);border-radius:18px;background:var(--bg)}
+.entry-text{min-width:0}
+.entry-text p{margin:0;overflow-wrap:break-word;font-variant-numeric:tabular-nums}
+.entry-line1{font-weight:700}
+.entry-time{font-size:13px;color:var(--text-muted);margin-top:2px !important}
+.entry-actions{display:flex;gap:10px}
+.entry-actions button{flex:1;padding:8px 14px}
+.entry-actions button:last-child{color:var(--error);border-color:var(--error)}
+</style>
+</helmet>
+<div class="app" data-theme="light" style="width: 360px; height: 2100px">
+<div class="page">
+<header class="app-header">
+<div class="brand">
+<svg class="mark" viewBox="0 0 52 52" aria-hidden="true"><rect width="52" height="52" rx="16" fill="#EFEAFB"></rect><rect x="10" y="12" width="8" height="28" rx="4" fill="#CBB9F6"></rect><rect x="22" y="19" width="8" height="21" rx="4" fill="#BFE6D3"></rect><rect x="34" y="27" width="8" height="13" rx="4" fill="#FFCFB0"></rect></svg>
+<div><h1>Loan EMI Calculator</h1><p class="tagline">Work out the monthly payment, total cost and repayment schedule of a loan.</p></div>
+</div>
+<div class="field theme-field"><label for="theme">Theme</label><select id="theme"><option>System</option><option>Light</option><option>Dark</option></select></div>
+</header>
+<main class="layout">
+<form class="card form-card">
+<div class="field"><label for="currency">Currency</label><select id="currency"><option>USD ($)</option><option>PKR (Rs)</option></select><p class="hint">Changing currency changes the symbol only. Amounts are not converted.</p></div>
+<div class="field"><label for="amount">Loan amount ($)</label><input id="amount" type="text" value="1,000,000,000,000,000"></div>
+<div class="field"><label for="rate">Annual interest rate (%)</label><input id="rate" type="text" value="75"></div>
+<div class="tenure-row">
+<div class="field"><label for="tenure">Loan tenure</label><input id="tenure" type="text" value="100"></div>
+<div class="field"><label for="unit">Tenure unit</label><select id="unit"><option>Years</option><option>Months</option></select></div>
+</div>
+<div class="actions"><button type="button" class="primary">Calculate</button><button type="button" class="secondary">Reset</button></div>
+</form>
+<section class="card results-card">
+<dl class="summary">
+<div class="figure headline"><dt>Monthly payment</dt><dd>$62,<wbr>500,<wbr>000,<wbr>000,<wbr>000.00</dd></div>
+<div class="figure"><dt>Total interest</dt><dd>$74,<wbr>000,<wbr>000,<wbr>000,<wbr>000,<wbr>003.34</dd></div>
+<div class="figure"><dt>Total amount payable</dt><dd>$75,<wbr>000,<wbr>000,<wbr>000,<wbr>000,<wbr>003.34</dd></div>
+</dl>
+<p class="rounding-note">Some payments differ by up to 0.02 because amounts are rounded to 2 decimal places.</p>
+<div class="schedule">
+<h2>Repayment schedule</h2>
+<div class="schedule-scroll" role="region" tabindex="0" aria-label="Repayment schedule">
+<table><thead><tr><th>Month</th><th>Payment ($)</th><th>Interest ($)</th><th>Principal ($)</th><th>Balance ($)</th></tr></thead>
+<tbody>
+<tr><td>1</td><td>62,500,000,000,000.00</td><td>62,500,000,000,000.00</td><td>0.00</td><td>1,000,000,000,000,000.00</td></tr>
+<tr><td>2</td><td>62,500,000,000,000.00</td><td>62,500,000,000,000.00</td><td>0.00</td><td>1,000,000,000,000,000.00</td></tr>
+<tr><td>3</td><td>62,500,000,000,000.00</td><td>62,500,000,000,000.00</td><td>0.00</td><td>1,000,000,000,000,000.00</td></tr>
+<tr><td>4</td><td>62,500,000,000,000.00</td><td>62,500,000,000,000.00</td><td>0.00</td><td>1,000,000,000,000,000.00</td></tr>
+<tr><td>5</td><td>62,500,000,000,000.00</td><td>62,500,000,000,000.00</td><td>0.00</td><td>1,000,000,000,000,000.00</td></tr>
+<tr><td>6</td><td>62,500,000,000,000.00</td><td>62,500,000,000,000.00</td><td>0.00</td><td>1,000,000,000,000,000.00</td></tr>
+</tbody></table>
+</div>
+</div>
+</section>
+<section class="card history-card">
+<h2 tabindex="-1">Saved calculations</h2>
+<ul class="history-list">
+<li class="history-entry"><div class="entry-text"><p class="entry-line1">$1,000,000,000,000,000.00 at 75% for 100 years</p><p>$62,500,000,000,000.00 per month</p><p class="entry-time">18 Oct 2026, 16:40</p></div><div class="entry-actions"><button type="button" class="secondary">Restore</button><button type="button" class="secondary">Delete</button></div></li>
+<li class="history-entry"><div class="entry-text"><p class="entry-line1">$10.00 at 0.01% for 1 month</p><p>$10.00 per month</p><p class="entry-time">18 Oct 2026, 16:38</p></div><div class="entry-actions"><button type="button" class="secondary">Restore</button><button type="button" class="secondary">Delete</button></div></li>
+</ul>
+<button type="button" class="secondary">Clear all</button>
+</section>
+</main>
+</div>
+</div>
+</x-dc>
+<script type="text/x-dc" data-dc-script data-props='{"$preview":{"width":360,"height":2100}}'>
+class Component extends DCLogic {
+renderVals() {
+return {};
+}
+}
+</script>
+</body>
+</html>
