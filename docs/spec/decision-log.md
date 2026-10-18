@@ -81,6 +81,8 @@ Each decision is **Approved** or **Proposed — needs owner approval**. Claude C
 | D-65 | Add four visuals: S-20, S-21, S-22 new; S-19 Backlog to v1 | Approved (owner), 2026-10-18 |
 | D-66 | Chart test hooks: `data-hit-area`, `data-segment`, `data-series` | Approved (owner, G3b), 2026-10-18 |
 | D-67 | G3b: visuals tests approved and frozen; three copy gaps closed; test-designer readings | Approved (owner, G3b), 2026-10-18 |
+| D-68 | Visuals implementation choices and evidence | **Proposed**: owner to review at the visuals mini-gate |
+| D-69 | Sticky loan form on wide, tall windows (owner request) | Approved (owner), 2026-10-18; implementation for review at the visuals mini-gate |
 
 **How this log is kept (D-24):** every decision is recorded here, however small. Entries are never deleted or rewritten. A changed decision gets a new dated **Decision** line under its entry, or a new entry that names the one it supersedes, and a row in the change history.
 
@@ -639,6 +641,30 @@ Every S-5 and S-8 test already passed before group 6, apart from the D-59 Firefo
   - yearly cells are read as `th, td`;
   - there are exactly 4 figures, and the yearly chart is the 4th.
 - **Still open:** D-64 (redesign gate) and RD-3 (forced-colors borders).
+
+### D-68 Visuals implementation (Proposed, owner to review at the visuals mini-gate)
+1. **Domain:** `costSplit`, `interestShare` and `yearlySummary` in `src/domain/summary.ts`, and `formatPercent` in `format.ts`. All use exact `Decimal` arithmetic with half-up rounding to 1 dp; `loanPercent` is `100 − interestPercent`.
+2. **Geometry:** every chart uses one band layout. Item *k* of *n* spans [*k*/*n*, (*k*+1)/*n*] of the plot, centred where the D-66 hover hook expects it.
+   - The balance and payment charts are **stepped areas**, one `<path>` per series however many months there are. The yearly chart is **bars**, again one `<path>` per series.
+   - The SVG stretches to the card (`preserveAspectRatio="none"`). **All text is HTML** (caption, legend, axis ends, tooltip), so nothing scales down to unreadable sizes on phones.
+3. **No money becomes a JS `number`.** Drawing needs a dimensionless ratio (value ÷ max), computed in `Decimal` and converted with `toNumber()` only for pixel geometry. The cost bar's flex weights are the two *percentages*, which are not money.
+4. **Palette,** checked with the dataviz validator script against the real card surfaces (all checks pass: lightness band, chroma, colour-blind separation ΔE ≥ 25, normal-vision ΔE ≥ 25, ≥ 3:1 against the surface):
+   - light: Principal `#6A50D3` (the design's focus colour), Interest `#C4512E`;
+   - dark: Principal `#957EEC`, Interest `#D4703C`.
+   - The **balance** (and the cost bar's **loan amount**) use the Principal colour: the balance *is* the principal still owed, and a teal tried first failed the chroma and colour-blind checks.
+5. **No new words beyond the approved copy.** The axes show only the first and last item numbers (`1` … `120`).
+6. **No new keyboard stops:** the charts aren't focusable, and the yearly table isn't a scroll region, so AC-8.1's frozen tab order is unchanged. Keyboard and screen-reader users get every value from the captions and tables. The tooltips are pointer-only, as §8.3.2 allows.
+7. **Evidence:**
+   - Vitest **345 of 345**.
+   - The four visual specs **90 of 90** across 3 browsers on the first full run.
+   - Full `CI=1 npm run verify`: the first run gave 542 of 543, with one WebKit 8-second click timeout in `[AC-2.16]`, a test that renders no chart. That test then passed 5 of 5 alone in WebKit, and the **second full run exited 0 with E2E 543 of 543** and `trace` OK. This matches the earlier load-only WebKit timeouts (D-64).
+   - Bundle 87.1 KB (it was 85.4 KB).
+
+### D-69 Sticky loan form (owner request, 2026-10-18)
+- **Request:** the owner's screenshots showed the empty space under the form while scrolling the results: "freeze the actual calculator … when you scroll the space on left is empty".
+- **Decision:** at **≥ 769 px wide and ≥ 820 px tall**, the form card is `position: sticky` (`top: 24px`) and follows the scroll. In shorter windows it scrolls normally, so the bottom of the form (Calculate) can never end up out of reach. Phones and tablets keep the single column.
+- **One wrapper `<div className="layout-main">`** now holds the form and the results. A sticky element can travel to the end of its parent box, and with the whole layout grid as parent, the form **overlapped Saved calculations** at the end of the page (probe: form bottom 568 px against the card top at 511 px). The wrapper has no role or semantics and changes no order. With it, the form stops at the end of the results (form bottom 487 px against the card top at 511 px) in Chromium, Firefox and WebKit.
+- **Not done:** no sticky behaviour on short windows. The 820 px threshold leaves room for the form with all three error messages showing.
 
 ### D-47 Group 2 builds the schedule table; cross-group ACs reported as pending
 - **Decision:** The shared helper `expectResultsShown` requires the schedule table, so group 2 builds `ScheduleTable` too; group 3 then verifies S-10 and S-13. AC-4.4 needs the Theme and Currency selects (group 4), and AC-9.2 needs saved calculations (group 5), so they are reported at G4.2 as **pending later groups**, not as done.
