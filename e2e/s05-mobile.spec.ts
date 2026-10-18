@@ -27,7 +27,7 @@ test.describe('S-5 Phone use at 360 x 740', () => {
     expect(m.body).toBeLessThanOrEqual(m.view)
 
     await calculateLoan(page, LOANS.MAX)
-    await expect(scheduleTable(page).getByRole('row')).toHaveCount(481)
+    await expect(scheduleTable(page).getByRole('row')).toHaveCount(1201)
     m = await pageOverflowX(page)
     expect(m.view).toBe(360)
     expect(m.doc).toBeLessThanOrEqual(360)
@@ -93,9 +93,9 @@ test.describe('S-5 Phone use at 360 x 740', () => {
     await open(page)
     await calculateLoan(page, LOANS.MAX)
     const expected = {
-      'Monthly payment': 'Rs 41,666,666.80',
-      'Total interest': 'Rs 19,000,000,061.79',
-      'Total amount payable': 'Rs 20,000,000,061.79',
+      'Monthly payment': 'Rs 62,500,000,000,000.00',
+      'Total interest': 'Rs 74,000,000,000,000,003.34',
+      'Total amount payable': 'Rs 75,000,000,000,000,003.34',
     } as const
     for (const name of Object.keys(expected) as (keyof typeof expected)[]) {
       const dd = summary(page, name)

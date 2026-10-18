@@ -10,25 +10,28 @@ const SEED = 20261017
 const RUNS = 1000
 const TIMEOUT = 600_000
 
-/** A generated loan, described by integers only: cents, basis points of a percent, months. */
+/**
+ * A generated loan, described by integers only: cents, basis points of a percent, months.
+ * Cents is a bigint because the largest amount, 10^15, is 10^17 cents (above 2^53).
+ */
 interface Case {
-  cents: number
+  cents: bigint
   bps: number
   months: number
   /** Use the years field when months is a multiple of 12 (and this flag is set). */
   asYears: boolean
 }
 
-const AMOUNT_MIN_CENTS = 100_000 // 1,000.00
-const AMOUNT_MAX_CENTS = 100_000_000_000 // 1,000,000,000.00
-const RATE_MAX_BPS = 5_000 // 50.00%
-const MONTHS_MAX = 480
+const AMOUNT_MIN_CENTS = 1_000n // 10.00
+const AMOUNT_MAX_CENTS = 100_000_000_000_000_000n // 1,000,000,000,000,000.00
+const RATE_MAX_BPS = 7_500 // 75.00%
+const MONTHS_MAX = 1_200
 
-// D-38: at least a quarter of runs draw from the corner where rounding errors are largest.
+// D-38 / D-54: at least a quarter of runs draw from the corner where rounding errors are largest.
 const cornerCase = fc.record({
-  cents: fc.integer({ min: AMOUNT_MIN_CENTS, max: 2_000_000 }), // 1,000 to 20,000
-  bps: fc.integer({ min: 3_000, max: RATE_MAX_BPS }), // 30% to 50%
-  months: fc.integer({ min: 300, max: MONTHS_MAX }),
+  cents: fc.bigInt({ min: AMOUNT_MIN_CENTS, max: 2_000_000n }), // 10 to 20,000
+  bps: fc.integer({ min: 4_500, max: RATE_MAX_BPS }), // 45% to 75%
+  months: fc.integer({ min: 900, max: MONTHS_MAX }),
   asYears: fc.boolean(),
 })
 
@@ -40,11 +43,16 @@ const boundCase = fc.record({
   asYears: fc.boolean(),
 })
 
+/** Amounts spread over every order of magnitude from 10 to 10^15. */
+const wideCents = fc.oneof(
+  fc.bigInt({ min: AMOUNT_MIN_CENTS, max: AMOUNT_MAX_CENTS }),
+  fc.bigInt({ min: AMOUNT_MIN_CENTS, max: 100_000_000n }), // 10 to 1,000,000
+  fc.bigInt({ min: 100_000_000n, max: 100_000_000_000_000n }), // 1 million to 10^12
+  fc.bigInt({ min: 100_000_000_000_000n, max: AMOUNT_MAX_CENTS }), // 10^12 to 10^15
+)
+
 const wideCase = fc.record({
-  cents: fc.oneof(
-    fc.integer({ min: AMOUNT_MIN_CENTS, max: AMOUNT_MAX_CENTS }),
-    fc.integer({ min: AMOUNT_MIN_CENTS, max: 100_000_000 }),
-  ),
+  cents: wideCents,
   bps: fc.oneof(
     fc.integer({ min: 0, max: RATE_MAX_BPS }),
     fc.constantFrom(1, 99, 100, 1200, 1800, 3600),
@@ -59,14 +67,14 @@ const caseArb: fc.Arbitrary<Case> = fc.oneof(
   { weight: 4, arbitrary: wideCase },
 )
 
-/** Years-based cases: whole numbers of years, 1 to 40, same corner bias. */
+/** Years-based cases: whole numbers of years, 1 to 100, same corner bias. */
 const yearsCaseArb = fc.oneof(
   {
     weight: 3,
     arbitrary: fc.record({
-      cents: fc.integer({ min: AMOUNT_MIN_CENTS, max: 2_000_000 }),
-      bps: fc.integer({ min: 3_000, max: RATE_MAX_BPS }),
-      years: fc.integer({ min: 25, max: 40 }),
+      cents: fc.bigInt({ min: AMOUNT_MIN_CENTS, max: 2_000_000n }),
+      bps: fc.integer({ min: 4_500, max: RATE_MAX_BPS }),
+      years: fc.integer({ min: 75, max: 100 }),
     }),
   },
   {
@@ -74,26 +82,27 @@ const yearsCaseArb = fc.oneof(
     arbitrary: fc.record({
       cents: fc.constantFrom(AMOUNT_MIN_CENTS, AMOUNT_MAX_CENTS),
       bps: fc.constantFrom(0, RATE_MAX_BPS),
-      years: fc.constantFrom(1, 40),
+      years: fc.constantFrom(1, 100),
     }),
   },
   {
     weight: 4,
     arbitrary: fc.record({
-      cents: fc.integer({ min: AMOUNT_MIN_CENTS, max: AMOUNT_MAX_CENTS }),
+      cents: wideCents,
       bps: fc.integer({ min: 0, max: RATE_MAX_BPS }),
-      years: fc.integer({ min: 1, max: 40 }),
+      years: fc.integer({ min: 1, max: 100 }),
     }),
   },
 )
 
-function twoDp(units: number): string {
-  const whole = Math.floor(units / 100)
-  const frac = String(units % 100).padStart(2, '0')
+function twoDp(units: bigint | number): string {
+  const n = BigInt(units)
+  const whole = n / 100n
+  const frac = String(n % 100n).padStart(2, '0')
   return `${whole}.${frac}`
 }
 
-function amountText(c: Case | { cents: number }): string {
+function amountText(c: Case | { cents: bigint }): string {
   return twoDp(c.cents)
 }
 
@@ -132,6 +141,7 @@ function loanFor(c: Case): CalculatedLoan {
 
 const HALF_UP = Decimal.ROUND_HALF_UP
 const CENT = new Decimal('0.01')
+const TWO_CENTS = new Decimal('0.02')
 const rate = (c: Case) => new Decimal(rateText(c))
 const principalAmount = (c: Case) => new Decimal(amountText(c))
 
@@ -208,13 +218,16 @@ function checkPaymentsNearHeadline(c: Case): void {
   const loan = loanFor(c)
   const first = rowAt(loan, 0).payment
   check(loan.monthlyPayment.eq(first), () => `${describeCase(c)}: headline != payment_1`)
-  for (const r of loan.rows) {
+  // D-55: every payment but the last within 0.01 of the headline; the last within 0.02.
+  const lastIndex = loan.rows.length - 1
+  loan.rows.forEach((r, i) => {
+    const limit = i === lastIndex ? TWO_CENTS : CENT
     check(
-      r.payment.minus(first).abs().lte(CENT),
+      r.payment.minus(first).abs().lte(limit),
       () =>
-        `${describeCase(c)} month ${r.month}: payment ${r.payment.toFixed(2)} vs headline ${first.toFixed(2)}`,
+        `${describeCase(c)} month ${r.month}: payment ${r.payment.toFixed(2)} vs headline ${first.toFixed(2)} (limit ${limit.toFixed(2)})`,
     )
-  }
+  })
   const differs = loan.rows.some((r) => !r.payment.eq(first))
   check(
     loan.showRoundingNote === differs,
@@ -238,7 +251,7 @@ function checkTotals(c: Case): void {
   )
 }
 
-function checkYearsEqualMonths(y: { cents: number; bps: number; years: number }): void {
+function checkYearsEqualMonths(y: { cents: bigint; bps: number; years: number }): void {
   const base = { cents: y.cents, bps: y.bps }
   const asYears = loanFor({ ...base, months: y.years * 12, asYears: true })
   const asMonths = loanFor({ ...base, months: y.years * 12, asYears: false })
@@ -311,7 +324,7 @@ describe('property tests over the full valid input domain', () => {
   )
 
   it(
-    '[AC-10.5][SPEC-§5.4] invariant 6: every payment is within 0.01 of the monthly payment; the rounding note flag matches',
+    '[AC-10.5][SPEC-§5.4] invariant 6: every payment but the last is within 0.01 of the monthly payment, the last within 0.02; the rounding note flag matches',
     () => {
       fc.assert(fc.property(caseArb, checkPaymentsNearHeadline), params)
     },
@@ -339,7 +352,7 @@ describe('deterministic corners and reference loans', () => {
   const bounds: Case[] = []
   for (const cents of [AMOUNT_MIN_CENTS, AMOUNT_MAX_CENTS]) {
     for (const bps of [0, 1, RATE_MAX_BPS]) {
-      for (const months of [1, 2, 12, 480]) {
+      for (const months of [1, 2, 12, 1200]) {
         bounds.push({ cents, bps, months, asYears: false })
       }
     }
@@ -347,15 +360,15 @@ describe('deterministic corners and reference loans', () => {
 
   // Reference loans from the user-stories table, as integer cents / bps / months.
   const references: Case[] = [
-    { cents: 100_000_000, bps: 1200, months: 12, asYears: true }, // L-A
-    { cents: 250_000_000, bps: 1800, months: 60, asYears: true }, // L-B
-    { cents: 12_000_000, bps: 0, months: 12, asYears: false }, // L-C
-    { cents: 10_000_000, bps: 1000, months: 1, asYears: false }, // L-D
-    { cents: 100_000, bps: 1, months: 1, asYears: false }, // L-MIN
-    { cents: 100_000_000_000, bps: 5000, months: 480, asYears: true }, // L-MAX
-    { cents: 100_000, bps: 0, months: 3, asYears: false }, // L-Z3
-    { cents: 1_000_000, bps: 3600, months: 359, asYears: false }, // SPEC-5.3 regression 1
-    { cents: 1_000_082, bps: 3000, months: 360, asYears: false }, // SPEC-5.3 regression 2
+    { cents: 100_000_000n, bps: 1200, months: 12, asYears: true }, // L-A
+    { cents: 250_000_000n, bps: 1800, months: 60, asYears: true }, // L-B
+    { cents: 12_000_000n, bps: 0, months: 12, asYears: false }, // L-C
+    { cents: 10_000_000n, bps: 1000, months: 1, asYears: false }, // L-D
+    { cents: 1_000n, bps: 1, months: 1, asYears: false }, // L-MIN
+    { cents: 100_000_000_000_000_000n, bps: 7500, months: 1200, asYears: true }, // L-MAX
+    { cents: 100_000n, bps: 0, months: 3, asYears: false }, // L-Z3
+    { cents: 1_000_000n, bps: 3600, months: 359, asYears: false }, // SPEC-5.3 regression 1
+    { cents: 1_000_082n, bps: 3000, months: 360, asYears: false }, // SPEC-5.3 regression 2
   ]
 
   it(
@@ -389,12 +402,13 @@ describe('deterministic corners and reference loans', () => {
   )
 
   it(
-    '[SPEC-§5.4] invariant 8 holds at the tenure bounds (1 year and 40 years) and for the reference loans in whole years',
+    '[SPEC-§5.4] invariant 8 holds at the tenure bounds (1 year and 100 years) and for the reference loans in whole years',
     () => {
-      checkYearsEqualMonths({ cents: AMOUNT_MIN_CENTS, bps: RATE_MAX_BPS, years: 40 })
+      checkYearsEqualMonths({ cents: AMOUNT_MIN_CENTS, bps: RATE_MAX_BPS, years: 100 })
+      checkYearsEqualMonths({ cents: AMOUNT_MAX_CENTS, bps: RATE_MAX_BPS, years: 100 })
       checkYearsEqualMonths({ cents: AMOUNT_MAX_CENTS, bps: 0, years: 1 })
-      checkYearsEqualMonths({ cents: 100_000_000, bps: 1200, years: 1 })
-      checkYearsEqualMonths({ cents: 250_000_000, bps: 1800, years: 5 })
+      checkYearsEqualMonths({ cents: 100_000_000n, bps: 1200, years: 1 })
+      checkYearsEqualMonths({ cents: 250_000_000n, bps: 1800, years: 5 })
     },
     TIMEOUT,
   )

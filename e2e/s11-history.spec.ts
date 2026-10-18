@@ -246,7 +246,7 @@ test.describe('S-11 Recall earlier calculations', () => {
     const cases: { v: Parameters<typeof calculateLoan>[1]; line1: string }[] = [
       { v: LOANS.A, line1: 'Rs 1,000,000.00 at 12% for 1 year' },
       { v: LOANS.B, line1: 'Rs 2,500,000.00 at 18% for 5 years' },
-      { v: LOANS.MIN, line1: 'Rs 1,000.00 at 0.01% for 1 month' },
+      { v: LOANS.MIN, line1: 'Rs 10.00 at 0.01% for 1 month' },
       { v: LOANS.C, line1: 'Rs 120,000.00 at 0% for 12 months' },
       {
         v: { amount: '100000', rate: '21.50', tenure: '24', unit: 'Months' },

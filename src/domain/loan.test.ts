@@ -34,12 +34,14 @@ describe('reference loans: monthly payment', () => {
     expect(calc('100000', '10', '1', 'months').monthlyPayment.toFixed(2)).toBe('100833.33')
   })
 
-  it('[AC-1.6] L-MIN (1000, 0.01, 1 month) has monthly payment 1000.01', () => {
-    expect(calc('1000', '0.01', '1', 'months').monthlyPayment.toFixed(2)).toBe('1000.01')
+  it('[AC-1.6] L-MIN (10, 0.01, 1 month) has monthly payment 10.00', () => {
+    expect(calc('10', '0.01', '1', 'months').monthlyPayment.toFixed(2)).toBe('10.00')
   })
 
-  it('[AC-1.7] L-MAX (1000000000, 50, 40 years) has monthly payment 41666666.80', () => {
-    expect(calc('1000000000', '50', '40', 'years').monthlyPayment.toFixed(2)).toBe('41666666.80')
+  it('[AC-1.7] L-MAX (1000000000000000, 75, 100 years) has monthly payment 62500000000000.00', () => {
+    expect(calc('1000000000000000', '75', '100', 'years').monthlyPayment.toFixed(2)).toBe(
+      '62500000000000.00',
+    )
   })
 
   it('[AC-1.8] thousands and lakh separators give the same result as 1000000', () => {
@@ -94,16 +96,16 @@ describe('reference loans: totals', () => {
     expect(loan.totalPayable.toFixed(2)).toBe('120000.00')
   })
 
-  it('[AC-3.4] L-MIN total interest 0.01 and total payable 1000.01', () => {
-    const loan = calc('1000', '0.01', '1', 'months')
-    expect(loan.totalInterest.toFixed(2)).toBe('0.01')
-    expect(loan.totalPayable.toFixed(2)).toBe('1000.01')
+  it('[AC-3.4] L-MIN total interest 0.00 and total payable 10.00', () => {
+    const loan = calc('10', '0.01', '1', 'months')
+    expect(loan.totalInterest.toFixed(2)).toBe('0.00')
+    expect(loan.totalPayable.toFixed(2)).toBe('10.00')
   })
 
-  it('[AC-3.5] L-MAX total interest 19000000061.79 and total payable 20000000061.79', () => {
-    const loan = calc('1000000000', '50', '40', 'years')
-    expect(loan.totalInterest.toFixed(2)).toBe('19000000061.79')
-    expect(loan.totalPayable.toFixed(2)).toBe('20000000061.79')
+  it('[AC-3.5] L-MAX total interest 74000000000000003.34 and total payable 75000000000000003.34', () => {
+    const loan = calc('1000000000000000', '75', '100', 'years')
+    expect(loan.totalInterest.toFixed(2)).toBe('74000000000000003.34')
+    expect(loan.totalPayable.toFixed(2)).toBe('75000000000000003.34')
   })
 
   it('[AC-3.1][AC-1.5] L-D total interest 833.33 and total payable 100833.33', () => {
@@ -185,11 +187,11 @@ describe('schedule rows', () => {
     expect(rowAt(loan, 59).balance.toFixed(2)).toBe('0.00')
   })
 
-  it('[AC-10.1] L-MAX has 480 rows and ends at 0.00', () => {
-    const loan = calc('1000000000', '50', '40', 'years')
-    expect(loan.rows).toHaveLength(480)
-    expect(rowAt(loan, 479).month).toBe(480)
-    expect(rowAt(loan, 479).balance.toFixed(2)).toBe('0.00')
+  it('[AC-10.1] L-MAX has 1200 rows and ends at 0.00', () => {
+    const loan = calc('1000000000000000', '75', '100', 'years')
+    expect(loan.rows).toHaveLength(1200)
+    expect(rowAt(loan, 1199).month).toBe(1200)
+    expect(rowAt(loan, 1199).balance.toFixed(2)).toBe('0.00')
   })
 
   it('[AC-10.4][AC-13.3] one-month loan L-D: the single row repays everything', () => {
@@ -198,9 +200,9 @@ describe('schedule rows', () => {
     expect(rowText(loan, 0)).toBe('1 | 100833.33 | 833.33 | 100000.00 | 0.00')
   })
 
-  it('[AC-1.6][AC-10.4] L-MIN single row: 1000.01 | 0.01 | 1000.00 | 0.00', () => {
-    const loan = calc('1000', '0.01', '1', 'months')
-    expect(rowText(loan, 0)).toBe('1 | 1000.01 | 0.01 | 1000.00 | 0.00')
+  it('[AC-1.6][AC-10.4] L-MIN single row: 10.00 | 0.00 | 10.00 | 0.00', () => {
+    const loan = calc('10', '0.01', '1', 'months')
+    expect(rowText(loan, 0)).toBe('1 | 10.00 | 0.00 | 10.00 | 0.00')
   })
 
   it('[AC-1.4][AC-10.4] L-C (0%) every row is 10000.00 | 0.00 | 10000.00', () => {
@@ -236,7 +238,7 @@ describe('rounding note flag', () => {
 
   it('[AC-10.6] single-payment loans L-D and L-MIN do not show the note', () => {
     expect(calc('100000', '10', '1', 'months').showRoundingNote).toBe(false)
-    expect(calc('1000', '0.01', '1', 'months').showRoundingNote).toBe(false)
+    expect(calc('10', '0.01', '1', 'months').showRoundingNote).toBe(false)
   })
 
   it('[AC-10.6][AC-10.7] L-Z3 (333.33, 333.34, 333.33) shows the note', () => {
@@ -271,9 +273,11 @@ describe('regression loans where the fixed-instalment method fails', () => {
     expect(rowAt(loan, 358).month).toBe(359)
     expect(rowAt(loan, 358).balance.toFixed(2)).toBe('0.00')
     const headline = new Decimal('300.01')
-    for (const r of loan.rows) {
+    // D-55: every payment but the last within 0.01 of the headline, the last within 0.02.
+    for (const r of loan.rows.slice(0, 358)) {
       expect(r.payment.minus(headline).abs().lte('0.01')).toBe(true)
     }
+    expect(rowAt(loan, 358).payment.minus(headline).abs().lte('0.02')).toBe(true)
     // The fixed-instalment method pays off at month 352; here no balance reaches zero early.
     for (const r of loan.rows.slice(0, 358)) {
       expect(r.balance.gt(0)).toBe(true)
@@ -287,9 +291,11 @@ describe('regression loans where the fixed-instalment method fails', () => {
     expect(rowAt(loan, 359).month).toBe(360)
     expect(rowAt(loan, 359).balance.toFixed(2)).toBe('0.00')
     const headline = new Decimal('250.05')
-    for (const r of loan.rows) {
+    // D-55: every payment but the last within 0.01 of the headline, the last within 0.02.
+    for (const r of loan.rows.slice(0, 359)) {
       expect(r.payment.minus(headline).abs().lte('0.01')).toBe(true)
     }
+    expect(rowAt(loan, 359).payment.minus(headline).abs().lte('0.02')).toBe(true)
     // The fixed-instalment method's final payment is 1,767.73.
     expect(rowAt(loan, 359).payment.lt('251')).toBe(true)
   })
@@ -331,11 +337,13 @@ describe('emi', () => {
     expect(value.toFixed(4)).toBe('100833.3333')
   })
 
-  it('[SPEC-§5.1] L-MAX payment rounds to 41666666.80', () => {
-    const r = new Decimal(50).div(1200)
+  it('[SPEC-§5.1] L-MAX payment rounds to 62500000000000.00', () => {
+    const r = new Decimal(75).div(1200)
     expect(
-      emi(new Decimal('1000000000'), r, 480).toDecimalPlaces(2, Decimal.ROUND_HALF_UP).toFixed(2),
-    ).toBe('41666666.80')
+      emi(new Decimal('1000000000000000'), r, 1200)
+        .toDecimalPlaces(2, Decimal.ROUND_HALF_UP)
+        .toFixed(2),
+    ).toBe('62500000000000.00')
   })
 })
 

@@ -54,15 +54,15 @@ describe('validateInputs: successful parse', () => {
   })
 
   it('[AC-2.5][AC-2.7][AC-2.10] accepts every exact bound', () => {
-    expect(valueFor({ amount: '1000' }).amount.toFixed(2)).toBe('1000.00')
-    expect(valueFor({ amount: '1000000000' }).amount.toFixed(2)).toBe('1000000000.00')
+    expect(valueFor({ amount: '10' }).amount.toFixed(2)).toBe('10.00')
+    expect(valueFor({ amount: '1000000000000000' }).amount.toFixed(2)).toBe('1000000000000000.00')
     expect(valueFor({ rate: '0' }).annualRate.isZero()).toBe(true)
-    expect(valueFor({ rate: '50' }).annualRate.toFixed(2)).toBe('50.00')
+    expect(valueFor({ rate: '75' }).annualRate.toFixed(2)).toBe('75.00')
     expect(valueFor({ rate: '0.01' }).annualRate.toFixed(2)).toBe('0.01')
     expect(valueFor({ tenure: '1', unit: 'years' }).months).toBe(12)
-    expect(valueFor({ tenure: '40', unit: 'years' }).months).toBe(480)
+    expect(valueFor({ tenure: '100', unit: 'years' }).months).toBe(1200)
     expect(valueFor({ tenure: '1', unit: 'months' }).months).toBe(1)
-    expect(valueFor({ tenure: '480', unit: 'months' }).months).toBe(480)
+    expect(valueFor({ tenure: '1200', unit: 'months' }).months).toBe(1200)
   })
 })
 
@@ -94,24 +94,24 @@ describe('validateInputs: error codes', () => {
     expect(errorsFor({ amount: '1e6' })).toEqual({ amount: 'AMOUNT_NAN' })
   })
 
-  it.each([['0'], ['-500'], ['999.99']])('[AC-2.4] amount %j is AMOUNT_RANGE', (amount) => {
+  it.each([['0'], ['-500'], ['9.99']])('[AC-2.4] amount %j is AMOUNT_RANGE', (amount) => {
     expect(errorsFor({ amount })).toEqual({ amount: 'AMOUNT_RANGE' })
   })
 
-  it('[AC-2.5] amount 1000000000.01 is AMOUNT_RANGE and 1000000000 is accepted', () => {
-    expect(errorsFor({ amount: '1000000000.01' })).toEqual({ amount: 'AMOUNT_RANGE' })
-    expect(errorsFor({ amount: '1000000000' })).toEqual({})
+  it('[AC-2.5] amount 1000000000000000.01 is AMOUNT_RANGE and 1000000000000000 is accepted', () => {
+    expect(errorsFor({ amount: '1000000000000000.01' })).toEqual({ amount: 'AMOUNT_RANGE' })
+    expect(errorsFor({ amount: '1000000000000000' })).toEqual({})
   })
 
   it('[AC-2.6] amount 1000.555 is AMOUNT_DECIMALS', () => {
     expect(errorsFor({ amount: '1000.555' })).toEqual({ amount: 'AMOUNT_DECIMALS' })
   })
 
-  it.each([['-1'], ['50.01']])('[AC-2.7] rate %j is RATE_RANGE', (rate) => {
+  it.each([['-1'], ['75.01']])('[AC-2.7] rate %j is RATE_RANGE', (rate) => {
     expect(errorsFor({ rate })).toEqual({ rate: 'RATE_RANGE' })
   })
 
-  it.each([['0'], ['50']])('[AC-2.7] rate %j is accepted', (rate) => {
+  it.each([['0'], ['75']])('[AC-2.7] rate %j is accepted', (rate) => {
     expect(errorsFor({ rate })).toEqual({})
   })
 
@@ -124,17 +124,17 @@ describe('validateInputs: error codes', () => {
     expect(errorsFor({ tenure: '2.5', unit: 'years' })).toEqual({ tenure: 'TENURE_WHOLE' })
   })
 
-  it.each([['0'], ['41']])('[AC-2.10] years tenure %j is TENURE_RANGE_YEARS', (tenure) => {
+  it.each([['0'], ['101']])('[AC-2.10] years tenure %j is TENURE_RANGE_YEARS', (tenure) => {
     expect(errorsFor({ tenure, unit: 'years' })).toEqual({ tenure: 'TENURE_RANGE_YEARS' })
   })
 
-  it.each([['0'], ['481']])('[AC-2.10] months tenure %j is TENURE_RANGE_MONTHS', (tenure) => {
+  it.each([['0'], ['1201']])('[AC-2.10] months tenure %j is TENURE_RANGE_MONTHS', (tenure) => {
     expect(errorsFor({ tenure, unit: 'months' })).toEqual({ tenure: 'TENURE_RANGE_MONTHS' })
   })
 
-  it('[AC-2.10] tenure 40 years and 480 months show no tenure error', () => {
-    expect(errorsFor({ tenure: '40', unit: 'years' })).toEqual({})
-    expect(errorsFor({ tenure: '480', unit: 'months' })).toEqual({})
+  it('[AC-2.10] tenure 100 years and 1200 months show no tenure error', () => {
+    expect(errorsFor({ tenure: '100', unit: 'years' })).toEqual({})
+    expect(errorsFor({ tenure: '1200', unit: 'months' })).toEqual({})
   })
 
   it('[AC-2.10] 41 is valid in months but 481 is invalid in years (range depends on unit)', () => {
@@ -143,7 +143,7 @@ describe('validateInputs: error codes', () => {
   })
 
   it('[AC-2.11] invalid amount and invalid rate are reported together, tenure stays valid', () => {
-    expect(errorsFor({ amount: 'abc', rate: '60' })).toEqual({
+    expect(errorsFor({ amount: 'abc', rate: '99' })).toEqual({
       amount: 'AMOUNT_NAN',
       rate: 'RATE_RANGE',
     })
@@ -175,9 +175,12 @@ describe('validateInputs: error codes', () => {
 })
 
 describe('validateInputs: spec §4.2 input table', () => {
-  it.each([['1000'], ['1000.00'], ['1000000000']])('[SPEC-§4.2] amount %j is valid', (amount) => {
-    expect(errorsFor({ amount })).toEqual({})
-  })
+  it.each([['10'], ['10.00'], ['1000'], ['00012'], ['1000000000000000']])(
+    '[SPEC-§4.2] amount %j is valid',
+    (amount) => {
+      expect(errorsFor({ amount })).toEqual({})
+    },
+  )
 
   it('[SPEC-§4.2] amount 1000.500 is AMOUNT_DECIMALS (trailing zeros count)', () => {
     expect(errorsFor({ amount: '1000.500' })).toEqual({ amount: 'AMOUNT_DECIMALS' })
@@ -187,9 +190,12 @@ describe('validateInputs: spec §4.2 input table', () => {
     expect(errorsFor({ amount: '5000000000.555' })).toEqual({ amount: 'AMOUNT_DECIMALS' })
   })
 
-  it.each([['.5'], ['00012']])('[SPEC-§4.2] amount %j is AMOUNT_RANGE', (amount) => {
-    expect(errorsFor({ amount })).toEqual({ amount: 'AMOUNT_RANGE' })
-  })
+  it.each([['.5'], ['9.99'], ['1000000000000000.01']])(
+    '[SPEC-§4.2] amount %j is AMOUNT_RANGE',
+    (amount) => {
+      expect(errorsFor({ amount })).toEqual({ amount: 'AMOUNT_RANGE' })
+    },
+  )
 
   it.each([['１２'], ['١٢'], ['1,,000'], ['1000,50']])(
     '[SPEC-§4.2] amount %j is AMOUNT_NAN',
@@ -251,8 +257,8 @@ describe('validateInputs: further spec §4.2 rules', () => {
     ['1,000.555', 'AMOUNT_DECIMALS'],
     ['0.001', 'AMOUNT_DECIMALS'],
     ['1,00,00,000', undefined],
-    ['999.99', 'AMOUNT_RANGE'],
-    ['1000000000.01', 'AMOUNT_RANGE'],
+    ['9.99', 'AMOUNT_RANGE'],
+    ['1000000000000000.01', 'AMOUNT_RANGE'],
   ])('[SPEC-§4.2] amount %j -> %s', (amount, code) => {
     expect(errorsFor({ amount })).toEqual(code ? { amount: code } : {})
   })
@@ -265,14 +271,14 @@ describe('validateInputs: further spec §4.2 rules', () => {
     ['+5', 'RATE_NAN'],
     ['١٢', 'RATE_NAN'],
     ['1.2.3', 'RATE_NAN'],
-    ['50.001', 'RATE_DECIMALS'],
+    ['75.001', 'RATE_DECIMALS'],
     ['12.500', 'RATE_DECIMALS'],
     ['-0.001', 'RATE_DECIMALS'],
-    ['50.00', undefined],
+    ['75.00', undefined],
     ['0.01', undefined],
     ['.5', undefined],
     ['0.00', undefined],
-    ['50.01', 'RATE_RANGE'],
+    ['75.01', 'RATE_RANGE'],
     ['-0.01', 'RATE_RANGE'],
     ['100', 'RATE_RANGE'],
   ])('[SPEC-§4.2] rate %j -> %s', (rate, code) => {
@@ -294,27 +300,27 @@ describe('validateInputs: further spec §4.2 rules', () => {
     ['-0', 'TENURE_RANGE_YEARS'],
     ['0', 'TENURE_RANGE_YEARS'],
     ['00', 'TENURE_RANGE_YEARS'],
-    ['41', 'TENURE_RANGE_YEARS'],
+    ['101', 'TENURE_RANGE_YEARS'],
     ['1', undefined],
-    ['40', undefined],
-    ['0040', undefined],
+    ['100', undefined],
+    ['0100', undefined],
   ])('[SPEC-§4.2] tenure %j in years -> %s', (tenure, code) => {
     expect(errorsFor({ tenure, unit: 'years' })).toEqual(code ? { tenure: code } : {})
   })
 
   it.each([
     ['-1', 'TENURE_RANGE_MONTHS'],
-    ['481', 'TENURE_RANGE_MONTHS'],
-    ['1000', 'TENURE_RANGE_MONTHS'],
-    ['0480', undefined],
+    ['1201', 'TENURE_RANGE_MONTHS'],
+    ['5000', 'TENURE_RANGE_MONTHS'],
+    ['01200', undefined],
     ['2.5', 'TENURE_WHOLE'],
   ])('[SPEC-§4.2] tenure %j in months -> %s', (tenure, code) => {
     expect(errorsFor({ tenure, unit: 'months' })).toEqual(code ? { tenure: code } : {})
   })
 
   it('[SPEC-§4.2] tenure range code follows the unit', () => {
-    expect(errorsFor({ tenure: '600', unit: 'years' })).toEqual({ tenure: 'TENURE_RANGE_YEARS' })
-    expect(errorsFor({ tenure: '600', unit: 'months' })).toEqual({ tenure: 'TENURE_RANGE_MONTHS' })
+    expect(errorsFor({ tenure: '1201', unit: 'years' })).toEqual({ tenure: 'TENURE_RANGE_YEARS' })
+    expect(errorsFor({ tenure: '1201', unit: 'months' })).toEqual({ tenure: 'TENURE_RANGE_MONTHS' })
   })
 
   it('[SPEC-§4.2] validateInputs never throws on hostile text and reports every field', () => {

@@ -49,14 +49,16 @@ test.describe('S-1 Calculate the monthly payment', () => {
     await expect(summary(page, 'Monthly payment')).toHaveText('Rs 100,833.33')
   })
 
-  test('[AC-1.6] the smallest accepted values give Rs 1,000.01 (L-MIN)', async ({ page }) => {
+  test('[AC-1.6] the smallest accepted values give Rs 10.00 (L-MIN)', async ({ page }) => {
     await calculateLoan(page, LOANS.MIN)
-    await expect(summary(page, 'Monthly payment')).toHaveText('Rs 1,000.01')
+    await expect(summary(page, 'Monthly payment')).toHaveText('Rs 10.00')
   })
 
-  test('[AC-1.7] the largest accepted values give Rs 41,666,666.80 (L-MAX)', async ({ page }) => {
+  test('[AC-1.7] the largest accepted values give Rs 62,500,000,000,000.00 (L-MAX)', async ({
+    page,
+  }) => {
     await calculateLoan(page, LOANS.MAX)
-    await expect(summary(page, 'Monthly payment')).toHaveText('Rs 41,666,666.80')
+    await expect(summary(page, 'Monthly payment')).toHaveText('Rs 62,500,000,000,000.00')
   })
 
   test('[AC-1.8] thousands and lakh separators give the same result as AC-1.1', async ({

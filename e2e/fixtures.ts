@@ -36,7 +36,7 @@ export const test = base.extend({
 export const COPY = {
   idle: 'Enter your loan details and select Calculate.',
   stale: 'Your inputs have changed. Select Calculate to see updated results.',
-  rounding: 'Some payments differ by 0.01 because amounts are rounded to 2 decimal places.',
+  rounding: 'Some payments differ by up to 0.02 because amounts are rounded to 2 decimal places.',
   historyEmpty: 'No saved calculations yet.',
   historyUnavailable:
     "Saved calculations aren't available in this browser. Calculations still work.",
@@ -48,15 +48,15 @@ export const COPY = {
   amountRequired: 'Enter a loan amount.',
   amountNan: 'Loan amount must be a number.',
   amountDecimals: 'Loan amount can have at most 2 decimal places.',
-  amountRange: 'Loan amount must be between 1,000 and 1,000,000,000.',
+  amountRange: 'Loan amount must be between 10 and 1,000,000,000,000,000.',
   rateRequired: 'Enter an interest rate.',
   rateNan: 'Interest rate must be a number.',
   rateDecimals: 'Interest rate can have at most 2 decimal places.',
-  rateRange: 'Interest rate must be between 0 and 50%.',
+  rateRange: 'Interest rate must be between 0 and 75%.',
   tenureRequired: 'Enter a loan tenure.',
   tenureWhole: 'Loan tenure must be a whole number.',
-  tenureYears: 'Loan tenure must be between 1 and 40 years.',
-  tenureMonths: 'Loan tenure must be between 1 and 480 months.',
+  tenureYears: 'Loan tenure must be between 1 and 100 years.',
+  tenureMonths: 'Loan tenure must be between 1 and 1,200 months.',
 }
 
 export const HISTORY_KEY = 'emi-calc.v1.history'
@@ -140,32 +140,32 @@ export const LOANS = {
     months: 1,
   },
   MIN: {
-    amount: '1000',
+    amount: '10',
     rate: '0.01',
     tenure: '1',
     unit: 'Months',
-    monthly: 'Rs 1,000.01',
-    interest: 'Rs 0.01',
-    total: 'Rs 1,000.01',
-    line1: 'Rs 1,000.00 at 0.01% for 1 month',
-    amountCents: 100_000n,
+    monthly: 'Rs 10.00',
+    interest: 'Rs 0.00',
+    total: 'Rs 10.00',
+    line1: 'Rs 10.00 at 0.01% for 1 month',
+    amountCents: 1_000n,
     rateNum: 1n,
     rateDen: 100n,
     months: 1,
   },
   MAX: {
-    amount: '1000000000',
-    rate: '50',
-    tenure: '40',
+    amount: '1000000000000000',
+    rate: '75',
+    tenure: '100',
     unit: 'Years',
-    monthly: 'Rs 41,666,666.80',
-    interest: 'Rs 19,000,000,061.79',
-    total: 'Rs 20,000,000,061.79',
-    line1: 'Rs 1,000,000,000.00 at 50% for 40 years',
-    amountCents: 100_000_000_000n,
-    rateNum: 50n,
+    monthly: 'Rs 62,500,000,000,000.00',
+    interest: 'Rs 74,000,000,000,000,003.34',
+    total: 'Rs 75,000,000,000,000,003.34',
+    line1: 'Rs 1,000,000,000,000,000.00 at 75% for 100 years',
+    amountCents: 100_000_000_000_000_000n,
+    rateNum: 75n,
     rateDen: 1n,
-    months: 480,
+    months: 1200,
   },
   Z3: {
     amount: '1000',
@@ -307,7 +307,7 @@ export function cents(text: string): bigint {
 }
 
 /**
- * Checks every row against AC-10.4, AC-10.5 and AC-13.3 using integer cents and the formula in
+ * Checks every row against AC-10.4, AC-10.5 (D-55) and AC-13.3 using integer cents and the formula in
  * the ACs: interest = round-half-up(opening x annual rate / 1200), payment = interest + principal,
  * balance = opening - principal, final balance 0.00. Returns the column sums.
  */
@@ -343,7 +343,12 @@ export function checkScheduleArithmetic(
     expect(bal >= 0n, `row ${i + 1} balance not negative`).toBe(true)
     expect(pr >= 0n, `row ${i + 1} principal not negative`).toBe(true)
     const diff = p > headline ? p - headline : headline - p
-    expect(diff <= 1n, `row ${i + 1} payment within 0.01 of the headline`).toBe(true)
+    // AC-10.5 (D-55): every payment except the last within 0.01 of the headline; the last within 0.02.
+    const isLast = i === loan.months - 1
+    expect(
+      diff <= (isLast ? 2n : 1n),
+      `row ${i + 1} payment within ${isLast ? '0.02' : '0.01'} of the headline`,
+    ).toBe(true)
     opening = bal
     sumPayment += p
     sumInterest += it

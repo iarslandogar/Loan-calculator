@@ -36,14 +36,14 @@ test.describe('S-3 Total interest and total amount payable', () => {
 
   test('[AC-3.4] L-MIN totals', async ({ page }) => {
     await calculateLoan(page, LOANS.MIN)
-    await expect(summary(page, 'Total interest')).toHaveText('Rs 0.01')
-    await expect(summary(page, 'Total amount payable')).toHaveText('Rs 1,000.01')
+    await expect(summary(page, 'Total interest')).toHaveText('Rs 0.00')
+    await expect(summary(page, 'Total amount payable')).toHaveText('Rs 10.00')
   })
 
   test('[AC-3.5] L-MAX totals are shown in full', async ({ page }) => {
     await calculateLoan(page, LOANS.MAX)
-    await expect(summary(page, 'Total interest')).toHaveText('Rs 19,000,000,061.79')
-    await expect(summary(page, 'Total amount payable')).toHaveText('Rs 20,000,000,061.79')
+    await expect(summary(page, 'Total interest')).toHaveText('Rs 74,000,000,000,000,003.34')
+    await expect(summary(page, 'Total amount payable')).toHaveText('Rs 75,000,000,000,000,003.34')
     for (const name of ['Monthly payment', 'Total interest', 'Total amount payable'] as const) {
       const text = (await summary(page, name).textContent()) ?? ''
       expect(text).not.toMatch(/[eE]\+?\d|…|\.\.\./)

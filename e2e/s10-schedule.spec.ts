@@ -93,7 +93,7 @@ test.describe('S-10 Repayment schedule', () => {
     await expect(scheduleTable(page).getByRole('row')).toHaveCount(4)
   })
 
-  test('[AC-10.8] L-MAX shows all 480 rows within 1 second of Calculate (timed in the page)', async ({
+  test('[AC-10.8] L-MAX shows all 1,200 rows within 1 second of Calculate (timed in the page)', async ({
     page,
   }) => {
     await page.getByLabel(/^Loan amount/).fill(LOANS.MAX.amount)
@@ -111,8 +111,8 @@ test.describe('S-10 Repayment schedule', () => {
             reject(new Error('Calculate button not found'))
             return
           }
-          // header row + 480 data rows
-          const done = () => document.querySelectorAll('table tr').length >= 481
+          // header row + 1,200 data rows
+          const done = () => document.querySelectorAll('table tr').length >= 1201
           const observer = new MutationObserver(() => {
             if (done()) {
               observer.disconnect()
@@ -122,7 +122,7 @@ test.describe('S-10 Repayment schedule', () => {
           observer.observe(document.body, { childList: true, subtree: true })
           setTimeout(() => {
             observer.disconnect()
-            reject(new Error('The 480th row did not appear within 10 s'))
+            reject(new Error('The 1,200th row did not appear within 10 s'))
           }, 10_000)
           const start = performance.now()
           button.click()
@@ -132,10 +132,12 @@ test.describe('S-10 Repayment schedule', () => {
           }
         }),
     )
-    expect(elapsed, 'ms from Calculate click to the 480th row in the DOM').toBeLessThanOrEqual(1000)
-    await expect(scheduleTable(page).getByRole('row')).toHaveCount(481)
-    await expect(rowCells(page, 480)).toHaveText([
-      '480',
+    expect(elapsed, 'ms from Calculate click to the 1,200th row in the DOM').toBeLessThanOrEqual(
+      1000,
+    )
+    await expect(scheduleTable(page).getByRole('row')).toHaveCount(1201)
+    await expect(rowCells(page, 1200)).toHaveText([
+      '1200',
       /^[\d,]+\.\d{2}$/,
       /^[\d,]+\.\d{2}$/,
       /^[\d,]+\.\d{2}$/,

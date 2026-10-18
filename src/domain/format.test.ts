@@ -144,19 +144,21 @@ describe('toCanonical', () => {
   })
 
   it('[SPEC-§6] never uses exponent notation at the largest and smallest values', () => {
-    expect(toCanonical(inputOf('1000000000', '50', '40', 'years'))).toEqual({
-      amount: '1000000000',
-      rate: '50',
-      tenure: 40,
+    expect(toCanonical(inputOf('1000000000000000', '75', '100', 'years'))).toEqual({
+      amount: '1000000000000000',
+      rate: '75',
+      tenure: 100,
       unit: 'years',
     })
-    expect(toCanonical(inputOf('1000', '0.01', '1', 'months'))).toEqual({
-      amount: '1000',
+    expect(toCanonical(inputOf('10', '0.01', '1', 'months'))).toEqual({
+      amount: '10',
       rate: '0.01',
       tenure: 1,
       unit: 'months',
     })
-    expect(toCanonical(inputOf('1000000000.00', '0', '480', 'months')).amount).toBe('1000000000')
+    expect(toCanonical(inputOf('1000000000000000.00', '0', '1200', 'months')).amount).toBe(
+      '1000000000000000',
+    )
   })
 
   it('[SPEC-§6] amount "1000." canonicalises to 1000', () => {

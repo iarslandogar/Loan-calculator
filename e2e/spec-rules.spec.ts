@@ -79,7 +79,7 @@ test.describe('Spec rules: §3.2 state transitions', () => {
 
   test('[SPEC-§3.2] changing the tenure unit clears the tenure error only', async ({ page }) => {
     await open(page)
-    await fillLoan(page, { amount: 'abc', rate: '12', tenure: '41', unit: 'Years' })
+    await fillLoan(page, { amount: 'abc', rate: '12', tenure: '101', unit: 'Years' })
     await calculate(page)
     await expectFieldError(tenureIn(page), COPY.tenureYears)
     await expectFieldError(amountIn(page), COPY.amountNan)

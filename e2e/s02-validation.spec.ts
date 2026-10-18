@@ -54,19 +54,21 @@ test.describe('S-2 Clear messages for invalid input', () => {
     await expectNoResults(page)
   })
 
-  test('[AC-2.4] amounts 0, -500 and 999.99 are out of range', async ({ page }) => {
-    for (const amount of ['0', '-500', '999.99']) {
+  test('[AC-2.4] amounts 0, -500 and 9.99 are out of range', async ({ page }) => {
+    for (const amount of ['0', '-500', '9.99']) {
       await tryAmount(page, amount)
       await expectFieldError(amountIn(page), COPY.amountRange)
       await expectNoResults(page)
     }
   })
 
-  test('[AC-2.5] 1000000000.01 is out of range; 1000000000 is accepted', async ({ page }) => {
-    await tryAmount(page, '1000000000.01')
+  test('[AC-2.5] 1000000000000000.01 is out of range; 1000000000000000 is accepted', async ({
+    page,
+  }) => {
+    await tryAmount(page, '1000000000000000.01')
     await expectFieldError(amountIn(page), COPY.amountRange)
     await expectNoResults(page)
-    await tryAmount(page, '1000000000')
+    await tryAmount(page, '1000000000000000')
     await expectResultsShown(page)
     await expectFieldClean(amountIn(page))
   })
@@ -77,14 +79,14 @@ test.describe('S-2 Clear messages for invalid input', () => {
     await expectNoResults(page)
   })
 
-  test('[AC-2.7] rates -1 and 50.01 are out of range; 0 and 50 are accepted', async ({ page }) => {
-    for (const rate of ['-1', '50.01']) {
+  test('[AC-2.7] rates -1 and 75.01 are out of range; 0 and 75 are accepted', async ({ page }) => {
+    for (const rate of ['-1', '75.01']) {
       await fillLoan(page, { amount: '1000000', rate, tenure: '1', unit: 'Years' })
       await calculate(page)
       await expectFieldError(rateIn(page), COPY.rateRange)
       await expectNoResults(page)
     }
-    for (const rate of ['0', '50']) {
+    for (const rate of ['0', '75']) {
       await fillLoan(page, { amount: '1000000', rate, tenure: '1', unit: 'Years' })
       await calculate(page)
       await expectResultsShown(page)
@@ -109,22 +111,22 @@ test.describe('S-2 Clear messages for invalid input', () => {
     await expectNoResults(page)
   })
 
-  test('[AC-2.10] tenure ranges: 1-40 years and 1-480 months', async ({ page }) => {
-    for (const tenure of ['0', '41']) {
+  test('[AC-2.10] tenure ranges: 1-100 years and 1-1,200 months', async ({ page }) => {
+    for (const tenure of ['0', '101']) {
       await fillLoan(page, { amount: '1000000', rate: '12', tenure, unit: 'Years' })
       await calculate(page)
       await expectFieldError(tenureIn(page), COPY.tenureYears)
     }
-    for (const tenure of ['0', '481']) {
+    for (const tenure of ['0', '1201']) {
       await fillLoan(page, { amount: '1000000', rate: '12', tenure, unit: 'Months' })
       await calculate(page)
       await expectFieldError(tenureIn(page), COPY.tenureMonths)
     }
-    await fillLoan(page, { amount: '1000000', rate: '12', tenure: '40', unit: 'Years' })
+    await fillLoan(page, { amount: '1000000', rate: '12', tenure: '100', unit: 'Years' })
     await calculate(page)
     await expectResultsShown(page)
     await expectFieldClean(tenureIn(page))
-    await fillLoan(page, { amount: '1000000', rate: '12', tenure: '480', unit: 'Months' })
+    await fillLoan(page, { amount: '1000000', rate: '12', tenure: '1200', unit: 'Months' })
     await calculate(page)
     await expectResultsShown(page)
     await expectFieldClean(tenureIn(page))
