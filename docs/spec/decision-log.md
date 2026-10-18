@@ -87,6 +87,7 @@ Each decision is **Approved** or **Proposed — needs owner approval**. Claude C
 | D-71 | Spec §8.3.2: drawing ratios and percentages may be JS numbers, for geometry only | Approved (owner, visuals mini-gate), 2026-10-18 |
 | D-72 | Remove the forced layout in the yearly-table overflow check (AC-10.8 regression from D-70) | Developer fix, 2026-10-18; owner informed |
 | D-73 | Deploy to GitHub Pages before Phase 5, at the owner's direction | Approved (owner), 2026-10-18 |
+| D-74 | Transcripts: readable Markdown plus filtered raw logs | Approved (owner), 2026-10-19 |
 
 **How this log is kept (D-24):** every decision is recorded here, however small. Entries are never deleted or rewritten. A changed decision gets a new dated **Decision** line under its entry, or a new entry that names the one it supersedes, and a row in the change history.
 
@@ -731,6 +732,24 @@ The code-reviewer's visuals report (docs/process/review-findings.md, "Visuals") 
   - This is the first CI evidence for AC-10.8's "on the CI test machine" (D-32): the Linux `verify` includes `[AC-10.8]` in all 3 browsers and passed. Per-test counts weren't read, because GitHub's job logs need a signed-in account.
 - **Note:** the repo name is `Loan-calculator`, not the plan's `muhammad-arslan-calculator`. The workflows take the name from the repository, so the Pages path is `/Loan-calculator/` with no change. `package.json` keeps its old name, which is cosmetic.
 
+### D-74 Transcripts of the development (owner, 2026-10-19)
+- **Request:** "can you create a transcript for the whole development we did?"
+- **Decision:** `transcripts/` holds:
+  - a readable Markdown transcript of the main session, with owner messages verbatim (including the one sent mid-task) and tool calls collapsed and shortened;
+  - one transcript per subagent run (19);
+  - filtered raw JSON Lines logs;
+  - the generator script `make_transcripts.py`;
+  - an index (`transcripts/README.md`) with a timeline and the exclusions.
+- **Left out, the developer's recommendation, accepted by the owner ("yes"):**
+  - Claude Code's API request records (about 30 MB), which hold the tool's internal system prompt and a list of the owner's other connected accounts;
+  - environment and file-history bookkeeping;
+  - injected `<system-reminder>` blocks;
+  - in the Markdown only, private reasoning blocks.
+  - The loop plan said "remove secrets, change nothing else". This filters more than that, and is stated openly in the index. The owner may still ask for the unfiltered logs.
+- **Secrets scan:** GitHub, Anthropic, OpenAI and AWS tokens, bearer tokens and private keys: none found.
+- **PDF (owner request, "give me file here as well, as a pdf"):** `session-01-conversation.pdf`, 66 pages: the conversation in full, with each run of tool work as one line (a PDF can't collapse sections, so the full tool detail stays in the Markdown). It is printed from generated HTML with Playwright's Chromium, so no new dependency. `transcripts/` is added to ESLint's `globalIgnores`, like `design/` (D-62), so the helper scripts can't fail `verify`.
+- **Still owed by the owner:** the `session-00-requirements` export from claude.ai (D-00e).
+
 ### D-47 Group 2 builds the schedule table; cross-group ACs reported as pending
 - **Decision:** The shared helper `expectResultsShown` requires the schedule table, so group 2 builds `ScheduleTable` too; group 3 then verifies S-10 and S-13. AC-4.4 needs the Theme and Currency selects (group 4), and AC-9.2 needs saved calculations (group 5), so they are reported at G4.2 as **pending later groups**, not as done.
 
@@ -749,3 +768,4 @@ The code-reviewer's visuals report (docs/process/review-findings.md, "Visuals") 
 | 2026-10-18 | Gate G3 approved: D-43 and D-44 approved; tests frozen at tag `g3-tests-approved` | Claude Code (Opus 5.5) for M. Arslan |
 | 2026-10-18 | Visuals mini-gate: D-64, D-68, D-70 and D-71 approved; D-69 failed the owner's check and was fixed; spec §8.3.2 gains the drawing-ratio line | Claude Code (Opus 5.5) for M. Arslan |
 | 2026-10-18 | D-72 AC-10.8 regression fixed; D-73 deploy before Phase 5 | Claude Code (Opus 5.5) for M. Arslan |
+| 2026-10-19 | D-74 transcripts added | Claude Code (Opus 5.5) for M. Arslan |
