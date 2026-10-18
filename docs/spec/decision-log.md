@@ -69,7 +69,7 @@ Each decision is **Approved** or **Proposed — needs owner approval**. Claude C
 | D-53 | Handling of the G4.4 review's Minor findings | Approved (owner, G4.4), 2026-10-18 |
 | D-54 | Widen the input limits (supersedes D-02's bounds) | Approved (owner), 2026-10-18: amount 10 to 10^15, rate 0 to 75%, 1 to 100 years / 1 to 1,200 months |
 | D-55 | Counterexample to invariant 6 / AC-10.5 within the current limits | Approved (owner), 2026-10-18: option A, state it truthfully |
-| D-56 | Test-designer readings for the D-54/D-55 test update | **Proposed**: owner to review at the D-54 mini-gate |
+| D-56 | Test-designer readings for the D-54/D-55 test update | Accepted with the D-54 mini-gate (owner), 2026-10-18 |
 
 **How this log is kept (D-24):** every decision is recorded here, however small. Entries are never deleted or rewritten. A changed decision gets a new dated **Decision** line under its entry, or a new entry that names the one it supersedes, and a row in the change history.
 
@@ -493,6 +493,8 @@ Other incidental changes (each needed because an old "invalid" example became va
 - AC-2.11 changed rate `60` → `99`.
 - Validate cases moved: `50.01` → `75.01`, and `1000`/`600` months → `5000`/`1201`.
 - Property-test cents are now `bigint`, because 10^17 cents exceeds 2^53.
+
+**Mini-gate (2026-10-18):** the code-reviewer found 0 blocking issues, and its own fuzz of 20,010 loans (seed 90210) gave 0 counterexamples. One Major (D54-1): AC-2.15 still quoted the old range message, which the developer had missed. The owner approved fixing it ("yes please fix it"), and AC-2.15 now quotes `Loan amount must be between 10 and 1,000,000,000,000,000.` The owner didn't address D-56 separately; it is recorded as accepted with the gate, and the owner may still amend it. Minors D54-2 and D54-3 (narrow-width clipping and wrapping) are scheduled for group 6.
 
 **Result after the code change:**
 - Vitest: 297 of 297, including every property at 1,000 runs, seed 20261017, over the new bounds.
