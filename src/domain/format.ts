@@ -28,6 +28,11 @@ export function formatDateTime(date: Date): string {
   return `${date.getDate()} ${month} ${date.getFullYear()}, ${pad(date.getHours())}:${pad(date.getMinutes())}`
 }
 
+/** Always 1 dp, half-up: "6.2%", "0.0%" (D-65). Stub until the G3b tests are approved. */
+export function formatPercent(_x: Decimal): string {
+  throw new Error('NOT_IMPLEMENTED')
+}
+
 /** Never exponent notation; -0 becomes 0. */
 export function toCanonical(input: LoanInput): CanonicalInput {
   return {
