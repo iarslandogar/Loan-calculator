@@ -53,7 +53,18 @@ test.describe('S-8 Keyboard', () => {
     await expect(clearAllBtn(page)).toBeDisabled()
     await page.keyboard.press('Tab')
     await expect(clearAllBtn(page)).not.toBeFocused()
-    await expect(resetBtn(page)).not.toBeFocused()
+    // Portable across browsers (D-59): Firefox keeps focus on the last control, Chromium/WebKit move it to body.
+    const focusIsOnResetOrLeftPage = await resetBtn(page).evaluate(
+      (el) =>
+        document.activeElement === el ||
+        document.activeElement === null ||
+        document.activeElement === document.body ||
+        document.activeElement === document.documentElement,
+    )
+    expect(
+      focusIsOnResetOrLeftPage,
+      'after Tab past the last control, focus must be on Reset or have left the page content, not on any other element',
+    ).toBe(true)
 
     // Back in, then reverse the whole way.
     await resetBtn(page).focus()

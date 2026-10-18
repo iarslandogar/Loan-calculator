@@ -70,8 +70,9 @@ Each decision is **Approved** or **Proposed — needs owner approval**. Claude C
 | D-54 | Widen the input limits (supersedes D-02's bounds) | Approved (owner), 2026-10-18: amount 10 to 10^15, rate 0 to 75%, 1 to 100 years / 1 to 1,200 months |
 | D-55 | Counterexample to invariant 6 / AC-10.5 within the current limits | Approved (owner), 2026-10-18: option A, state it truthfully |
 | D-56 | Test-designer readings for the D-54/D-55 test update | Accepted with the D-54 mini-gate (owner), 2026-10-18 |
-| D-57 | Group 5 implementation choices | **Proposed**: developer decisions, owner to review at G4.5 |
-| D-58 | Handling of the G4.5 review's findings | **Proposed**: owner to review at G4.5 |
+| D-57 | Group 5 implementation choices | Approved (owner, G4.5), 2026-10-18 |
+| D-58 | Handling of the G4.5 review's findings | Approved (owner, G4.5), 2026-10-18 |
+| D-59 | Post-G3 fix: portable AC-8.1 "Tab past the last control" assertion | Approved (owner), 2026-10-18 |
 
 **How this log is kept (D-24):** every decision is recorded here, however small. Entries are never deleted or rewritten. A changed decision gets a new dated **Decision** line under its entry, or a new entry that names the one it supersedes, and a row in the change history.
 
@@ -527,6 +528,11 @@ The code-reviewer reported `BLOCKING FINDINGS: 0` for group 5, with these findin
 5. **G45-5, code quality:** an unreachable guard in `onRestore`, and one `removeFailed` message for both read and write failures. **Accepted.**
 
 **Process note:** the developer ran a Playwright suite while the reviewer was also running one. They collided in `test-results/`, giving ENOENT trace errors in Firefox. The clean re-run with nothing else running: **452 of 453 across 3 browsers** (the full frozen suite plus 6 reviewer tests). The only failure is G45-4. From now on, the developer and reviewer never run Playwright at the same time.
+
+### D-59 Post-G3 fix: portable AC-8.1 assertion (owner-approved change to a frozen test)
+- **Defect (G45-4):** in `e2e/s08-keyboard.spec.ts`, `[AC-8.1] Tab order on a first visit` asserts `expect(resetBtn(page)).not.toBeFocused()` after pressing Tab past Reset, the last tabbable control. Playwright's Firefox keeps focus on the last element in that case, while Chromium and WebKit move it to `BODY`. This was shown on a neutral page by both the developer and the reviewer. The line tests browser behaviour, not the app.
+- **Decision (owner, 2026-10-18):** replace only that line with a portable check: after the Tab, focus is on Reset or has left the page content (`body` or `document`), but is **not on any other element of the page**. The `clearAllBtn not.toBeFocused()` check before it stays. The `test-designer` makes the edit, and the owner sees the diff.
+- **Rejected:** removing the line (it loses the "no unexpected focus" check); leaving it failing (S-8 could never be Implemented).
 
 ### D-47 Group 2 builds the schedule table; cross-group ACs reported as pending
 - **Decision:** The shared helper `expectResultsShown` requires the schedule table, so group 2 builds `ScheduleTable` too; group 3 then verifies S-10 and S-13. AC-4.4 needs the Theme and Currency selects (group 4), and AC-9.2 needs saved calculations (group 5), so they are reported at G4.2 as **pending later groups**, not as done.
