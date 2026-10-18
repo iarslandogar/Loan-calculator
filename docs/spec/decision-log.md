@@ -74,6 +74,7 @@ Each decision is **Approved** or **Proposed — needs owner approval**. Claude C
 | D-58 | Handling of the G4.5 review's findings | Approved (owner, G4.5), 2026-10-18 |
 | D-59 | Post-G3 fix: portable AC-8.1 "Tab past the last control" assertion | Approved (owner), 2026-10-18 |
 | D-60 | Group 6 implementation choices | **Proposed**: developer decisions, owner to review at G4.6 |
+| D-61 | Post-G3 fix: AC-8.4 waits for scrolling to settle | Approved (owner), 2026-10-18 |
 
 **How this log is kept (D-24):** every decision is recorded here, however small. Entries are never deleted or rewritten. A changed decision gets a new dated **Decision** line under its entry, or a new entry that names the one it supersedes, and a row in the change history.
 
@@ -551,6 +552,11 @@ Every S-5 and S-8 test already passed before group 6, apart from the D-59 Firefo
 
 **Still open for G4.6:** CI on GitHub (D-22, D-32). The remote doesn't exist yet, so AC-10.8's "on the CI test machine" isn't proven yet.
 - **Correction (developer, 2026-10-18, after the G4.6 review, G46-2):** "Exit condition met" overstated a single run. The reviewer's `CI=1 npm run verify` **exited 1**: `[chromium] [AC-8.4]` failed, and it failed in 6 of 9 isolated re-runs on the reviewer's machine. The developer reproduced it: 0 failures in 10 runs alone, but **1 failure in 40 under parallel load** (`Expected: < 407, Received: 416`), and **0 in 40 with Chromium smooth scrolling disabled**. Cause: the frozen test reads `scrollTop` as its next baseline while Chromium's smooth keyboard-scroll animation is still running, so the next comparison races the end of the previous scroll. **The app is correct**: positions settle at 40 → 416 → 40 → 0. Under 8 parallel Firefox workers there were also 30-second timeouts on page load and focus; that's overload of the machine, not this race. So `verify` is **not yet reliably green**, and the fix needs the owner (frozen scope; see G46-1).
+
+### D-61 Post-G3 fix: AC-8.4 waits for scrolling to settle (owner-approved change to a frozen test)
+- **Defect (G46-1, Blocker at G4.6):** `[AC-8.4]` in `e2e/s08-keyboard.spec.ts` reads `scrollTop` as its next baseline straight after a poll succeeds. Chromium animates keyboard scrolling, so the baseline can be read mid-animation and the next comparison races. Evidence: 6 of 9 isolated reviewer runs failed; the developer saw 1 in 40 fail under load (`Expected: < 407, Received: 416`). The app is correct.
+- **Decision (owner, 2026-10-18):** after each key press, the test waits until `scrollTop` stops changing before it records the baseline. The assertions are unchanged: ArrowDown and PageDown move down, PageUp and ArrowUp move back up. The `test-designer` makes the edit, and the owner sees the diff. `playwright.config.ts` is not changed.
+- **Rejected:** `--disable-smooth-scrolling` for Chromium. It changes how Chromium scrolls in every test and leaves the race in the test.
 
 ### D-47 Group 2 builds the schedule table; cross-group ACs reported as pending
 - **Decision:** The shared helper `expectResultsShown` requires the schedule table, so group 2 builds `ScheduleTable` too; group 3 then verifies S-10 and S-13. AC-4.4 needs the Theme and Currency selects (group 4), and AC-9.2 needs saved calculations (group 5), so they are reported at G4.2 as **pending later groups**, not as done.

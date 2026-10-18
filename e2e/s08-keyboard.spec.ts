@@ -177,18 +177,32 @@ test.describe('S-8 Keyboard', () => {
     await expect(region).toBeFocused()
     const top = () => region.evaluate((el) => el.scrollTop)
     expect(await top()).toBe(0)
+    // Chromium animates keyboard scrolling: wait until two reads ~100 ms apart agree.
+    const settled = async () => {
+      let stable = -1
+      await expect
+        .poll(async () => {
+          const a = await top()
+          await page.waitForTimeout(100)
+          const b = await top()
+          stable = b
+          return a === b
+        })
+        .toBe(true)
+      return stable
+    }
 
     await page.keyboard.press('ArrowDown')
     await expect.poll(top).toBeGreaterThan(0)
-    const afterArrow = await top()
+    const afterArrow = await settled()
 
     await page.keyboard.press('PageDown')
     await expect.poll(top).toBeGreaterThan(afterArrow + 20)
-    const afterPage = await top()
+    const afterPage = await settled()
 
     await page.keyboard.press('PageUp')
     await expect.poll(top).toBeLessThan(afterPage)
-    const afterPageUp = await top()
+    const afterPageUp = await settled()
 
     await page.keyboard.press('ArrowUp')
     await expect.poll(top).toBeLessThan(afterPageUp)
