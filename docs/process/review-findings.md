@@ -268,3 +268,30 @@ So Playwright's Firefox does not move focus off the last tabbable element on a p
 No wrong number, crash, data loss or false `Implemented` claim found in this group. D-57 is still `Proposed`; the owner approves or amends it at G4.5. The reviewer tests in `e2e/review/g45.spec.ts` are expected to fail until G45-1 and G45-2 are fixed, so `npm run verify` is red until then (Phase 5 is when Major and Blocker fixes are made; these two are Minor).
 
 BLOCKING FINDINGS: 0
+
+---
+
+## G4.6 review (2026-10-18): group 6, layout and keyboard (S-5, S-8), full gate
+
+Scope: 04de524, 446b087, 525e012. Reviewer tests: none added (no app defect found; probes deleted).
+
+### Gate
+`CI=1 npm run verify` (first run): lint, format, typecheck clean; Vitest 297/297; size 85.4 KB of 150 KB OK; E2E `452 passed, 1 failed`; **exit 1**. The failure: `[chromium] e2e/s08-keyboard.spec.ts:169 [AC-8.4] arrow keys and Page Up/Down scroll the focused schedule` (`expect.poll(top).toBeLessThan(afterPage)` timed out after PageUp). `trace --results` did not run. The developer's "453/453, exit 0" did not reproduce.
+Rerun of that one test alone, `CI=1 npx playwright test --grep AC-8.4 --project=chromium`: 3 runs gave pass, fail, pass; 6 more gave pass, pass, fail, fail, fail, fail. So it fails more than half the time here (Windows).
+Diagnosis (probes since deleted): the app is right. With 600 ms waits scrollTop goes 40, 416, 40, 0 every time (arrow 40 px, page 376 px, as expected), and there is no `scroll-behavior` in `src`. Chromium's smooth keyboard scrolling animates, and the frozen test samples `afterArrow` and `afterPage` mid-animation without letting it settle, so PageUp can land in a race. It is a timing flake in a frozen test plus the OS smooth-scroll setting, not a layout or keyboard defect.
+
+### Freeze check
+`git log g3-tests-approved..HEAD -- <freeze scope>`: exactly 749144e, 5751988, 16c8cc8, 04de524. 04de524 changes one assertion in `e2e/s08-keyboard.spec.ts` (plus the decision log). `resetBtn not.toBeFocused` becomes an `evaluate` that is true only if `activeElement` is Reset, null, `body` or `documentElement`. Focus on any other page element (Calculate, Clear all, an input) gives false, so the failure is still caught. The `clearAllBtn not.toBeFocused` line is untouched. No `.skip/.only/.fixme/test.fail` anywhere in `e2e`, `src`, `test`. Note: a weaker point only, focus on `body` passes even if the app wrongly blurred Reset, which is what D-59 asks for.
+
+### Conformance and exploratory (Chromium, Firefox, WebKit)
+Probe: 7 widths (180, 320, 360, 768, 769, 1280, 1920) x light and dark x states (empty with 4 long history entries, validation errors, 999,999,999.99 / 50% / 480 months results, stale, Clear all dialog open), checking page overflow, controls off-screen, tap targets under 44 px (width 300 and up), overlapping control boxes, and clipped or overflowing non-scroll elements. Result: 0 problems in all 3 browsers (42 + 3 runs passed). The only overlap hits were page controls under the modal dialog at 180 px (expected, the dialog is modal) and the dialog itself fits in 180 px. At 180 px the schedule table is cut inside its own scroll region (keyboard-focusable, scrolls), which is the intended design. Forced-colors emulation: focus outline stays solid 2 px on input, select and button in all 3 browsers; buttons keep a 1 px border. No animation or transition in the CSS, so reduced motion is moot. `<wbr>`: `BreakAfterCommas.tsx` adds only `<wbr />`; textContent and the Restore/Delete names are asserted by the passing S-5/S-11/S-12 tests (D-29 names unchanged). Keyboard-only flows (AC-8.1 order, AC-8.6) pass in all 3 browsers; 04de524 fixes the Firefox case.
+Code quality: no `any`, no `console`, no `Intl`/`toLocaleString` in `src` (a comment only); layer imports clean.
+
+### Findings
+
+| ID | Severity | Story/AC | Evidence | Suggested fix |
+|---|---|---|---|---|
+| G46-1 | Blocker (gate and claim) | S-8 AC-8.4 / spec §15, D-60 | `CI=1 npm run verify` exits 1 on this machine: `[chromium] [AC-8.4] arrow keys and Page Up/Down scroll...` fails, 452 passed, 1 failed. Isolated reruns fail about half the time (pass, fail, pass; then pass, pass, fail, fail, fail, fail). D-60 states "453 of 453, verify exits 0"; that is false on reproduction, and S-8 cannot be Implemented while verify is red. Cause is in the test and the environment (Chromium smooth scrolling), not in `src`. | Owner decision (frozen test). Options: make Chromium deterministic in `playwright.config.ts` with `launchOptions: { args: ['--disable-smooth-scrolling'] }` (also frozen scope, needs approval), or have the test wait for scrollTop to settle before sampling, as D-59 did for another test. Developer should correct the D-60 claim. |
+| G46-2 | Minor | Process | D-60 is still `Proposed`; its "exit condition met" line is wrong (see G46-1). | Amend after G46-1 is resolved. |
+
+BLOCKING FINDINGS: 1
