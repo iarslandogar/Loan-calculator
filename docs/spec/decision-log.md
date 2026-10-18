@@ -692,6 +692,7 @@ The code-reviewer's visuals report (docs/process/review-findings.md, "Visuals") 
    - lint, typecheck and format clean; Vitest 345 of 345;
    - `[REVIEW-V1]`, `[REVIEW-V2]`, S-19 to S-22 and S-8: 129 of 129 across 3 browsers;
    - the full `verify` result is in the visuals mini-gate summary.
+   - **Result (developer, 2026-10-18):** full `CI=1 npm run verify` **exit 0 on the first run**: lint, format and typecheck clean; Vitest 345 of 345; size 87.4 KB of 150 KB; E2E **549 of 549** across 3 browsers (543 before, plus `[REVIEW-V1]` and `[REVIEW-V2]` in each browser), in 7.9 minutes; `trace --results` OK. No WebKit timeout this run. One clean run is not proof that the F-4 flake is gone.
 
 ### D-47 Group 2 builds the schedule table; cross-group ACs reported as pending
 - **Decision:** The shared helper `expectResultsShown` requires the schedule table, so group 2 builds `ScheduleTable` too; group 3 then verifies S-10 and S-13. AC-4.4 needs the Theme and Currency selects (group 4), and AC-9.2 needs saved calculations (group 5), so they are reported at G4.2 as **pending later groups**, not as done.
