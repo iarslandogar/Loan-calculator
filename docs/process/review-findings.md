@@ -144,3 +144,41 @@ Currency switch with L-MAX shown, recalculating a shorter loan while scrolled (n
 | G43-2 | Minor | Process | Group 3 delivered no commits, so "group 3 tests pass" is evidence about group 2 code (D-47); the S-10/S-13 Status must still wait for G4.6 `verify` and the owner's hand check. | None; record in the gate summary. |
 
 BLOCKING FINDINGS: 0
+
+---
+
+## 2026-10-18, G4.4 (settings, S-6 theme and S-7 currency)
+
+Reviewer: code-reviewer. Scope 44c6afe..babc602. No `src/` or frozen test edited. All Playwright runs used `CI=1`; nothing is left listening on 4173.
+
+### Gate evidence
+- `CI=1 npx playwright test e2e/s06-theme.spec.ts e2e/s07-currency.spec.ts e2e/s01* s02* s03* s04* s09*`: 180 passed, 6 failed (2.9 min). The 6 failures are exactly [AC-7.5] and [AC-9.2] in chromium, firefox and webkit: both need saved calculations (group 5) and are pending, not defects. No regression in group 2 specs.
+- `CI=1 npx playwright test e2e/spec-rules.spec.ts --grep "settings|input-border"`: `--list` showed 15 tests (5 per browser: three [SPEC-§9.2] settings rules, [SPEC-§8.4] Light and Dark input-border); 15 passed. No other tests were included or dropped by the filter.
+- `npm run lint` exit 0; `npm run typecheck` exit 0; `npm run format:check` exit 0; `npx vitest run`: 7 files, 294 tests passed.
+- Freeze check (`git diff --stat g3-tests-approved..HEAD` over the §12.4 scope): only `e2e/fixtures.ts` (D-48) and `e2e/s09-reset.spec.ts` (D-46). No `.skip/.only/.fixme/test.fail`, no deleted or weakened tests.
+
+### Conformance
+- 8.4: `data-theme` is set on `<html>` by the inline script in `index.html` and again by `useAppliedTheme`; the `matchMedia` change listener is attached only while System is selected and removed otherwise. Tokens in `theme.css` match the §8.4 table exactly, including `--input-border` light #7E8898 / dark #66768C (D-19). Focus is `2px solid var(--focus)` with 2px offset on `:focus-visible`.
+- 9.1: all four helpers wrap `window.localStorage` access inside try/catch and return `{ ok: false }`; nothing throws. `saveSettings` ignores failure (AC-6.6). 9.2: key `emi-calc.v1.settings`, defaults PKR/system, per-field fallback; the inline script applies the same rule for theme.
+- 3.2: `updateSettings` dispatches only `setCurrency`/`setTheme`; the reducer leaves `inputs`, `errors` and `results` untouched, and persists. Layers: `storage/` imports only `domain/types`, no `ui/`. Copy strings come from `copy.ts`. No hard-coded colours outside `theme.css`; no `any`.
+
+### Exploratory (chromium, firefox, webkit; probe deleted, nothing real found)
+- Pre-paint: saved `dark` with OS light and React bundle replaced by an empty script gives `data-theme="dark"`, so the attribute is set before React mounts, in all 3 browsers.
+- Corrupt settings (`null`, `{}`, `{"theme":null}`, `{"currency":"usd"}`, `"dark"`, `[]`, `0`, `true`, `{"theme":"DARK"}`, 2,000,000-character string): selects show System / PKR, no console errors. `{"theme":"dark","currency":"EUR"}` keeps dark and falls back to PKR (per-field rule).
+- Storage blocked by a throwing `window.localStorage` getter, and by throwing `getItem`/`setItem`: no errors; theme and currency still change in memory.
+- Theme switched mid-flow with results shown, with an error showing, while stale, and with L-MAX (480 rows) shown; arrow-key change on the select; at 180 px wide (approximates 200% zoom at 360): scrollWidth equals clientWidth, 480 rows intact, no console errors.
+- System followed across 30 rapid OS toggles (ends on the last value); a fixed Light ignores a dark OS.
+- Contrast, computed from the live tokens: dark focus outline 7.43:1 on `--bg`, 6.59:1 on `--surface`; light 6.70:1 / 6.24:1; dark text/bg 15.57:1; dark on-primary/primary 7.43:1; dark input-border 3.99 / 3.54. No button is ever `disabled` in the app, so there is no disabled-text case; the secondary button is `--text` on `--bg`.
+
+### Findings
+
+| ID | Severity | Story/AC | Evidence | Suggested fix |
+|---|---|---|---|---|
+| (none) | n/a | S-6, S-7 | No Blocker or Major defect found. | n/a |
+| G44-1 | Minor | S-6/S-7, §9.2 | Two tabs open together: tab A sets Theme to Dark, then tab B (loaded earlier, still holding System) sets Currency to USD. `updateSettings` writes `{...state.settings, ...change}` from tab B's stale memory, so storage ends `{"currency":"USD","theme":"system"}` and A's Dark is silently lost on reload (observed in all 3 browsers). No requirement to sync settings (§9.3 covers history only); no crash. | In `updateSettings`, write `{ ...loadSettings(), ...change }` (re-read, then write) so only the changed field is overwritten. |
+| G44-2 | Minor | Code quality | `updateSettings` is recreated each render and the context value object is not memoised (carried over from G4.2 M-4); `saveSettings` result is discarded, so a blocked save is invisible, which is acceptable per AC-6.6. | Memoise the context value if profiling ever needs it. |
+| G44-3 | Minor | Code quality | The inline script duplicates the validation rule of `parseSettings` (unavoidable, no bundler step) and nothing tests the two for drift beyond the three [SPEC-§9.2] cases. | Optional: add a unit test that reads the script from `index.html` and checks it against the same variant table. |
+
+Pending, not defects: AC-7.5 and AC-9.2 (need saved calculations, group 5).
+
+BLOCKING FINDINGS: 0
