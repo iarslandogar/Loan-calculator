@@ -64,7 +64,8 @@ Each decision is **Approved** or **Proposed — needs owner approval**. Claude C
 | D-48 | Post-G3 fix: summary figures located with `getByLabel` (supersedes part of D-43) | Approved (owner), 2026-10-18 |
 | D-49 | Group 2 implementation choices | Approved (owner, G4.2), 2026-10-18 |
 | D-50 | Handling of the G4.2 review's Minor findings | Approved (owner, G4.2), 2026-10-18 |
-| D-51 | Group 3 needed no new code; G4.3 Minor findings | **Proposed**: owner to review at G4.3 |
+| D-51 | Group 3 needed no new code; G4.3 Minor findings | Approved (owner, G4.3), 2026-10-18 |
+| D-52 | Group 4 implementation choices | **Proposed**: developer decisions, owner to review at G4.4 |
 
 **How this log is kept (D-24):** every decision is recorded here, however small. Entries are never deleted or rewritten. A changed decision gets a new dated **Decision** line under its entry, or a new entry that names the one it supersedes, and a row in the change history.
 
@@ -413,6 +414,15 @@ The code-reviewer reported `BLOCKING FINDINGS: 0` for group 2, with six Minors:
 - **AC-10.8 headroom:** the reviewer measured L-MAX locally from click to the 480th row. The worst case was 150 ms (Firefox), against a 1,000 ms limit. It will be measured again on real CI at G4.6.
 - **Minor G43-1, the 480 rows re-render on any context change:** **won't fix.** While results are shown, the only context change that can happen is a currency switch, which must re-render the headers anyway. Typing makes the results stale and unmounts the table.
 - **Minor G43-2, group 3 had no commits:** noted. The S-10 and S-13 tests exercise group 2's code (`9f2c633`).
+
+### D-52 Group 4 implementation choices (Proposed, owner to review at G4.4)
+1. **Settings load before the first render**, in `useReducer`'s initialiser, not an effect. The §9.2 fallback tests read the selects straight after a reload without waiting, and it also avoids a flash of the default values.
+2. **Settings are saved only on a real user change**, through `updateSettings`, never on load. A first visit therefore writes nothing to storage. Saving is best effort: if storage is blocked, settings live in memory for the visit (AC-6.6).
+3. **Validation:** `parseSettings` treats non-JSON, `null`, arrays and non-objects as "both defaults", and checks each field separately. The inline pre-paint script in `index.html` applies the same rule to the theme, and both are wrapped so they never throw.
+4. **Theme application:** the resolved theme is set on `<html data-theme>`. A `matchMedia('(prefers-color-scheme: dark)')` change listener is attached only while "System" is selected, so a fixed choice ignores device changes (AC-6.4).
+5. **Type location:** the `Theme` type moved to `src/storage/settings.ts`, so the storage layer doesn't import from `ui/` (layer rule).
+6. **Dark tokens:** exactly spec §8.4 plus D-19's `--input-border` (#66768C). The sticky table header uses `--surface`, so it follows the theme (closes G4.2 Minor M-6).
+7. **Test-filter lesson:** Playwright's `--grep` is case-insensitive, and an exclusion filter silently dropped AC-6.1. The developer now lists (`--list`) whatever a filter excludes before reporting.
 
 ### D-47 Group 2 builds the schedule table; cross-group ACs reported as pending
 - **Decision:** The shared helper `expectResultsShown` requires the schedule table, so group 2 builds `ScheduleTable` too; group 3 then verifies S-10 and S-13. AC-4.4 needs the Theme and Currency selects (group 4), and AC-9.2 needs saved calculations (group 5), so they are reported at G4.2 as **pending later groups**, not as done.
