@@ -67,6 +67,8 @@ Each decision is **Approved** or **Proposed — needs owner approval**. Claude C
 | D-51 | Group 3 needed no new code; G4.3 Minor findings | Approved (owner, G4.3), 2026-10-18 |
 | D-52 | Group 4 implementation choices | **Proposed**: developer decisions, owner to review at G4.4 |
 | D-53 | Handling of the G4.4 review's Minor findings | **Proposed**: owner to review at G4.4 |
+| D-54 | Owner request: widen the input limits (verified), now, before group 5 | Approved direction (owner), 2026-10-18; exact bounds pending |
+| D-55 | **Counterexample to invariant 6 / AC-10.5 within the current limits** | **Open**: owner decision needed |
 
 **How this log is kept (D-24):** every decision is recorded here, however small. Entries are never deleted or rewritten. A changed decision gets a new dated **Decision** line under its entry, or a new entry that names the one it supersedes, and a row in the change history.
 
@@ -432,6 +434,30 @@ The code-reviewer reported `BLOCKING FINDINGS: 0` for group 4, with three Minors
    - **Not tested:** no automated test covers this, because tests are frozen and §9.3 only requires two-tab handling for history.
 2. **G44-2, the context value isn't memoised, and a failed settings save is silent:** **won't fix.** Same reasoning as D-50 item 4, and AC-6.6 requires the silence.
 3. **G44-3, the inline pre-paint script duplicates `parseSettings`:** **accepted.** The script must run before any bundle loads, so it can't import the module. The three `[SPEC-§9.2]` settings tests plus AC-6.3 guard against the two drifting apart.
+
+### D-54 Widen the input limits (owner request, 2026-10-18)
+- **Request:** the owner asked to remove the limits on loan amount, interest rate and tenure.
+- **Developer analysis:** removing them entirely isn't safe.
+  - Above about 10^38 the 40-digit precision is exceeded.
+  - An unbounded tenure would hang the browser while it draws the schedule.
+  - A 1,000% rate broke the 0.01 guarantee in 11 months of one loan.
+- **Decision (owner, 2026-10-18):** widen to **wide, verified limits** (for example amount up to 10^15, rate up to 100%, tenure up to 100 years or 1,200 months, with exact values set by verification). Do it **now, before group 5**.
+- **Status:** the bounds search found D-55 first. The exact bounds wait on the D-55 decision.
+
+### D-55 Counterexample to invariant 6 / AC-10.5 within the CURRENT limits (open)
+- **Finding (Claude Code, 2026-10-18, while verifying D-54):** spec §5.3 says "every payment is within 0.01 of the headline payment", and §5.4 invariant 6, AC-10.5 and the `note.rounding` copy say the same. That is **not true**, even within the approved D-02 limits.
+- **Evidence:**
+  - 20,000 uniform random loans within the current limits, run with exact decimal arithmetic using spec §5.2 exactly.
+  - **4 loans (0.02%)** have one payment more than 0.01 from the headline.
+  - The **largest deviation is 0.02**, and it is **always the final month**.
+  - The final balance is still exactly 0.00, and every other invariant holds.
+  - Reproduced with the app's own TypeScript code (`validateInputs` and `calculateLoan`, run in the dev server):
+    - `81020318.72`, `3.97`, `204` months: headline 546,773.74, final payment 546,773.72.
+    - `5649385.87`, `44.01`, `439` months: headline 207,191.25, final payment 207,191.27.
+    - `1235400.38`, `50`, `238` months: headline 51,478.12, final payment 51,478.14.
+- **Why the tests didn't catch it:** the frozen property test (fast-check, 1,000 runs, seed 20261017) didn't draw any of these rare cases. The original "about 1,700 cases" verification in §5.3 missed them too.
+- **Rule applied:** spec §5.4 says to stop, record and report; don't change the algorithm or loosen the invariant without approval. Nothing has been changed.
+- **Decision:** pending (owner).
 
 ### D-47 Group 2 builds the schedule table; cross-group ACs reported as pending
 - **Decision:** The shared helper `expectResultsShown` requires the schedule table, so group 2 builds `ScheduleTable` too; group 3 then verifies S-10 and S-13. AC-4.4 needs the Theme and Currency selects (group 4), and AC-9.2 needs saved calculations (group 5), so they are reported at G4.2 as **pending later groups**, not as done.
