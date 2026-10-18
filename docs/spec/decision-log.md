@@ -79,7 +79,8 @@ Each decision is **Approved** or **Proposed — needs owner approval**. Claude C
 | D-63 | Redesign proposals P1–P5 | Approved (owner), 2026-10-18: P1 yes, P2 n/a, P3 yes, P4 already done, P5 declined (backlog) |
 | D-64 | Redesign implementation: deviations from the bundle and verification | **Proposed**: owner to review at the redesign mini-gate |
 | D-65 | Add four visuals: S-20, S-21, S-22 new; S-19 Backlog to v1 | Approved (owner), 2026-10-18 |
-| D-66 | Chart test hooks: `data-hit-area`, `data-segment`, `data-series` | **Proposed**: owner to review at G3b |
+| D-66 | Chart test hooks: `data-hit-area`, `data-segment`, `data-series` | Approved (owner, G3b), 2026-10-18 |
+| D-67 | G3b: visuals tests approved and frozen; three copy gaps closed; test-designer readings | Approved (owner, G3b), 2026-10-18 |
 
 **How this log is kept (D-24):** every decision is recorded here, however small. Entries are never deleted or rewritten. A changed decision gets a new dated **Decision** line under its entry, or a new entry that names the one it supersedes, and a row in the change history.
 
@@ -616,6 +617,28 @@ Every S-5 and S-8 test already passed before group 6, apart from the D-59 Firefo
 ### D-66 Chart test hooks (Proposed, owner to review at G3b)
 - **Decision:** spec §8.3.1 gains three `data-` hooks: `[data-hit-area]` (hover geometry: item *k* of *n* at (*k* − 0.5) / *n* of its width), `[data-segment]` (the cost bar's parts) and `[data-series]` (every chart mark).
 - **Why:** the chart SVG is deliberately `aria-hidden`, because the figcaption and tables carry the data for assistive technology. So role and name locators can't reach the hover areas, the segments or the marks. The hooks are defined before the tests are written, so the test-designer doesn't invent a structure that then gets frozen without anyone deciding it (the D-43 lesson).
+
+### D-67 Gate G3b: visuals tests approved and frozen (owner, 2026-10-18)
+- **Evidence:**
+  - 48 new Vitest tests, all red on `NOT_IMPLEMENTED`; the 297 existing tests pass.
+  - 30 new E2E tests per browser, all red on missing charts, with AC-21.3 on its intended timeout. 0 early passes.
+  - No existing test, fixture or config changed. `trace` OK, with 115 ACs.
+- **Decision (owner, 2026-10-18):** "approved". G3b is approved, and the new tests are frozen from tag `g3b-visuals-tests-approved` under the same rules as D-12 and D-23. D-66 is approved.
+- **Three gaps in the proposal, closed with the developer's suggestions** (the owner approved without separate answers, so the suggestions stand):
+  1. the yearly chart's `<figcaption>` is `Interest and principal paid each year.` (new copy key `yearly.chart.caption`);
+  2. the yearly tooltip amounts carry the currency symbol, like the other tooltips;
+  3. `{n}` in the balance sentence is grouped (`1,200`), matching the error messages.
+- **Test-designer readings** (binding with the tests):
+  - the results card is the smallest ancestor holding the summary, the four figures and the schedule;
+  - "chart text" means every element with its own visible text inside a `<figure>`, plus the four chart titles (tooltips excluded);
+  - marks must resolve to a solid colour (fill, else stroke, else `background-color`);
+  - a 0%-interest cost bar may omit the interest segment, or make it at most 0.5 px wide;
+  - each hoverable figure has exactly one `[data-hit-area]`;
+  - the tooltip is the single page-level `role="tooltip"` after a hover;
+  - the legend order is the document order of the exact texts `Principal` and `Interest`;
+  - yearly cells are read as `th, td`;
+  - there are exactly 4 figures, and the yearly chart is the 4th.
+- **Still open:** D-64 (redesign gate) and RD-3 (forced-colors borders).
 
 ### D-47 Group 2 builds the schedule table; cross-group ACs reported as pending
 - **Decision:** The shared helper `expectResultsShown` requires the schedule table, so group 2 builds `ScheduleTable` too; group 3 then verifies S-10 and S-13. AC-4.4 needs the Theme and Currency selects (group 4), and AC-9.2 needs saved calculations (group 5), so they are reported at G4.2 as **pending later groups**, not as done.

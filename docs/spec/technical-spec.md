@@ -340,15 +340,16 @@ Formatter contract: `formatMoney` and `formatAmount` receive non-negative values
 | chart.cost.summary | `Interest is {pct} of the total amount payable.` |
 | chart.cost.loan / chart.cost.interest | `Loan amount` / `Interest` |
 | chart.balance.title | `Balance over time` |
-| chart.balance.summary | `The balance falls from {amount} to {zero} over {n} months.` (`{n} month` when n = 1) |
+| chart.balance.summary | `The balance falls from {amount} to {zero} over {n} months.` (`{n} month` when n = 1; `{n}` grouped like `1,200`, D-67) |
 | chart.balance.tooltip | `Month {k}: {balance}` |
 | chart.makeup.title | `Interest and principal in each payment` |
 | chart.makeup.summary | `Interest is {first} of the first payment and {last} of the last.` |
 | chart.makeup.tooltip | `Month {k}: principal {principal}, interest {interest}` |
 | chart.series.principal / chart.series.interest | `Principal` / `Interest` |
 | yearly.title | `Yearly summary` |
+| yearly.chart.caption | `Interest and principal paid each year.` (the yearly chart's `<figcaption>`, D-67) |
 | yearly.cols | `Year`, `Interest (Rs)`, `Principal (Rs)`, `Balance (Rs)` (`($)` for USD) |
-| yearly.tooltip | `Year {y}: principal {principal}, interest {interest}` |
+| yearly.tooltip | `Year {y}: principal {principal}, interest {interest}` (amounts with the currency symbol, e.g. `Year 1: principal Rs 338,857.21, interest Rs 422,945.63`, D-67) |
 | fatal | `Something went wrong. Please reload the page.` |
 
 The apostrophes in `can't`, `aren't`, `doesn't`, `Couldn't` and `site's` are the ASCII `'` character.
