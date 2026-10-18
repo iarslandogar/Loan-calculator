@@ -83,6 +83,7 @@ Each decision is **Approved** or **Proposed — needs owner approval**. Claude C
 | D-67 | G3b: visuals tests approved and frozen; three copy gaps closed; test-designer readings | Approved (owner, G3b), 2026-10-18 |
 | D-68 | Visuals implementation choices and evidence | **Proposed**: owner to review at the visuals mini-gate |
 | D-69 | Sticky loan form on wide, tall windows (owner request) | Approved (owner), 2026-10-18; implementation for review at the visuals mini-gate |
+| D-70 | Fixes for the visuals review (F-1 to F-5), forced-colors marks (RD-3) and results memoisation | **Proposed**: owner to review at the visuals mini-gate |
 
 **How this log is kept (D-24):** every decision is recorded here, however small. Entries are never deleted or rewritten. A changed decision gets a new dated **Decision** line under its entry, or a new entry that names the one it supersedes, and a row in the change history.
 
@@ -665,6 +666,32 @@ Every S-5 and S-8 test already passed before group 6, apart from the D-59 Firefo
 - **Decision:** at **≥ 769 px wide and ≥ 820 px tall**, the form card is `position: sticky` (`top: 24px`) and follows the scroll. In shorter windows it scrolls normally, so the bottom of the form (Calculate) can never end up out of reach. Phones and tablets keep the single column.
 - **One wrapper `<div className="layout-main">`** now holds the form and the results. A sticky element can travel to the end of its parent box, and with the whole layout grid as parent, the form **overlapped Saved calculations** at the end of the page (probe: form bottom 568 px against the card top at 511 px). The wrapper has no role or semantics and changes no order. With it, the form stops at the end of the results (form bottom 487 px against the card top at 511 px) in Chromium, Firefox and WebKit.
 - **Not done:** no sticky behaviour on short windows. The 820 px threshold leaves room for the form with all three error messages showing.
+
+### D-70 Visuals review fixes (Proposed, owner to review at the visuals mini-gate)
+The code-reviewer's visuals report (docs/process/review-findings.md, "Visuals") had 0 blocking findings, 2 Majors and 3 Minors. No test or frozen file was changed.
+1. **F-1 (Major), the yearly table at 180 px** (200% zoom of 360 px): the four column headers need 284 px of a 130 px column, so the page scrolled sideways by 129 px.
+   - Shrinking the table can't fix it without breaking words mid-letter.
+   - **Decision:** the table sits in a `div.yearly-scroll` with `overflow-x: auto`. While (and only while) the table is wider than that wrapper, a `ResizeObserver` makes the wrapper `role="region"`, named by the "Yearly summary" heading, with `tabIndex=0`, so keyboard users can scroll it. This matches the schedule's region (§8.2).
+   - At normal widths it's a plain `div` with no role and no tab stop, so AC-8.1's frozen tab order is unchanged.
+   - Probe in Chromium, Firefox and WebKit: at 180 px, page overflow 0 and one region; at 1280 px, no tabindex and no region.
+2. **F-2 (Major) and RD-3, forced colours:** the browser forced the cost-bar segments and legend swatches to Canvas, so they vanished (Chromium, Firefox).
+   - **Decision:** under `@media (forced-colors: active)`, the data marks (cost segments, swatches, SVG chart paths) use `forced-color-adjust: none` and keep their colours, with a `1px solid CanvasText` border on the segments and swatches.
+   - The **headline tile and the rounding note** gain the same border. This is the optional RD-3 item, done here because it is the same media block; the owner may veto it.
+3. **F-3 (Minor) tidy-ups:**
+   - the cost legend now uses `copy.chart.cost.interest` (same text, `Interest`), so no spec §7 key is unused;
+   - BalanceChart's duplicate import is merged;
+   - HoverBand uses `VIEW_W` and `VIEW_H`;
+   - the Year cell is `<th scope="row">`, with the header styles scoped to `thead` so it looks as before.
+4. **F-4 (Minor), WebKit load timeouts:** they can't be fixed in the tests (frozen). To reduce load:
+   - the charts and the schedule are now a memoised `ResultsDetail`, so they redraw only when the loan or currency changes, not on other state changes such as the history save right after Calculate;
+   - each chart memoises its paths, so pointer hover no longer rebuilds 1,200-month paths.
+   - This reduces work, but it is **not proof** that the flake is gone; the full `verify` result is the evidence.
+5. **F-5 (Minor), stale hover index:** `useBandHover` now ignores an index beyond the current item count. The reviewer couldn't reproduce it (a new calculation needs a click, which ends the hover), so this is a guard only.
+6. **Not changed, for the owner:** the reviewer suggested making explicit in spec §8.3.2 that drawing ratios and percentages may become JS numbers for geometry only (D-68 item 3). The spec is unchanged until the owner agrees.
+7. **Evidence:**
+   - lint, typecheck and format clean; Vitest 345 of 345;
+   - `[REVIEW-V1]`, `[REVIEW-V2]`, S-19 to S-22 and S-8: 129 of 129 across 3 browsers;
+   - the full `verify` result is in the visuals mini-gate summary.
 
 ### D-47 Group 2 builds the schedule table; cross-group ACs reported as pending
 - **Decision:** The shared helper `expectResultsShown` requires the schedule table, so group 2 builds `ScheduleTable` too; group 3 then verifies S-10 and S-13. AC-4.4 needs the Theme and Currency selects (group 4), and AC-9.2 needs saved calculations (group 5), so they are reported at G4.2 as **pending later groups**, not as done.
