@@ -1,6 +1,6 @@
 // Rate, tenure, date and canonical-input text for history entries (spec §6).
 // Deterministic by design: no Intl, no toLocaleString.
-import type { Decimal } from './money'
+import { Decimal } from './money'
 import type { CanonicalInput, LoanInput, Unit } from './types'
 
 const MONTHS = ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec']
@@ -28,9 +28,10 @@ export function formatDateTime(date: Date): string {
   return `${date.getDate()} ${month} ${date.getFullYear()}, ${pad(date.getHours())}:${pad(date.getMinutes())}`
 }
 
-/** Always 1 dp, half-up: "6.2%", "0.0%" (D-65). Stub until the G3b tests are approved. */
-export function formatPercent(_x: Decimal): string {
-  throw new Error('NOT_IMPLEMENTED')
+/** Always 1 dp, half-up: "6.2%", "0.0%" (D-65). Never exponent notation. */
+export function formatPercent(x: Decimal): string {
+  const rounded = x.toDecimalPlaces(1, Decimal.ROUND_HALF_UP)
+  return `${rounded.isZero() ? '0.0' : rounded.toFixed(1)}%`
 }
 
 /** Never exponent notation; -0 becomes 0. */
