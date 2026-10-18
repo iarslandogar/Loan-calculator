@@ -108,7 +108,15 @@ ul {
 
 .layout {
   display: grid;
-  grid-template-columns: minmax(0, 4fr) minmax(0, 6fr); /* form left, results right */
+  grid-template-columns: minmax(0, 1fr);
+  gap: var(--space-6);
+}
+
+/* Form left, results right. The form/results row is its own box so the sticky form stops at
+   the end of the results and never covers Saved calculations (D-69). */
+.layout-main {
+  display: grid;
+  grid-template-columns: minmax(0, 4fr) minmax(0, 6fr);
   gap: var(--space-6);
   align-items: start;
 }
@@ -124,6 +132,16 @@ ul {
 
 .history-card {
   grid-column: 1 / -1;
+}
+
+/* The form stays in view while the results scroll (owner request, D-69). Only side by side
+   (≥ 769px) and only when the window is tall enough to show the whole form, so Calculate is
+   never out of reach. It stops at the end of the results row, above Saved calculations. */
+@media (min-width: 769px) and (min-height: 820px) {
+  .form-card {
+    position: sticky;
+    top: var(--space-6);
+  }
 }
 
 /* ---------- 5. Form ------------------------------------------------------ */
@@ -613,7 +631,8 @@ button:disabled:hover {
   .page {
     padding: 28px 24px 40px;
   }
-  .layout {
+  .layout,
+  .layout-main {
     grid-template-columns: minmax(0, 1fr);
     gap: var(--space-4);
   }

@@ -12,8 +12,11 @@ export function App() {
         <div className="page">
           <Header />
           <main className="layout">
-            <LoanForm />
-            <ResultsPanel />
+            {/* No semantics: bounds the sticky form to the form/results row (D-69). */}
+            <div className="layout-main">
+              <LoanForm />
+              <ResultsPanel />
+            </div>
             <HistoryPanel />
           </main>
         </div>
