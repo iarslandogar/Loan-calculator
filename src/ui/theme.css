@@ -1,5 +1,7 @@
-/* Design tokens (spec §8.4). Light theme; the dark theme and switching arrive with S-6. */
-:root {
+/* Design tokens (spec §8.4). The resolved theme is set as data-theme on <html>:
+   before first paint by the inline script in index.html, then by the app. */
+:root,
+:root[data-theme='light'] {
   color-scheme: light;
   --bg: #ffffff;
   --surface: #f5f7fa;
@@ -11,7 +13,23 @@
   --border: #cbd2dc;
   --input-border: #7e8898;
   --focus: #1d4ed8;
+}
 
+:root[data-theme='dark'] {
+  color-scheme: dark;
+  --bg: #0f141b;
+  --surface: #18202b;
+  --text: #e7ecf3;
+  --text-muted: #a9b4c2;
+  --primary: #7aa2ff;
+  --on-primary: #0f141b;
+  --error: #ff8a80;
+  --border: #2e3a4a;
+  --input-border: #66768c;
+  --focus: #7aa2ff;
+}
+
+:root {
   --radius: 8px;
   --gap: 16px;
   --font:

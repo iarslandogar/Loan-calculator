@@ -24,6 +24,18 @@ body {
   padding: var(--gap);
 }
 
+.app-header {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: space-between;
+  align-items: flex-start;
+  gap: 8px var(--gap);
+}
+
+.theme-field {
+  min-width: 140px;
+}
+
 .app-header h1 {
   margin: 0;
   font-size: 1.75rem;

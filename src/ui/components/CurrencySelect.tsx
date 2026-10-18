@@ -5,7 +5,7 @@ import { copy } from '../copy'
 const CURRENCIES: Currency[] = ['PKR', 'USD']
 
 export function CurrencySelect() {
-  const { state, dispatch } = useApp()
+  const { state, updateSettings } = useApp()
   return (
     <div className="field">
       <label htmlFor="currency">{copy.currency.label}</label>
@@ -13,7 +13,7 @@ export function CurrencySelect() {
         id="currency"
         aria-describedby="currency-note"
         value={state.settings.currency}
-        onChange={(e) => dispatch({ type: 'setCurrency', currency: e.target.value as Currency })}
+        onChange={(e) => updateSettings({ currency: e.target.value as Currency })}
       >
         {CURRENCIES.map((c) => (
           <option key={c} value={c}>

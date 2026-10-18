@@ -1,7 +1,6 @@
 // Application state and transitions (spec §3.2).
 import type { CalculatedLoan, Currency, ErrorCode, Field, RawInputs, Unit } from '../domain/types'
-
-export type Theme = 'system' | 'light' | 'dark'
+import { defaultSettings, type Settings, type Theme } from '../storage/settings'
 
 export type Results =
   { status: 'idle' } | { status: 'shown'; loan: CalculatedLoan } | { status: 'stale' }
@@ -10,7 +9,7 @@ export interface AppState {
   inputs: RawInputs
   errors: Partial<Record<Field, ErrorCode>>
   results: Results
-  settings: { currency: Currency; theme: Theme }
+  settings: Settings
 }
 
 export type Action =
@@ -20,6 +19,7 @@ export type Action =
   | { type: 'calculated'; loan: CalculatedLoan }
   | { type: 'reset' }
   | { type: 'setCurrency'; currency: Currency }
+  | { type: 'setTheme'; theme: Theme }
 
 export const emptyInputs: RawInputs = { amount: '', rate: '', tenure: '', unit: 'years' }
 
@@ -27,7 +27,7 @@ export const initialState: AppState = {
   inputs: emptyInputs,
   errors: {},
   results: { status: 'idle' },
-  settings: { currency: 'PKR', theme: 'system' },
+  settings: defaultSettings,
 }
 
 function withoutError(errors: AppState['errors'], field: Field): AppState['errors'] {
@@ -67,5 +67,7 @@ export function appReducer(state: AppState, action: Action): AppState {
       return { ...state, inputs: emptyInputs, errors: {}, results: { status: 'idle' } }
     case 'setCurrency':
       return { ...state, settings: { ...state.settings, currency: action.currency } }
+    case 'setTheme':
+      return { ...state, settings: { ...state.settings, theme: action.theme } }
   }
 }

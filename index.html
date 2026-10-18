@@ -4,6 +4,32 @@
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <title>Loan EMI Calculator</title>
+    <script>
+      // Spec §8.4: apply the saved theme before first paint, so there is no flash of the wrong
+      // theme. Same rules as src/storage/settings.ts parseSettings; never throws.
+      ;(function () {
+        var theme = 'system'
+        try {
+          var raw = window.localStorage.getItem('emi-calc.v1.settings')
+          var saved = raw ? JSON.parse(raw) : null
+          if (saved && typeof saved === 'object' && !Array.isArray(saved)) {
+            if (saved.theme === 'light' || saved.theme === 'dark') theme = saved.theme
+          }
+        } catch (e) {
+          theme = 'system'
+        }
+        try {
+          if (theme === 'system') {
+            var dark =
+              window.matchMedia && window.matchMedia('(prefers-color-scheme: dark)').matches
+            theme = dark ? 'dark' : 'light'
+          }
+          document.documentElement.setAttribute('data-theme', theme)
+        } catch (e) {
+          document.documentElement.setAttribute('data-theme', 'light')
+        }
+      })()
+    </script>
   </head>
   <body>
     <div id="root"></div>

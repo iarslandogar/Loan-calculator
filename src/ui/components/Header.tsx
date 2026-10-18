@@ -1,4 +1,5 @@
 import { copy } from '../copy'
+import { ThemeSelect } from './ThemeSelect'
 
 export function Header() {
   return (
@@ -7,6 +8,7 @@ export function Header() {
         <h1>{copy.app.title}</h1>
         <p className="tagline">{copy.app.tagline}</p>
       </div>
+      <ThemeSelect />
     </header>
   )
 }
