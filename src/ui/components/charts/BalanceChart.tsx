@@ -1,5 +1,5 @@
-import { formatMoney } from '../../../domain/money'
-import { Decimal } from '../../../domain/money'
+import { useMemo } from 'react'
+import { Decimal, formatMoney } from '../../../domain/money'
 import type { CalculatedLoan, Currency } from '../../../domain/types'
 import { copy } from '../../copy'
 import { AxisEnds, HoverBand, Tooltip } from './ChartParts'
@@ -10,7 +10,11 @@ export function BalanceChart({ loan, currency }: { loan: CalculatedLoan; currenc
   const { rows, input } = loan
   const n = rows.length
   const { index, handlers } = useBandHover(n)
-  const tops = rows.map((row) => ratio(row.balance, input.amount))
+  // Memoised: hovering re-renders the chart, and a 1,200-month path is costly to rebuild.
+  const path = useMemo(
+    () => stepBandPath(rows.map((row) => ratio(row.balance, input.amount))),
+    [rows, input.amount],
+  )
   const summary = copy.chart.balance.summary(
     formatMoney(input.amount, currency),
     formatMoney(new Decimal(0), currency),
@@ -32,7 +36,7 @@ export function BalanceChart({ loan, currency }: { loan: CalculatedLoan; currenc
             {...handlers}
           >
             <HoverBand index={index} count={n} />
-            <path className="mark-principal" data-series="balance" d={stepBandPath(tops)} />
+            <path className="mark-principal" data-series="balance" d={path} />
           </svg>
           <Tooltip index={index} count={n}>
             {hovered &&

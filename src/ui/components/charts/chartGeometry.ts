@@ -72,7 +72,9 @@ export function useBandHover(count: number) {
     setIndex(Math.min(count - 1, Math.max(0, Math.floor(f * count))))
   }
   const onPointerLeave = () => setIndex(null)
-  return { index, handlers: { onPointerMove, onPointerLeave } }
+  // A stale index from a longer loan is never shown (F-5).
+  const current = index !== null && index < count ? index : null
+  return { index: current, handlers: { onPointerMove, onPointerLeave } }
 }
 
 /** "1200" → "1,200" (counts only; never used for money). */

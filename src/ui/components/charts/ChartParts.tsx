@@ -1,9 +1,15 @@
 import type { ReactNode } from 'react'
 import { copy } from '../../copy'
-import { centrePercent } from './chartGeometry'
+import { VIEW_H, VIEW_W, centrePercent } from './chartGeometry'
 
 /** HTML legend (spec §8.3.2): Principal first, Interest second, in every chart. */
-export function Legend({ first = copy.chart.series.principal }: { first?: string }) {
+export function Legend({
+  first = copy.chart.series.principal,
+  second = copy.chart.series.interest,
+}: {
+  first?: string
+  second?: string
+}) {
   return (
     <ul className="chart-legend">
       <li>
@@ -12,7 +18,7 @@ export function Legend({ first = copy.chart.series.principal }: { first?: string
       </li>
       <li>
         <span className="swatch swatch-interest" aria-hidden="true" />
-        {copy.chart.series.interest}
+        {second}
       </li>
     </ul>
   )
@@ -54,6 +60,6 @@ export function Tooltip({
 /** A faint highlight of the hovered band (decorative; not a data mark). */
 export function HoverBand({ index, count }: { index: number | null; count: number }) {
   if (index === null) return null
-  const width = 1000 / count
-  return <rect className="chart-hover-band" x={index * width} y={0} width={width} height={100} />
+  const width = VIEW_W / count
+  return <rect className="chart-hover-band" x={index * width} y={0} width={width} height={VIEW_H} />
 }

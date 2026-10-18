@@ -29,7 +29,7 @@ export function CostBreakdown({ loan }: { loan: CalculatedLoan }) {
             />
           )}
         </div>
-        <Legend first={copy.chart.cost.loan} />
+        <Legend first={copy.chart.cost.loan} second={copy.chart.cost.interest} />
         <figcaption>{summary}</figcaption>
       </figure>
     </div>

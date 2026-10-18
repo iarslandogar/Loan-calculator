@@ -1,3 +1,5 @@
+import { memo } from 'react'
+import type { CalculatedLoan, Currency } from '../../domain/types'
 import { useApp } from '../AppContext'
 import { copy } from '../copy'
 import { BalanceChart } from './charts/BalanceChart'
@@ -7,6 +9,29 @@ import { YearlySummary } from './charts/YearlySummary'
 import { ResultsSummary } from './ResultsSummary'
 import { RoundingNote } from './RoundingNote'
 import { ScheduleTable } from './ScheduleTable'
+
+/**
+ * The charts and the schedule redraw only when the loan or currency changes, not on every app
+ * state change (for example the history save right after Calculate). Up to 1,200 rows (D-70).
+ */
+const ResultsDetail = memo(function ResultsDetail({
+  loan,
+  currency,
+}: {
+  loan: CalculatedLoan
+  currency: Currency
+}) {
+  return (
+    <>
+      {/* Spec §8.3.2 order: cost, balance, payment make-up, yearly, then the schedule. */}
+      <CostBreakdown loan={loan} />
+      <BalanceChart loan={loan} currency={currency} />
+      <PaymentMakeupChart loan={loan} currency={currency} />
+      <YearlySummary loan={loan} currency={currency} />
+      <ScheduleTable rows={loan.rows} currency={currency} />
+    </>
+  )
+})
 
 export function ResultsPanel() {
   const { state } = useApp()
@@ -23,12 +48,7 @@ export function ResultsPanel() {
         <>
           <ResultsSummary loan={results.loan} currency={settings.currency} />
           {results.loan.showRoundingNote && <RoundingNote />}
-          {/* Spec §8.3.2 order: cost, balance, payment make-up, yearly, then the schedule. */}
-          <CostBreakdown loan={results.loan} />
-          <BalanceChart loan={results.loan} currency={settings.currency} />
-          <PaymentMakeupChart loan={results.loan} currency={settings.currency} />
-          <YearlySummary loan={results.loan} currency={settings.currency} />
-          <ScheduleTable rows={results.loan.rows} currency={settings.currency} />
+          <ResultsDetail loan={results.loan} currency={settings.currency} />
         </>
       )}
     </section>

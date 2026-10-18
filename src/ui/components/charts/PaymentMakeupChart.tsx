@@ -1,3 +1,4 @@
+import { useMemo } from 'react'
 import { formatPercent } from '../../../domain/format'
 import { formatMoney } from '../../../domain/money'
 import { interestShare } from '../../../domain/summary'
@@ -17,9 +18,16 @@ export function PaymentMakeupChart({
   const { rows } = loan
   const n = rows.length
   const { index, handlers } = useBandHover(n)
-  const max = rows.reduce((m, row) => (row.payment.gt(m) ? row.payment : m), rows[0]!.payment)
-  const principalTops = rows.map((row) => ratio(row.principal, max))
-  const paymentTops = rows.map((row) => ratio(row.payment, max))
+  // Memoised: hovering re-renders the chart, and 1,200-month paths are costly to rebuild.
+  const paths = useMemo(() => {
+    const max = rows.reduce((m, row) => (row.payment.gt(m) ? row.payment : m), rows[0]!.payment)
+    const principalTops = rows.map((row) => ratio(row.principal, max))
+    const paymentTops = rows.map((row) => ratio(row.payment, max))
+    return {
+      principal: stepBandPath(principalTops),
+      interest: stepBandPath(paymentTops, principalTops),
+    }
+  }, [rows])
   const first = rows[0]!
   const last = rows[n - 1]!
   const summary = copy.chart.makeup.summary(
@@ -41,16 +49,8 @@ export function PaymentMakeupChart({
             {...handlers}
           >
             <HoverBand index={index} count={n} />
-            <path
-              className="mark-principal"
-              data-series="principal"
-              d={stepBandPath(principalTops)}
-            />
-            <path
-              className="mark-interest"
-              data-series="interest"
-              d={stepBandPath(paymentTops, principalTops)}
-            />
+            <path className="mark-principal" data-series="principal" d={paths.principal} />
+            <path className="mark-interest" data-series="interest" d={paths.interest} />
           </svg>
           <Tooltip index={index} count={n}>
             {hovered &&

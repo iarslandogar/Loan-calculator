@@ -946,16 +946,20 @@ figure.chart {
   border-radius: 6px;
 }
 
-/* Yearly summary table: same rhythm as the schedule, not a separate scroll stop. */
+/* Yearly summary table: same rhythm as the schedule. The wrapper scrolls only when the table
+   cannot fit (very narrow or zoomed windows); only then is it a focusable region (D-70). */
+.yearly-scroll {
+  margin-top: var(--space-4);
+  overflow-x: auto;
+}
 .yearly-table {
   width: 100%;
-  margin-top: var(--space-4);
   border-collapse: separate;
   border-spacing: 0;
   font-size: 14px;
   font-variant-numeric: tabular-nums;
 }
-.yearly-table th {
+.yearly-table thead th {
   padding: var(--space-2) var(--space-3);
   background: var(--wash);
   border-bottom: 1.5px solid var(--input-border);
@@ -966,7 +970,8 @@ figure.chart {
   text-align: right;
   text-transform: uppercase;
 }
-.yearly-table td {
+.yearly-table td,
+.yearly-table tbody th {
   padding: 8px var(--space-3);
   border-bottom: 1px solid var(--border);
   text-align: right;
@@ -976,7 +981,11 @@ figure.chart {
 .yearly-table td:first-child {
   text-align: left;
 }
-.yearly-table tbody tr:nth-child(even) td {
+.yearly-table tbody th {
+  font-weight: inherit;
+}
+.yearly-table tbody tr:nth-child(even) td,
+.yearly-table tbody tr:nth-child(even) th {
   background: var(--band);
 }
 
@@ -991,5 +1000,24 @@ figure.chart {
   .yearly-table td {
     padding-left: var(--space-2);
     padding-right: var(--space-2);
+  }
+}
+
+/* Forced colours (F-2, RD-3, D-70): the browser replaces backgrounds with Canvas, which would
+   erase the cost bar and the legend keys. Data marks keep their colours and gain a system-colour
+   outline. The headline tile and the rounding note gain borders, so they stay separated. */
+@media (forced-colors: active) {
+  .cost-segment,
+  .swatch,
+  .chart-plot path {
+    forced-color-adjust: none;
+  }
+  .cost-segment,
+  .swatch {
+    border: 1px solid CanvasText;
+  }
+  .figure.headline,
+  .rounding-note {
+    border: 1px solid CanvasText;
   }
 }
