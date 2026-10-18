@@ -1,5 +1,9 @@
 import { useApp } from '../AppContext'
 import { copy } from '../copy'
+import { BalanceChart } from './charts/BalanceChart'
+import { CostBreakdown } from './charts/CostBreakdown'
+import { PaymentMakeupChart } from './charts/PaymentMakeupChart'
+import { YearlySummary } from './charts/YearlySummary'
 import { ResultsSummary } from './ResultsSummary'
 import { RoundingNote } from './RoundingNote'
 import { ScheduleTable } from './ScheduleTable'
@@ -19,6 +23,11 @@ export function ResultsPanel() {
         <>
           <ResultsSummary loan={results.loan} currency={settings.currency} />
           {results.loan.showRoundingNote && <RoundingNote />}
+          {/* Spec §8.3.2 order: cost, balance, payment make-up, yearly, then the schedule. */}
+          <CostBreakdown loan={results.loan} />
+          <BalanceChart loan={results.loan} currency={settings.currency} />
+          <PaymentMakeupChart loan={results.loan} currency={settings.currency} />
+          <YearlySummary loan={results.loan} currency={settings.currency} />
           <ScheduleTable rows={results.loan.rows} currency={settings.currency} />
         </>
       )}

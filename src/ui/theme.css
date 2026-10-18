@@ -31,6 +31,10 @@
   --shadow-dialog: 0 24px 60px rgba(42, 37, 64, 0.22);
   --press: rgba(42, 37, 64, 0.1);
 
+  /* chart series (D-68): validated with the dataviz validator against --surface #FFFFFF */
+  --chart-principal: #6a50d3;
+  --chart-interest: #c4512e;
+
   /* scales */
   --font-sans: system-ui, -apple-system, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif;
   --space-1: 4px;
@@ -71,6 +75,10 @@
   --shadow-card: 0 1px 2px rgba(0, 0, 0, 0.35), 0 10px 30px rgba(0, 0, 0, 0.25);
   --shadow-dialog: 0 24px 60px rgba(0, 0, 0, 0.5);
   --press: rgba(0, 0, 0, 0.18);
+
+  /* chart series (D-68): validated against --surface #201D2B */
+  --chart-principal: #957eec;
+  --chart-interest: #d4703c;
 }
 
 /* Fallback before JS sets data-theme ("System" with no attribute yet). */
@@ -97,5 +105,7 @@
     --shadow-card: 0 1px 2px rgba(0, 0, 0, 0.35), 0 10px 30px rgba(0, 0, 0, 0.25);
     --shadow-dialog: 0 24px 60px rgba(0, 0, 0, 0.5);
     --press: rgba(0, 0, 0, 0.18);
+    --chart-principal: #957eec;
+    --chart-interest: #d4703c;
   }
 }
