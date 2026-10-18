@@ -135,12 +135,15 @@ ul {
 }
 
 /* The form stays in view while the results scroll (owner request, D-69). Only side by side
-   (≥ 769px) and only when the window is tall enough to show the whole form, so Calculate is
-   never out of reach. It stops at the end of the results row, above Saved calculations. */
-@media (min-width: 769px) and (min-height: 820px) {
+   (≥ 769px). In a window too short for the whole form, the card scrolls on its own, so
+   Calculate is never out of reach. It stops at the end of the results row, above Saved
+   calculations. */
+@media (min-width: 769px) {
   .form-card {
     position: sticky;
     top: var(--space-6);
+    max-height: calc(100vh - 2 * var(--space-6));
+    overflow-y: auto;
   }
 }
 
