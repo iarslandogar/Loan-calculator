@@ -6,6 +6,7 @@ import {
   type Dispatch,
   type ReactNode,
 } from 'react'
+import { loadHistory } from '../storage/history'
 import { loadSettings, saveSettings, type Settings, type Theme } from '../storage/settings'
 import { appReducer, initialState, type Action, type AppState } from './appReducer'
 
@@ -39,8 +40,12 @@ function useAppliedTheme(theme: Theme) {
   }, [theme])
 }
 
-// Settings are read before the first render, so the selects never flash the defaults.
-const init = (): AppState => ({ ...initialState, settings: loadSettings() })
+// Settings and history are read before the first render, so nothing flashes the defaults.
+const init = (): AppState => ({
+  ...initialState,
+  settings: loadSettings(),
+  history: { ...loadHistory(), removeFailed: false },
+})
 
 export function AppProvider({ children }: { children: ReactNode }) {
   const [state, dispatch] = useReducer(appReducer, undefined, init)

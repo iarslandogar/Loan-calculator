@@ -2,6 +2,7 @@ import { useRef, type FormEvent, type RefObject } from 'react'
 import { calculateLoan } from '../../domain/loan'
 import type { ErrorCode, Field, Unit } from '../../domain/types'
 import { validateInputs } from '../../domain/validate'
+import { createEntry, saveEntry } from '../../storage/history'
 import { useApp } from '../AppContext'
 import { copy } from '../copy'
 import { CurrencySelect } from './CurrencySelect'
@@ -61,7 +62,18 @@ export function LoanForm() {
       if (first) refs[first].current?.focus()
       return
     }
-    dispatch({ type: 'calculated', loan: calculateLoan(result.value) })
+    const loan = calculateLoan(result.value)
+    dispatch({ type: 'calculated', loan })
+    // Spec §9.3: save only after a successful calculation. A failed save makes saved
+    // calculations unavailable for the rest of the visit.
+    if (state.history.available) {
+      const saved = saveEntry(createEntry(loan, settings.currency))
+      dispatch(
+        saved.ok
+          ? { type: 'historyChanged', entries: saved.entries }
+          : { type: 'historyUnavailable' },
+      )
+    }
   }
 
   function onReset() {

@@ -1,6 +1,7 @@
 import { AppProvider } from './AppContext'
 import { ErrorBoundary } from './components/ErrorBoundary'
 import { Header } from './components/Header'
+import { HistoryPanel } from './components/HistoryPanel'
 import { LoanForm } from './components/LoanForm'
 import { ResultsPanel } from './components/ResultsPanel'
 
@@ -13,6 +14,7 @@ export function App() {
           <main className="layout">
             <LoanForm />
             <ResultsPanel />
+            <HistoryPanel />
           </main>
         </div>
       </AppProvider>

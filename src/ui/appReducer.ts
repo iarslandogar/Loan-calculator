@@ -1,15 +1,25 @@
 // Application state and transitions (spec §3.2).
 import type { CalculatedLoan, Currency, ErrorCode, Field, RawInputs, Unit } from '../domain/types'
+import type { HistoryEntry } from '../storage/history'
 import { defaultSettings, type Settings, type Theme } from '../storage/settings'
 
 export type Results =
   { status: 'idle' } | { status: 'shown'; loan: CalculatedLoan } | { status: 'stale' }
+
+export interface HistoryState {
+  /** False when storage is blocked, or after a failed save, for the rest of the visit (§9.1, §9.3). */
+  available: boolean
+  entries: HistoryEntry[]
+  /** A delete or Clear all could not be written (D-28); cleared by the next successful change. */
+  removeFailed: boolean
+}
 
 export interface AppState {
   inputs: RawInputs
   errors: Partial<Record<Field, ErrorCode>>
   results: Results
   settings: Settings
+  history: HistoryState
 }
 
 export type Action =
@@ -20,6 +30,11 @@ export type Action =
   | { type: 'reset' }
   | { type: 'setCurrency'; currency: Currency }
   | { type: 'setTheme'; theme: Theme }
+  | { type: 'restore'; inputs: RawInputs; currency: Currency; loan: CalculatedLoan }
+  | { type: 'historyChanged'; entries: HistoryEntry[] }
+  | { type: 'historyReloaded'; entries: HistoryEntry[] }
+  | { type: 'historyUnavailable' }
+  | { type: 'historyRemoveFailed' }
 
 export const emptyInputs: RawInputs = { amount: '', rate: '', tenure: '', unit: 'years' }
 
@@ -28,6 +43,7 @@ export const initialState: AppState = {
   errors: {},
   results: { status: 'idle' },
   settings: defaultSettings,
+  history: { available: true, entries: [], removeFailed: false },
 }
 
 function withoutError(errors: AppState['errors'], field: Field): AppState['errors'] {
@@ -69,5 +85,25 @@ export function appReducer(state: AppState, action: Action): AppState {
       return { ...state, settings: { ...state.settings, currency: action.currency } }
     case 'setTheme':
       return { ...state, settings: { ...state.settings, theme: action.theme } }
+    case 'restore':
+      // §3.2 (D-14): canonical inputs, all errors cleared, the entry's currency, fresh results.
+      return {
+        ...state,
+        inputs: action.inputs,
+        errors: {},
+        results: { status: 'shown', loan: action.loan },
+        settings: { ...state.settings, currency: action.currency },
+      }
+    case 'historyChanged':
+      return {
+        ...state,
+        history: { ...state.history, entries: action.entries, removeFailed: false },
+      }
+    case 'historyReloaded':
+      return { ...state, history: { ...state.history, entries: action.entries } }
+    case 'historyUnavailable':
+      return { ...state, history: { available: false, entries: [], removeFailed: false } }
+    case 'historyRemoveFailed':
+      return { ...state, history: { ...state.history, removeFailed: true } }
   }
 }
