@@ -5,14 +5,14 @@ A job describes what the person needs to get done whether or not this app exists
 | Job | Role | Served by stories |
 |---|---|---|
 | J-1 | R-1 Prospective Borrower | S-1, S-2, S-4, S-15 (backlog) |
-| J-2 | R-1 Prospective Borrower | S-3, S-14 (backlog) |
+| J-2 | R-1 Prospective Borrower | S-3, S-20, S-14 (backlog) |
 | J-3 | R-1 Prospective Borrower | S-7 |
 | J-4 | R-2 Loan Advisor | S-8, S-9, S-16 (backlog) |
-| J-5 | R-2 Loan Advisor | S-10, S-17 (backlog) |
+| J-5 | R-2 Loan Advisor | S-10, S-22, S-17 (backlog) |
 | J-6 | R-2 Loan Advisor | S-11 |
 | J-7 | R-2 Loan Advisor | S-12 |
-| J-8 | R-3 Existing Borrower | S-13, S-18 (backlog) |
-| J-9 | R-3 Existing Borrower | S-19 (backlog) |
+| J-8 | R-3 Existing Borrower | S-13, S-21, S-18 (backlog) |
+| J-9 | R-3 Existing Borrower | S-19 |
 | J-10 | R-1 Prospective Borrower | S-6 |
 | J-11 | R-1 Prospective Borrower | S-5 |
 

@@ -34,7 +34,10 @@
 | S-16 | Copy a quote summary to share | R-2 | J-4 | Backlog | Not implemented |
 | S-17 | Export or print the repayment schedule | R-2 | J-5 | Backlog | Not implemented |
 | S-18 | See the effect of an extra one-off repayment | R-3 | J-8 | Backlog | Not implemented |
-| S-19 | See interest versus principal for each year | R-3 | J-9 | Backlog | Not implemented |
+| S-19 | See interest versus principal for each year | R-3 | J-9 | v1 | Not implemented |
+| S-20 | See what share of the total cost is interest | R-1 | J-2 | v1 | Not implemented |
+| S-21 | See the balance fall over time | R-3 | J-8 | v1 | Not implemented |
+| S-22 | See how each payment splits between interest and principal | R-2 | J-5 | v1 | Not implemented |
 
 ## Reference loans used in the criteria
 
@@ -228,6 +231,48 @@ Saved calculations are stored only in this browser on this device. They are neve
 - **AC-13.2** Given L-B entered as `5` **Years**, then the schedule has exactly 60 rows and the Balance after month 60 is `0.00`.
 - **AC-13.3** Given any valid inputs, then the schedule has exactly as many rows as the tenure in months, every Balance equals the previous Balance minus that row's Principal, no Balance is negative, and the final Balance is exactly `0.00`. *(Property test.)*
 
+## S-19 See interest versus principal for each year
+**Role:** R-3 Existing Borrower · **Serves:** J-9 · **Scope:** v1 · **Status:** Not implemented
+
+"As an Existing Borrower, I want a yearly summary of interest versus principal paid, so that I can see how much of my money went to interest each year."
+
+*Moved from Backlog to v1 by the owner on 2026-10-18 (decision D-65, docs/process/proposal-visuals.md).*
+
+- **AC-19.1** Given L-B, when I view the yearly summary, then 5 rows are shown, and each row's interest and principal equal the sums of the matching 12 monthly rows.
+- **AC-19.2** Given L-B, then the **Yearly summary** table has the columns **Year**, **Interest (Rs)**, **Principal (Rs)**, **Balance (Rs)**, and its first and last rows read `1 | 422,945.63 | 338,857.21 | 2,161,142.79` and `5 | 69,355.47 | 692,447.31 | 0.00`.
+- **AC-19.3** Given `100000`, `10`, `18` **Months**, when I Calculate, then the yearly summary has 2 rows and the second (covering 6 months) reads `2 | 1,028.07 | 35,006.16 | 0.00`.
+- **AC-19.4** Given L-B, then a yearly chart shows one stacked bar per year, with a legend naming **Principal** and **Interest**.
+
+## S-20 See what share of the total cost is interest
+**Role:** R-1 Prospective Borrower · **Serves:** J-2 · **Scope:** v1 · **Status:** Not implemented
+
+"As a Prospective Borrower, I want to see at a glance how much of what I repay is interest, so that I can judge the true cost of an offer."
+
+- **AC-20.1** Given L-A, when I Calculate, then a **Cost breakdown** bar shows two parts, **Loan amount** and **Interest**, and the text `Interest is 6.2% of the total amount payable.`
+- **AC-20.2** Given L-B, then the text reads `Interest is 34.4% of the total amount payable.`
+- **AC-20.3** Given L-C (0%), then the text reads `Interest is 0.0% of the total amount payable.` and the bar shows the loan amount only.
+- **AC-20.4** Given L-A, then the loan-amount part takes 93.8% of the bar's width (within 1 percentage point).
+- **AC-20.5** Given either theme, then every chart's marks (S-19, S-20, S-21, S-22) have a contrast ratio of at least 3:1 against the card surface, and all chart text at least 4.5:1.
+- **AC-20.6** Given a viewport 360 px wide and L-MAX results, then the page does not scroll horizontally and every chart fits inside its card.
+
+## S-21 See the balance fall over time
+**Role:** R-3 Existing Borrower · **Serves:** J-8 · **Scope:** v1 · **Status:** Not implemented
+
+"As an Existing Borrower, I want to see my balance fall over the life of the loan, so that I can see how quickly I will owe less."
+
+- **AC-21.1** Given L-A, when I Calculate, then a **Balance over time** chart is shown with the text `The balance falls from Rs 1,000,000.00 to Rs 0.00 over 12 months.`
+- **AC-21.2** Given L-A, when I hover over month 6 in the chart, then a tooltip reads `Month 6: Rs 514,921.05`.
+- **AC-21.3** Given L-MAX, when I Calculate, then the chart is shown and AC-10.8's 1-second budget still holds with all charts present.
+
+## S-22 See how each payment splits between interest and principal
+**Role:** R-2 Loan Advisor · **Serves:** J-5 · **Scope:** v1 · **Status:** Not implemented
+
+"As a Loan Advisor, I want to show a customer how the interest part of each payment shrinks over time, so that I can explain the schedule at a glance."
+
+- **AC-22.1** Given L-A, when I Calculate, then an **Interest and principal in each payment** chart is shown with a legend naming **Principal** and **Interest** and the text `Interest is 11.3% of the first payment and 1.0% of the last.`
+- **AC-22.2** Given L-B, then the text reads `Interest is 59.1% of the first payment and 1.5% of the last.`
+- **AC-22.3** Given L-A, when I hover over month 1 in the chart, then a tooltip reads `Month 1: principal Rs 78,848.79, interest Rs 10,000.00`.
+
 ---
 
 # Backlog stories (not being built in v1)
@@ -259,7 +304,3 @@ These are recorded to show what we would build next. They are honestly marked **
 "As an Existing Borrower, I want to see how an extra payment would shorten my loan or reduce my interest, so that I can decide whether to make it."
 - **AC-18.1** Given L-B and an extra payment of `500000` after month 12 that keeps the monthly payment the same, then the new payoff month and the interest saved are shown.
 
-## S-19 See interest versus principal for each year
-**Role:** R-3 · **Serves:** J-9 · **Scope:** Backlog · **Status:** Not implemented
-"As an Existing Borrower, I want a yearly summary of interest versus principal paid, so that I can see how much of my money went to interest each year."
-- **AC-19.1** Given L-B, when I view the yearly summary, then 5 rows are shown, and each row's interest and principal equal the sums of the matching 12 monthly rows.

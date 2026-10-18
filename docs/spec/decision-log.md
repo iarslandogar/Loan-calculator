@@ -78,6 +78,7 @@ Each decision is **Approved** or **Proposed — needs owner approval**. Claude C
 | D-62 | Adopt the "Soft ledger" pastel redesign as a change cycle before Phase 5 | Approved (owner), 2026-10-18 |
 | D-63 | Redesign proposals P1–P5 | Approved (owner), 2026-10-18: P1 yes, P2 n/a, P3 yes, P4 already done, P5 declined (backlog) |
 | D-64 | Redesign implementation: deviations from the bundle and verification | **Proposed**: owner to review at the redesign mini-gate |
+| D-65 | Add four visuals: S-20, S-21, S-22 new; S-19 Backlog to v1 | Approved (owner), 2026-10-18 |
 
 **How this log is kept (D-24):** every decision is recorded here, however small. Entries are never deleted or rewritten. A changed decision gets a new dated **Decision** line under its entry, or a new entry that names the one it supersedes, and a row in the change history.
 
@@ -597,6 +598,19 @@ Every S-5 and S-8 test already passed before group 6, apart from the D-59 Firefo
   - A first L-MAX render probe suggested WebKit was 3× slower. A fair alternating A/B (3 rounds, WebKit, same method) disproved it: redesign medians 126 / 172 / 135 ms against old CSS 188 / 162 / 142 ms, all far under 1 s. The first probe was measurement noise, and the claim is retracted.
 - **Open observation:** the full E2E suite takes about 8.3 minutes against 5.5 before. The cause isn't established, and it isn't a failure.
 - **Note for the owner:** the design's reference board shows `Rs 66,185.46` and `Rs 1,066,185.46` for L-A. Those are example numbers in a static picture; the correct figures, which the app shows and the tests check, are 66,185.45 and 1,066,185.45.
+
+### D-65 Visuals: four charts in the results (owner, 2026-10-18)
+- **Request:** the owner asked for "a few visuals (like charts, diagrams)" and chose all four offered: a cost split bar, balance over time, payment make-up over time, and a yearly summary chart plus table.
+- **Decision:** approved as written in `docs/process/proposal-visuals.md`.
+  - New stories **S-20** (R-1/J-2), **S-21** (R-3/J-8) and **S-22** (R-2/J-5). **S-19** moves from Backlog to v1, with AC-19.2 to AC-19.4 added (AC-19.1 unchanged).
+  - New domain functions `costSplit`, `interestShare` and `yearlySummary` (spec §3.1.1), plus `formatPercent` (always 1 dp, half-up).
+  - New copy in spec §7, chart rules in §8.3.2, and the DOM contract rows in §8.3.1.
+- **Owner-approved edits to owner-only files:**
+  - `docs/jobs-to-be-done.md`: the owner explicitly approved exactly four edits ("You make exactly those edits"): J-2 + S-20, J-5 + S-22, J-8 + S-21, and J-9's S-19 no longer "(backlog)".
+  - `docs/user-stories.md`: the new stories and ACs, and S-19's scope.
+- **Reference values:** computed independently with exact decimal arithmetic (spec §5.2), and cross-checked: L-B's yearly interest sums to AC-3.2's Rs 1,309,014.14, and its principal to Rs 2,500,000.00.
+- **Process:** the `test-designer` writes the new tests (red), and the owner approves them, frozen under the tag `g3b-visuals-tests-approved`. Then implementation, `verify`, an independent review and a mini-gate, before Phase 5. **Existing frozen tests are not changed.**
+- **Still open from the redesign mini-gate:** D-64 approval, and whether to add the RD-3 forced-colors borders. The owner moved on to this request without answering.
 
 ### D-47 Group 2 builds the schedule table; cross-group ACs reported as pending
 - **Decision:** The shared helper `expectResultsShown` requires the schedule table, so group 2 builds `ScheduleTable` too; group 3 then verifies S-10 and S-13. AC-4.4 needs the Theme and Currency selects (group 4), and AC-9.2 needs saved calculations (group 5), so they are reported at G4.2 as **pending later groups**, not as done.

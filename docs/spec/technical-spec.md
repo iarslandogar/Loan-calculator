@@ -16,7 +16,7 @@ A single-page, client-only web app that calculates the equal monthly instalment 
 
 **There is no backend.** The app makes no network requests after the static files load: no API calls, analytics, cookies or fonts from third-party servers.
 
-**v1 scope:** stories S-1 to S-13. **Not in v1:** S-14 to S-19, and everything in §16.
+**v1 scope:** stories S-1 to S-13, plus S-19 to S-22 (the visuals, D-65). **Not in v1:** S-14 to S-18, and everything in §16.
 
 ## 2. Technology stack
 
@@ -114,10 +114,19 @@ validateInputs(raw: RawInputs): ValidationResult        // never throws
 emi(balance: Decimal, monthlyRate: Decimal, months: number): Decimal   // §5.1, unrounded
 calculateLoan(input: LoanInput): CalculatedLoan                        // §5.2
 
+// summary.ts (D-65)
+costSplit(loan: CalculatedLoan): { interestPercent: Decimal; loanPercent: Decimal }
+  // interestPercent = 100 x totalInterest / totalPayable, half-up to 1 dp; loanPercent = 100 - interestPercent
+interestShare(payment: Decimal, interest: Decimal): Decimal          // 100 x interest / payment, half-up to 1 dp
+yearlySummary(loan: CalculatedLoan): YearRow[]
+  // YearRow = { year: number; months: number; interest: Decimal; principal: Decimal; balance: Decimal }
+  // groups of 12 rows (the last group shorter if needed); exact sums; balance after the group's last month
+
 // format.ts
 formatRate(rate: Decimal): string                       // "12%", "21.5%"
 formatTenure(tenure: number, unit: Unit): string        // "1 year", "12 months"
 formatDateTime(date: Date): string                      // "17 Oct 2026, 20:45" (local time)
+formatPercent(x: Decimal): string                       // always 1 dp, half-up: "6.2%", "0.0%" (D-65)
 toCanonical(input: LoanInput): CanonicalInput           // never exponent notation; -0 becomes 0
 ```
 
@@ -327,6 +336,19 @@ Formatter contract: `formatMoney` and `formatAmount` receive non-negative values
 | err.TENURE_WHOLE | `Loan tenure must be a whole number.` |
 | err.TENURE_RANGE_YEARS | `Loan tenure must be between 1 and 100 years.` |
 | err.TENURE_RANGE_MONTHS | `Loan tenure must be between 1 and 1,200 months.` |
+| chart.cost.title | `Cost breakdown` |
+| chart.cost.summary | `Interest is {pct} of the total amount payable.` |
+| chart.cost.loan / chart.cost.interest | `Loan amount` / `Interest` |
+| chart.balance.title | `Balance over time` |
+| chart.balance.summary | `The balance falls from {amount} to {zero} over {n} months.` (`{n} month` when n = 1) |
+| chart.balance.tooltip | `Month {k}: {balance}` |
+| chart.makeup.title | `Interest and principal in each payment` |
+| chart.makeup.summary | `Interest is {first} of the first payment and {last} of the last.` |
+| chart.makeup.tooltip | `Month {k}: principal {principal}, interest {interest}` |
+| chart.series.principal / chart.series.interest | `Principal` / `Interest` |
+| yearly.title | `Yearly summary` |
+| yearly.cols | `Year`, `Interest (Rs)`, `Principal (Rs)`, `Balance (Rs)` (`($)` for USD) |
+| yearly.tooltip | `Year {y}: principal {principal}, interest {interest}` |
 | fatal | `Something went wrong. Please reload the page.` |
 
 The apostrophes in `can't`, `aren't`, `doesn't`, `Couldn't` and `site's` are the ASCII `'` character.
@@ -369,6 +391,29 @@ Tests locate elements only by role and accessible name. The app must provide:
 | Dialog | `<dialog>` named by `dialog.clear.text` | `getByRole('dialog', { name: "Clear all saved calculations? This can't be undone." })` |
 | Theme | `data-theme` on `<html>` | `document.documentElement.dataset.theme` |
 | Removal failure | Text in the Saved calculations card | `getByText(...)` with `history.removeFailed` |
+| Charts (D-65) | `<figure>` whose `<figcaption>` is the chart's summary sentence; a heading with the chart title; the `<svg>` is `aria-hidden="true"`; the legend is HTML text | `getByRole('figure', { name: <summary> })`; `getByText(<title>)` |
+| Yearly summary | `<h3>` = `yearly.title`; `<table aria-labelledby>` that heading; `<th scope="col">` per §7 | `getByRole('table', { name: 'Yearly summary' })` |
+| Chart tooltips | An element with `role="tooltip"` shown on pointer hover | `getByRole('tooltip')` |
+
+### 8.3.2 Charts (D-65)
+
+- **Order inside the results card:**
+  1. the three figures and the rounding note;
+  2. **Cost breakdown** (S-20);
+  3. **Balance over time** (S-21);
+  4. **Interest and principal in each payment** (S-22);
+  5. **Yearly summary**, a chart and table (S-19);
+  6. the **Repayment schedule**, still last.
+- **Hand-built inline SVG,** drawn from `CalculatedLoan`. No chart library (§2) and no network.
+- **Each series is one `<path>`,** never one element per month, so 1,200 months stay within AC-10.8.
+- **Never colour alone:**
+  - every chart has a visible text summary (its `<figcaption>`);
+  - two-series charts have an HTML legend, with Principal first and Interest second in every chart;
+  - the data is also in a table (the schedule, the yearly table).
+- **Colour:** two categorical series in a fixed order, validated with the dataviz validator against the light and dark card surfaces. Marks reach at least 3:1 against `--surface`, and chart text uses the text tokens (AC-20.5).
+- **One y-axis per chart.** Axes and grid are quiet.
+- **Hover:** a pointer tooltip (`role="tooltip"`) on the balance, payment and yearly charts, with the exact values. Keyboard and screen-reader users get the same values from the tables.
+- **Layout:** fluid width with no fixed pixel widths, and no horizontal page scroll (AC-20.6).
 
 ### 8.4 Theme
 
@@ -538,5 +583,5 @@ The build tsconfig excludes `*.test.*`, `test/` and `e2e/`, so the app builds wh
 - Currency conversion (the symbol only changes).
 - Accounts, sync across devices, server storage.
 - Languages other than English; right-to-left layouts.
-- Printing/exporting, copying, comparing offers, prepayments, yearly summaries (backlog stories S-14 to S-19).
+- Printing/exporting, copying, comparing offers, prepayments (backlog stories S-14 to S-18). Yearly summaries moved to v1 as S-19 (D-65).
 - Offline/PWA installation.
