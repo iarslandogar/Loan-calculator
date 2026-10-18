@@ -31,12 +31,16 @@ export function HistoryPanel() {
     const target = pendingFocus.current
     if (!target) return
     pendingFocus.current = null
-    if (target === 'heading') headingRef.current?.focus()
-    else if (target === 'clearAll') clearAllRef.current?.focus()
-    else {
+    // A target that can't take focus any more (Clear all disabled, or the entry removed by
+    // another tab meanwhile) falls back to the heading, so focus is never dropped (G45-1).
+    let element: HTMLElement | null | undefined = headingRef.current
+    if (target === 'clearAll' && clearAllRef.current && !clearAllRef.current.disabled) {
+      element = clearAllRef.current
+    } else if (typeof target === 'object') {
       const selector = `[data-entry-id="${CSS.escape(target.restore)}"] [data-action="restore"]`
-      listRef.current?.querySelector<HTMLButtonElement>(selector)?.focus()
+      element = listRef.current?.querySelector<HTMLButtonElement>(selector) ?? headingRef.current
     }
+    element?.focus()
   })
 
   // Spec §9.3: another tab changed the history (or cleared all storage): reload the list.

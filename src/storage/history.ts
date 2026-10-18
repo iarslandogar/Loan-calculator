@@ -32,7 +32,9 @@ function validEntry(value: unknown): HistoryEntry | null {
   if (typeof createdAt !== 'string') return null
   const time = Date.parse(createdAt)
   if (Number.isNaN(time)) return null
-  const year = new Date(time).getUTCFullYear()
+  // Check the year as it will be displayed (local time), so the shown date always has a
+  // four-digit year from 2000 to 9999 (G4.5 review G45-2).
+  const year = new Date(time).getFullYear()
   if (year < 2000 || year > 9999) return null
   if (currency !== 'PKR' && currency !== 'USD') return null
   if (typeof amount !== 'string' || typeof rate !== 'string') return null
@@ -81,12 +83,15 @@ export function parseHistory(raw: string | null): HistoryEntry[] {
   const seen = new Set<string>()
   const entries: HistoryEntry[] = []
   for (const element of value) {
+    // The first 20 valid, unique entries are the whole result, so stop there: a tampered
+    // store with thousands of elements stays fast (G4.5 review G45-3).
+    if (entries.length === HISTORY_LIMIT) break
     const entry = validEntry(element)
     if (!entry || seen.has(entry.id)) continue
     seen.add(entry.id)
     entries.push(entry)
   }
-  return entries.slice(0, HISTORY_LIMIT)
+  return entries
 }
 
 /** Reads the stored list now. Every write starts from this, never from in-memory state (D-13). */
