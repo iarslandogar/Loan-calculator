@@ -116,6 +116,7 @@ body {
 
 .actions {
   display: flex;
+  flex-wrap: wrap;
   gap: 8px;
   margin-top: 8px;
 }
@@ -160,9 +161,8 @@ button.secondary {
 
 .figure {
   display: flex;
-  flex-wrap: wrap;
-  justify-content: space-between;
-  gap: 4px 12px;
+  flex-direction: column;
+  gap: 2px;
 }
 
 .figure dt {
@@ -177,7 +177,7 @@ button.secondary {
 }
 
 .figure.headline dd {
-  font-size: 1.5rem;
+  font-size: clamp(1.15rem, 6vw, 1.5rem);
 }
 
 .rounding-note {
@@ -270,6 +270,7 @@ button.secondary {
 
 .entry-actions {
   display: flex;
+  flex-wrap: wrap;
   gap: 8px;
 }
 
@@ -294,6 +295,28 @@ button:disabled {
 .dialog-text {
   margin: 0 0 8px;
   font-weight: 600;
+}
+
+/* Very narrow viewports (for example 360 px at 200% zoom = 180 CSS px): stack the tenure pair
+   and tighten spacing so nothing overflows (G4.3/D-54 review D54-2). 360 px and up are unchanged. */
+@media (max-width: 300px) {
+  .page {
+    padding: 8px;
+  }
+
+  .card {
+    padding: 10px;
+  }
+
+  .tenure-row {
+    grid-template-columns: minmax(0, 1fr);
+    gap: 0;
+  }
+
+  .theme-field {
+    min-width: 0;
+    width: 100%;
+  }
 }
 
 .fatal {

@@ -1,8 +1,10 @@
 import { formatMoney } from '../../domain/money'
 import type { CalculatedLoan, Currency } from '../../domain/types'
 import { copy } from '../copy'
+import { BreakAfterCommas } from './BreakAfterCommas'
 
-// Spec §8.3.1: each <dd> is named by its <dt>, so tests find figures by role and name.
+// Spec §8.3.1: each <dd> is labelled by its <dt> (aria-labelledby), so tests find a figure
+// with getByLabel (D-48).
 export function ResultsSummary({ loan, currency }: { loan: CalculatedLoan; currency: Currency }) {
   const figures = [
     { id: 'summary-monthly', label: copy.summary.monthly, value: loan.monthlyPayment },
@@ -14,7 +16,9 @@ export function ResultsSummary({ loan, currency }: { loan: CalculatedLoan; curre
       {figures.map((f) => (
         <div key={f.id} className={f.id === 'summary-monthly' ? 'figure headline' : 'figure'}>
           <dt id={f.id}>{f.label}</dt>
-          <dd aria-labelledby={f.id}>{formatMoney(f.value, currency)}</dd>
+          <dd aria-labelledby={f.id}>
+            <BreakAfterCommas text={formatMoney(f.value, currency)} />
+          </dd>
         </div>
       ))}
     </dl>

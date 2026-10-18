@@ -2,6 +2,7 @@ import { formatDateTime, formatRate, formatTenure } from '../../domain/format'
 import { Decimal, formatMoney } from '../../domain/money'
 import type { HistoryEntry as Entry } from '../../storage/history'
 import { copy } from '../copy'
+import { BreakAfterCommas } from './BreakAfterCommas'
 
 interface HistoryEntryProps {
   entry: Entry
@@ -24,8 +25,12 @@ export function HistoryEntry({ entry, onRestore, onDelete }: HistoryEntryProps) 
   return (
     <li className="history-entry" data-entry-id={entry.id}>
       <div className="entry-text">
-        <p className="entry-line1">{line1}</p>
-        <p>{line2}</p>
+        <p className="entry-line1">
+          <BreakAfterCommas text={line1} />
+        </p>
+        <p>
+          <BreakAfterCommas text={line2} />
+        </p>
         <p className="entry-time">{copy.history.line3(datetime)}</p>
       </div>
       <div className="entry-actions">
