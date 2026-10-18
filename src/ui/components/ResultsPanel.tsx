@@ -12,7 +12,8 @@ export function ResultsPanel() {
       {/* The idle and stale texts are announced politely when they appear (D-49). */}
       <div aria-live="polite">
         {results.status === 'idle' && <p className="status">{copy.results.idle}</p>}
-        {results.status === 'stale' && <p className="status">{copy.results.stale}</p>}
+        {/* status-stale lets the design make the stale state unmistakable (D-63, P1). */}
+        {results.status === 'stale' && <p className="status status-stale">{copy.results.stale}</p>}
       </div>
       {results.status === 'shown' && (
         <>
