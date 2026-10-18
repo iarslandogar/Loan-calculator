@@ -65,9 +65,9 @@ Each decision is **Approved** or **Proposed — needs owner approval**. Claude C
 | D-49 | Group 2 implementation choices | Approved (owner, G4.2), 2026-10-18 |
 | D-50 | Handling of the G4.2 review's Minor findings | Approved (owner, G4.2), 2026-10-18 |
 | D-51 | Group 3 needed no new code; G4.3 Minor findings | Approved (owner, G4.3), 2026-10-18 |
-| D-52 | Group 4 implementation choices | **Proposed**: developer decisions, owner to review at G4.4 |
-| D-53 | Handling of the G4.4 review's Minor findings | **Proposed**: owner to review at G4.4 |
-| D-54 | Owner request: widen the input limits (verified), now, before group 5 | Approved direction (owner), 2026-10-18; exact bounds pending |
+| D-52 | Group 4 implementation choices | Approved (owner, G4.4), 2026-10-18 |
+| D-53 | Handling of the G4.4 review's Minor findings | Approved (owner, G4.4), 2026-10-18 |
+| D-54 | Widen the input limits (supersedes D-02's bounds) | Approved (owner), 2026-10-18: amount 10 to 10^15, rate 0 to 75%, 1 to 100 years / 1 to 1,200 months |
 | D-55 | Counterexample to invariant 6 / AC-10.5 within the current limits | Approved (owner), 2026-10-18: option A, state it truthfully |
 
 **How this log is kept (D-24):** every decision is recorded here, however small. Entries are never deleted or rewritten. A changed decision gets a new dated **Decision** line under its entry, or a new entry that names the one it supersedes, and a row in the change history.
@@ -442,7 +442,25 @@ The code-reviewer reported `BLOCKING FINDINGS: 0` for group 4, with three Minors
   - An unbounded tenure would hang the browser while it draws the schedule.
   - A 1,000% rate broke the 0.01 guarantee in 11 months of one loan.
 - **Decision (owner, 2026-10-18):** widen to **wide, verified limits** (for example amount up to 10^15, rate up to 100%, tenure up to 100 years or 1,200 months, with exact values set by verification). Do it **now, before group 5**.
-- **Status:** the bounds search found D-55 first. The exact bounds wait on the D-55 decision.
+- **Status:** the bounds search found D-55 first. The exact bounds waited on the D-55 decision.
+- **Verification** (exact decimal arithmetic, spec §5.2 exactly, under the D-55 guarantee: every payment within 0.01 of the headline except the final one, within 0.02; principal never negative; balance ends at 0.00):
+  - **Smallest amount:** Rs 1 fails, because at 0% over long tenures the headline rounds to 0.00. **Rs 10 passes** an exhaustive grid of 216 rate × tenure cases up to 1,200 months.
+  - **Rate × tenure:** near 100% over 1,100 to 1,200 months, a month's principal can be −0.01 (11 of 20,000 failed at 100%; a failure was seen at 97.77%).
+  - **Up to 90%:** 0 failures in 20,000 corner-biased random loans per maximum (50%, 60%, 75%, 90%), each over amounts 10 to 10^15 and 1 to 1,200 months.
+  - **At the edge:** 0 failures in a dense sweep of 5,082 schedules each at 75% and at 90% (rates within 5 points of the maximum, 1,100 to 1,200 months, past-failure amounts).
+  - **Today's limits:** 0 failures in 20,000 under the D-55 guarantee.
+  - **New references:** L-MIN and L-MAX satisfy every invariant, and an exact-rational cross-check gives identical rows.
+- **Decision (owner, 2026-10-18):** **amount 10 to 1,000,000,000,000,000; rate 0 to 75%; tenure 1 to 100 years or 1 to 1,200 months** (75% rather than 90%, for margin below where failures start). This **supersedes the bounds in D-02**; D-02's other reasoning stands.
+- **Copy:**
+  - `Loan amount must be between 10 and 1,000,000,000,000,000.`
+  - `Interest rate must be between 0 and 75%.`
+  - `Loan tenure must be between 1 and 100 years.`
+  - `Loan tenure must be between 1 and 1,200 months.` (grouped like the amount message)
+  - The rounding note (D-55) becomes `Some payments differ by up to 0.02 because amounts are rounded to 2 decimal places.` This is currency-neutral, and true by D-55.
+- **New references:**
+  - **L-MIN** = 10, 0.01%, 1 month: monthly Rs 10.00, total interest Rs 0.00, total payable Rs 10.00.
+  - **L-MAX** = 1,000,000,000,000,000, 75%, 100 years (1,200 months): monthly Rs 62,500,000,000,000.00, total interest Rs 74,000,000,000,000,003.34, total payable Rs 75,000,000,000,000,003.34.
+- **Corner-biased generators (D-38) move with the bounds:** amounts 10 to 20,000; rates 45 to 75%; tenures 900 to 1,200 months; every new exact bound appears.
 
 ### D-55 Counterexample to invariant 6 / AC-10.5 within the CURRENT limits (open)
 - **Finding (Claude Code, 2026-10-18, while verifying D-54):** spec §5.3 says "every payment is within 0.01 of the headline payment", and §5.4 invariant 6, AC-10.5 and the `note.rounding` copy say the same. That is **not true**, even within the approved D-02 limits.

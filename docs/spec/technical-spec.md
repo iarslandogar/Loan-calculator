@@ -164,9 +164,9 @@ Number pattern: `^-?(\d+(\.\d*)?|\.\d+)$`, where `\d` means the ASCII digits `0`
 
 | Field | 1. Empty | 2. Format | 3. Precision | 4. Range |
 |---|---|---|---|---|
-| Loan amount | `AMOUNT_REQUIRED` | not a number → `AMOUNT_NAN` | more than 2 dp → `AMOUNT_DECIMALS` | outside 1,000 to 1,000,000,000 inclusive → `AMOUNT_RANGE` |
-| Interest rate | `RATE_REQUIRED` | → `RATE_NAN` | more than 2 dp → `RATE_DECIMALS` | outside 0 to 50 inclusive → `RATE_RANGE` |
-| Loan tenure | `TENURE_REQUIRED` | not `^-?\d+$` → `TENURE_WHOLE` (also covers `abc` and `2.5`) | n/a | Years: outside 1 to 40 → `TENURE_RANGE_YEARS`; Months: outside 1 to 480 → `TENURE_RANGE_MONTHS` |
+| Loan amount | `AMOUNT_REQUIRED` | not a number → `AMOUNT_NAN` | more than 2 dp → `AMOUNT_DECIMALS` | outside 10 to 1,000,000,000,000,000 inclusive → `AMOUNT_RANGE` (D-54) |
+| Interest rate | `RATE_REQUIRED` | → `RATE_NAN` | more than 2 dp → `RATE_DECIMALS` | outside 0 to 75 inclusive → `RATE_RANGE` (D-54) |
+| Loan tenure | `TENURE_REQUIRED` | not `^-?\d+$` → `TENURE_WHOLE` (also covers `abc` and `2.5`) | n/a | Years: outside 1 to 100 → `TENURE_RANGE_YEARS`; Months: outside 1 to 1,200 → `TENURE_RANGE_MONTHS` (D-54) |
 
 A negative number passes the format check and fails on range, so `-500` gets the range message (AC-2.4).
 
@@ -174,10 +174,10 @@ A negative number passes the format check and fails on range, so `-500` gets the
 
 | Field | Raw | Result |
 |---|---|---|
-| Amount | `1000`, `1000.00`, `1000000000` | valid |
+| Amount | `10`, `10.00`, `1000`, `00012`, `1000000000000000` | valid |
 | Amount | `1000.500` | `AMOUNT_DECIMALS` (trailing zeros count) |
 | Amount | `5000000000.555` | `AMOUNT_DECIMALS` (precision is checked before range) |
-| Amount | `.5`, `00012` | `AMOUNT_RANGE` |
+| Amount | `.5`, `9.99`, `1000000000000000.01` | `AMOUNT_RANGE` |
 | Amount | `１２`, `١٢`, `1,,000`, `1000,50` | `AMOUNT_NAN` |
 | Rate | `5.`, `-0`, `12 %` | valid (5, 0, 12) |
 | Rate | `%` | `RATE_REQUIRED` (empty after normalisation) |
@@ -189,7 +189,7 @@ A negative number passes the format check and fails on range, so `-500` gets the
 ### 4.3 Derived values
 
 - `P` = loan amount as `Decimal`
-- `n` = tenure × 12 when the unit is years, otherwise the tenure (an integer from 1 to 480)
+- `n` = tenure × 12 when the unit is years, otherwise the tenure (an integer from 1 to 1,200)
 - `annualRate` = `Decimal`
 - `r = annualRate / 1200` (monthly rate as a fraction, held to 40 significant digits; used in the EMI formula)
 
@@ -234,7 +234,7 @@ The common textbook method fixes the payment at `round2(EMI)` for every month an
 - Rs 10,000 at 36% for 359 months: the loan is paid off **7 months early** (month 352).
 - Rs 10,000.82 at 30% for 360 months: the fixed instalment is 250.05 but the final instalment is **1,767.73**.
 
-Re-computing the instalment from the remaining balance each month stops the error compounding. We verified over the whole input range (exact decimal simulation, about 1,700 cases including every boundary corner) that it ends at exactly 0.00, never ends early, never produces a negative principal, and that **every payment is within 0.01 of the headline payment**. Every row stays verifiable by hand: interest = opening balance × r, rounded, and principal = payment − interest.
+Re-computing the instalment from the remaining balance each month stops the error compounding. We verified over the whole input range (exact decimal simulation; D-54 lists the searches, tens of thousands of cases including every boundary corner) that it ends at exactly 0.00, never ends early, never produces a negative principal, and that **every payment is within 0.01 of the headline payment, except the final payment, which is within 0.02** (D-55: about 0.02% of loans have a final payment 0.02 away; an earlier claim of 0.01 for every payment was wrong). Every row stays verifiable by hand: interest = opening balance × r, rounded, and principal = payment − interest.
 
 ### 5.4 Invariants (property-tested with fast-check over the full valid input domain)
 
@@ -244,13 +244,13 @@ For every valid (P, rate, n):
 3. For every row: `interest = round2(opening × annualRate / 1200)`, where opening is P for row 1 and the previous row's balance after that.
 4. For every row: `0 ≤ principal ≤ opening` and `balance ≥ 0`.
 5. Final balance = 0.00 exactly. Σ principal = P exactly.
-6. For every row: `|payment − payment_1| ≤ 0.01`.
+6. For every row except the last: `|payment − payment_1| ≤ 0.01`; for the last row: `|payment − payment_1| ≤ 0.02` (D-55).
 7. Total amount payable = P + total interest, exactly.
 8. Results are identical when the same tenure is entered as years or as the equivalent number of months.
 
 If a property test finds a counterexample: **stop, record it, and report it to the human.** Do not change the algorithm or loosen an invariant without approval.
 
-Generators must be biased towards the corners (D-38): at least a quarter of runs draw from small amounts (1,000 to 20,000), rates of 30–50% and tenures of 300–480 months, where rounding errors are largest. Every exact bound (1,000; 1,000,000,000; 0%; 50%; 1 month; 480 months) must also appear.
+Generators must be biased towards the corners (D-38): at least a quarter of runs draw from small amounts (10 to 20,000), rates of 45–75% and tenures of 900–1,200 months, where rounding errors are largest. Every exact bound (10; 1,000,000,000,000,000; 0%; 75%; 1 month; 1,200 months) must also appear (D-54).
 
 ### 5.5 Reference values (must be reproduced exactly)
 
@@ -261,8 +261,8 @@ Use the reference loans table in `docs/user-stories.md`, plus these schedule row
 - L-A payments equal 88,848.78 in rows 9, 10 and 12, and 88,848.79 in all other rows
 - L-Z3 rows: `333.33/0.00/333.33/666.67`, `333.34/0.00/333.34/333.33`, `333.33/0.00/333.33/0.00`
 - `[SPEC-§5.3]` regression loans, where the fixed-instalment method fails:
-  - `10000`, `36`, `359` months: headline `300.01`; exactly 359 rows; final balance `0.00`; every payment within 0.01 of `300.01`. (The fixed method pays off at month 352.)
-  - `10000.82`, `30`, `360` months: headline `250.05`; exactly 360 rows; final balance `0.00`; every payment within 0.01 of `250.05`. (The fixed method's final instalment is `1,767.73`.)
+  - `10000`, `36`, `359` months: headline `300.01`; exactly 359 rows; final balance `0.00`; every payment within 0.01 of `300.01` (the final one within 0.02, D-55). (The fixed method pays off at month 352.)
+  - `10000.82`, `30`, `360` months: headline `250.05`; exactly 360 rows; final balance `0.00`; every payment within 0.01 of `250.05` (the final one within 0.02, D-55). (The fixed method's final instalment is `1,767.73`.)
 
 ## 6. Formatting
 
@@ -299,7 +299,7 @@ Formatter contract: `formatMoney` and `formatAmount` receive non-negative values
 | summary.monthly | `Monthly payment` |
 | summary.interest | `Total interest` |
 | summary.total | `Total amount payable` |
-| note.rounding | `Some payments differ by 0.01 because amounts are rounded to 2 decimal places.` |
+| note.rounding | `Some payments differ by up to 0.02 because amounts are rounded to 2 decimal places.` (D-55) |
 | schedule.title | `Repayment schedule` (also the accessible name of the scroll region and of the table) |
 | schedule.cols | `Month`, `Payment (Rs)`, `Interest (Rs)`, `Principal (Rs)`, `Balance (Rs)` (`($)` for USD) |
 | history.title | `Saved calculations` |
@@ -318,15 +318,15 @@ Formatter contract: `formatMoney` and `formatAmount` receive non-negative values
 | err.AMOUNT_REQUIRED | `Enter a loan amount.` |
 | err.AMOUNT_NAN | `Loan amount must be a number.` |
 | err.AMOUNT_DECIMALS | `Loan amount can have at most 2 decimal places.` |
-| err.AMOUNT_RANGE | `Loan amount must be between 1,000 and 1,000,000,000.` |
+| err.AMOUNT_RANGE | `Loan amount must be between 10 and 1,000,000,000,000,000.` |
 | err.RATE_REQUIRED | `Enter an interest rate.` |
 | err.RATE_NAN | `Interest rate must be a number.` |
 | err.RATE_DECIMALS | `Interest rate can have at most 2 decimal places.` |
-| err.RATE_RANGE | `Interest rate must be between 0 and 50%.` |
+| err.RATE_RANGE | `Interest rate must be between 0 and 75%.` |
 | err.TENURE_REQUIRED | `Enter a loan tenure.` |
 | err.TENURE_WHOLE | `Loan tenure must be a whole number.` |
-| err.TENURE_RANGE_YEARS | `Loan tenure must be between 1 and 40 years.` |
-| err.TENURE_RANGE_MONTHS | `Loan tenure must be between 1 and 480 months.` |
+| err.TENURE_RANGE_YEARS | `Loan tenure must be between 1 and 100 years.` |
+| err.TENURE_RANGE_MONTHS | `Loan tenure must be between 1 and 1,200 months.` |
 | fatal | `Something went wrong. Please reload the page.` |
 
 The apostrophes in `can't`, `aren't`, `doesn't`, `Couldn't` and `site's` are the ASCII `'` character.
@@ -446,7 +446,7 @@ After that, later duplicates of an `id` are dropped and the list is truncated to
 | NFR-1 | Tested on the Chromium, Firefox and WebKit engines (Playwright). Chromium covers Chrome and Edge; WebKit approximates Safari. The 3-browser evidence that counts is the Linux CI run; a local run on Windows uses Playwright's Windows WebKit build. |
 | NFR-2 | A fresh clone runs with `npm ci && npm run dev` on Node 24. No accounts, keys or services. |
 | NFR-3 | No network requests after initial load (asserted in one E2E test via request interception, **after** a calculation). The same test asserts `document.cookie === ''` and that the context holds no cookies (NFR-7). |
-| NFR-4 | L-MAX: from the Calculate click to the 480th schedule row being in the DOM, ≤ 1,000 ms, measured inside the page with `performance.now()`, in each browser. Checked locally from G4.3 and on CI by G4.6 (AC-10.8; D-32). |
+| NFR-4 | L-MAX: from the Calculate click to the 1,200th (last) schedule row being in the DOM, ≤ 1,000 ms, measured inside the page with `performance.now()`, in each browser. Checked locally from G4.3 and on CI by G4.6 (AC-10.8; D-32). |
 | NFR-5 | Production JS bundle under 150 KB gzipped (checked in `verify`). |
 | NFR-6 | No `any` types, no `@ts-ignore`, and no ESLint warnings in committed code (`eslint --max-warnings 0`). |
 | NFR-7 | Data stays in the browser. No cookies. |

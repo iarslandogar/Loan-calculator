@@ -44,8 +44,8 @@
 | L-B | 2,500,000 | 18% | 5 years (60 months) | Rs 63,483.57 | Rs 1,309,014.14 | Rs 3,809,014.14 |
 | L-C | 120,000 | 0% | 12 months | Rs 10,000.00 | Rs 0.00 | Rs 120,000.00 |
 | L-D | 100,000 | 10% | 1 month | Rs 100,833.33 | Rs 833.33 | Rs 100,833.33 |
-| L-MIN | 1,000 | 0.01% | 1 month | Rs 1,000.01 | Rs 0.01 | Rs 1,000.01 |
-| L-MAX | 1,000,000,000 | 50% | 40 years (480 months) | Rs 41,666,666.80 | Rs 19,000,000,061.79 | Rs 20,000,000,061.79 |
+| L-MIN | 10 | 0.01% | 1 month | Rs 10.00 | Rs 0.00 | Rs 10.00 |
+| L-MAX | 1,000,000,000,000,000 | 75% | 100 years (1,200 months) | Rs 62,500,000,000,000.00 | Rs 74,000,000,000,000,003.34 | Rs 75,000,000,000,000,003.34 |
 | L-Z3 | 1,000 | 0% | 3 months | Rs 333.33 | Rs 0.00 | Rs 1,000.00 |
 
 ---
@@ -62,8 +62,8 @@
 - **AC-1.3** Given L-B entered as `2500000`, `18`, `5` **Years**, when I Calculate, then **Monthly payment** shows `Rs 63,483.57`.
 - **AC-1.4** Given a zero rate (L-C: `120000`, `0`, `12` **Months**), when I Calculate, then **Monthly payment** shows `Rs 10,000.00`.
 - **AC-1.5** Given a one-month loan (L-D: `100000`, `10`, `1` **Months**), when I Calculate, then **Monthly payment** shows `Rs 100,833.33`.
-- **AC-1.6** Given the smallest accepted values (L-MIN: `1000`, `0.01`, `1` **Months**), when I Calculate, then **Monthly payment** shows `Rs 1,000.01`.
-- **AC-1.7** Given the largest accepted values (L-MAX: `1000000000`, `50`, `40` **Years**), when I Calculate, then **Monthly payment** shows `Rs 41,666,666.80`.
+- **AC-1.6** Given the smallest accepted values (L-MIN: `10`, `0.01`, `1` **Months**), when I Calculate, then **Monthly payment** shows `Rs 10.00`.
+- **AC-1.7** Given the largest accepted values (L-MAX: `1000000000000000`, `75`, `100` **Years**), when I Calculate, then **Monthly payment** shows `Rs 62,500,000,000,000.00`.
 - **AC-1.8** Given the loan amount is typed with thousands separators, as `1,000,000` or in lakh style as `10,00,000`, when I Calculate with `12` and `1` **Years**, then the result is the same as AC-1.1.
 - **AC-1.9** Given values with leading or trailing spaces (`␣1000000␣`, `␣12␣`, `␣1␣`), when I Calculate, then the spaces are ignored and the result is the same as AC-1.1.
 - **AC-1.10** Given the rate is typed with a trailing percent sign (`12%`), when I Calculate with `1000000` and `1` **Years**, then the result is the same as AC-1.1.
@@ -80,13 +80,13 @@ Error messages appear directly below the field they refer to. While any error is
 - **AC-2.1** Given an empty form, when I Calculate, then I see `Enter a loan amount.`, `Enter an interest rate.` and `Enter a loan tenure.` under the matching fields, no results are shown, the results area shows `Enter your loan details and select Calculate.`, and focus moves to **Loan amount**.
 - **AC-2.2** Given loan amount `abc` (rate `12`, tenure `1` **Years**), when I Calculate, then I see `Loan amount must be a number.` and no results.
 - **AC-2.3** Given loan amount `1e6`, when I Calculate, then I see `Loan amount must be a number.` (scientific notation is not accepted).
-- **AC-2.4** Given loan amount `0`, `-500` or `999.99` (each tried separately), when I Calculate, then I see `Loan amount must be between 1,000 and 1,000,000,000.`
-- **AC-2.5** Given loan amount `1000000000.01`, when I Calculate, then I see `Loan amount must be between 1,000 and 1,000,000,000.`; and given loan amount `1000000000`, no loan-amount message is shown.
+- **AC-2.4** Given loan amount `0`, `-500` or `9.99` (each tried separately), when I Calculate, then I see `Loan amount must be between 10 and 1,000,000,000,000,000.`
+- **AC-2.5** Given loan amount `1000000000000000.01`, when I Calculate, then I see `Loan amount must be between 10 and 1,000,000,000,000,000.`; and given loan amount `1000000000000000`, no loan-amount message is shown.
 - **AC-2.6** Given loan amount `1000.555`, when I Calculate, then I see `Loan amount can have at most 2 decimal places.`
-- **AC-2.7** Given rate `-1` or `50.01`, when I Calculate, then I see `Interest rate must be between 0 and 50%.`; and given rate `0` or `50`, no rate message is shown.
+- **AC-2.7** Given rate `-1` or `75.01`, when I Calculate, then I see `Interest rate must be between 0 and 75%.`; and given rate `0` or `75`, no rate message is shown.
 - **AC-2.8** Given rate `twelve`, when I Calculate, then I see `Interest rate must be a number.`; and given rate `12.345`, I see `Interest rate can have at most 2 decimal places.`
 - **AC-2.9** Given tenure `2.5` with unit **Years**, when I Calculate, then I see `Loan tenure must be a whole number.`
-- **AC-2.10** Given unit **Years** and tenure `0` or `41`, when I Calculate, then I see `Loan tenure must be between 1 and 40 years.`; given unit **Months** and tenure `0` or `481`, I see `Loan tenure must be between 1 and 480 months.`; and tenure `40` **Years** or `480` **Months** shows no tenure message.
+- **AC-2.10** Given unit **Years** and tenure `0` or `101`, when I Calculate, then I see `Loan tenure must be between 1 and 100 years.`; given unit **Months** and tenure `0` or `1201`, I see `Loan tenure must be between 1 and 1,200 months.`; and tenure `100` **Years** or `1200` **Months** shows no tenure message.
 - **AC-2.11** Given an invalid loan amount and an invalid rate with a valid tenure, when I Calculate, then both messages are shown at the same time and focus moves to **Loan amount** (the first invalid field).
 - **AC-2.12** Given results for L-A are showing, when I change the loan amount to `abc` and Calculate, then the previous results and schedule are removed, `Loan amount must be a number.` is shown under **Loan amount**, and the results area shows `Enter your loan details and select Calculate.`
 - **AC-2.13** Given a message is showing under **Loan amount** and another under **Annual interest rate**, when I type in the **Loan amount** field, then the loan-amount message disappears and the rate message stays until the next Calculate.
@@ -103,8 +103,8 @@ Error messages appear directly below the field they refer to. While any error is
 - **AC-3.1** Given L-A, when I Calculate, then **Total interest** shows `Rs 66,185.45` and **Total amount payable** shows `Rs 1,066,185.45`.
 - **AC-3.2** Given L-B, when I Calculate, then **Total interest** shows `Rs 1,309,014.14` and **Total amount payable** shows `Rs 3,809,014.14`.
 - **AC-3.3** Given L-C (0%), when I Calculate, then **Total interest** shows `Rs 0.00` and **Total amount payable** shows `Rs 120,000.00`.
-- **AC-3.4** Given L-MIN, when I Calculate, then **Total interest** shows `Rs 0.01` and **Total amount payable** shows `Rs 1,000.01`.
-- **AC-3.5** Given L-MAX, when I Calculate, then **Total interest** shows `Rs 19,000,000,061.79` and **Total amount payable** shows `Rs 20,000,000,061.79`, in full, with no truncation, ellipsis or scientific notation.
+- **AC-3.4** Given L-MIN, when I Calculate, then **Total interest** shows `Rs 0.00` and **Total amount payable** shows `Rs 10.00`.
+- **AC-3.5** Given L-MAX, when I Calculate, then **Total interest** shows `Rs 74,000,000,000,000,003.34` and **Total amount payable** shows `Rs 75,000,000,000,000,003.34`, in full, with no truncation, ellipsis or scientific notation.
 - **AC-3.6** Given any valid inputs, when I Calculate, then loan amount + **Total interest** equals **Total amount payable** exactly, **Total interest** equals the sum of the schedule's Interest column, and **Total amount payable** equals the sum of the Payment column. *(Verified by a property test over at least 1,000 random valid inputs plus all reference loans.)*
 
 ## S-4 Results always match the inputs on screen
@@ -122,7 +122,7 @@ Error messages appear directly below the field they refer to. While any error is
 
 "As a Prospective Borrower, I want the calculator to work well on my phone, so that I can check an offer wherever I am."
 
-- **AC-5.1** Given a viewport 360 px wide, when the page loads and after I calculate L-MAX (480 schedule rows), then the page never scrolls horizontally (document width ≤ viewport width).
+- **AC-5.1** Given a viewport 360 px wide, when the page loads and after I calculate L-MAX (1,200 schedule rows), then the page never scrolls horizontally (document width ≤ viewport width).
 - **AC-5.2** Given a viewport 360 px wide, then every input, select and button is at least 44 × 44 CSS px, and its bounding box lies horizontally within the viewport (from 0 to 360 px).
 - **AC-5.3** Given a viewport 360 × 740 px and L-B results (60 rows), when I scroll the schedule, then the schedule scrolls inside its own area and its column headers stay visible while scrolling.
 - **AC-5.4** Given any device, then **Loan amount** and **Annual interest rate** have `inputmode="decimal"` and **Loan tenure** has `inputmode="numeric"`, so that phones show a number keypad.
@@ -182,10 +182,10 @@ Error messages appear directly below the field they refer to. While any error is
 - **AC-10.2** Given L-A, then row 1 reads `1 | 88,848.79 | 10,000.00 | 78,848.79 | 921,151.21`.
 - **AC-10.3** Given L-A, then row 12 reads `12 | 88,848.78 | 879.69 | 87,969.09 | 0.00`.
 - **AC-10.4** Given any valid inputs, then in every row Payment = Interest + Principal exactly, and Interest = the opening balance × (annual rate ÷ 1,200), rounded half-up to 2 decimal places. The opening balance is the loan amount for row 1 and the previous row's Balance after that. *(Property test.)*
-- **AC-10.5** Given any valid inputs, then every row's Payment differs from the **Monthly payment** shown in the summary by at most 0.01. *(Property test.)*
-- **AC-10.6** Given L-A (where some payments are 88,848.78), then the note `Some payments differ by 0.01 because amounts are rounded to 2 decimal places.` is shown below the summary; given L-C (all payments 10,000.00), the note is not shown.
+- **AC-10.5** Given any valid inputs, then every row's Payment except the last differs from the **Monthly payment** shown in the summary by at most 0.01, and the last row's Payment by at most 0.02. *(Property test.)*
+- **AC-10.6** Given L-A (where some payments are 88,848.78), then the note `Some payments differ by up to 0.02 because amounts are rounded to 2 decimal places.` is shown below the summary; given L-C (all payments 10,000.00), the note is not shown.
 - **AC-10.7** Given L-Z3 (`1000`, `0`, `3` **Months**), then the rows read `1 | 333.33 | 0.00 | 333.33 | 666.67`, `2 | 333.34 | 0.00 | 333.34 | 333.33`, `3 | 333.33 | 0.00 | 333.33 | 0.00`.
-- **AC-10.8** Given L-MAX, when I Calculate, then all 480 rows are shown, and the 480th row is in the page within 1 second of selecting Calculate. The time is measured inside the page, in each browser, both locally and on the CI test machine.
+- **AC-10.8** Given L-MAX, when I Calculate, then all 1,200 rows are shown, and the 1,200th row is in the page within 1 second of selecting Calculate. The time is measured inside the page, in each browser, both locally and on the CI test machine.
 
 ## S-11 Recall earlier calculations
 **Role:** R-2 Loan Advisor · **Serves:** J-6 · **Scope:** v1 · **Status:** Not implemented
