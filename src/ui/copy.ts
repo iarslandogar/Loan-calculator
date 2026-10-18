@@ -83,5 +83,38 @@ export const copy = {
     TENURE_RANGE_YEARS: 'Loan tenure must be between 1 and 100 years.',
     TENURE_RANGE_MONTHS: 'Loan tenure must be between 1 and 1,200 months.',
   } satisfies Record<ErrorCode, string>,
+  chart: {
+    cost: {
+      title: 'Cost breakdown',
+      summary: (pct: string) => `Interest is ${pct} of the total amount payable.`,
+      loan: 'Loan amount',
+      interest: 'Interest',
+    },
+    balance: {
+      title: 'Balance over time',
+      /** `months` is grouped text such as "1,200"; `count` picks month/months. */
+      summary: (amount: string, zero: string, months: string, count: number) =>
+        `The balance falls from ${amount} to ${zero} over ${months} ${count === 1 ? 'month' : 'months'}.`,
+      tooltip: (month: number, balance: string) => `Month ${month}: ${balance}`,
+    },
+    makeup: {
+      title: 'Interest and principal in each payment',
+      summary: (first: string, last: string) =>
+        `Interest is ${first} of the first payment and ${last} of the last.`,
+      tooltip: (month: number, principal: string, interest: string) =>
+        `Month ${month}: principal ${principal}, interest ${interest}`,
+    },
+    series: { principal: 'Principal', interest: 'Interest' },
+  },
+  yearly: {
+    title: 'Yearly summary',
+    chartCaption: 'Interest and principal paid each year.',
+    cols: (currency: Currency) => {
+      const s = `(${symbol(currency)})`
+      return ['Year', `Interest ${s}`, `Principal ${s}`, `Balance ${s}`]
+    },
+    tooltip: (year: number, principal: string, interest: string) =>
+      `Year ${year}: principal ${principal}, interest ${interest}`,
+  },
   fatal: 'Something went wrong. Please reload the page.',
 } as const
