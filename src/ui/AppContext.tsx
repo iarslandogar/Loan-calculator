@@ -49,7 +49,9 @@ export function AppProvider({ children }: { children: ReactNode }) {
   function updateSettings(change: Partial<Settings>) {
     if (change.currency) dispatch({ type: 'setCurrency', currency: change.currency })
     if (change.theme) dispatch({ type: 'setTheme', theme: change.theme })
-    saveSettings({ ...state.settings, ...change })
+    // Merge over what is stored now, not this tab's copy, so another tab's change to the
+    // other setting is not overwritten (G4.4 review G44-1; same idea as D-13).
+    saveSettings({ ...loadSettings(), ...change })
   }
 
   return (
