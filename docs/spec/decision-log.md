@@ -77,6 +77,7 @@ Each decision is **Approved** or **Proposed — needs owner approval**. Claude C
 | D-61 | Post-G3 fix: AC-8.4 waits for scrolling to settle | Approved (owner), 2026-10-18 |
 | D-62 | Adopt the "Soft ledger" pastel redesign as a change cycle before Phase 5 | Approved (owner), 2026-10-18 |
 | D-63 | Redesign proposals P1–P5 | Approved (owner), 2026-10-18: P1 yes, P2 n/a, P3 yes, P4 already done, P5 declined (backlog) |
+| D-64 | Redesign implementation: deviations from the bundle and verification | **Proposed**: owner to review at the redesign mini-gate |
 
 **How this log is kept (D-24):** every decision is recorded here, however small. Entries are never deleted or rewritten. A changed decision gets a new dated **Decision** line under its entry, or a new entry that names the one it supersedes, and a row in the change history.
 
@@ -580,6 +581,22 @@ Every S-5 and S-8 test already passed before group 6, apart from the D-59 Firefo
 - **P3, sticky Month column on narrow screens:** **approved.** CSS only. It must be checked in WebKit.
 - **P4, focus Cancel when the dialog opens:** **already implemented** (D-30) and tested by AC-8.5. No change.
 - **P5, interest vs principal split bar:** **declined for v1.** It carries meaning, so it would need new copy, an AC and tests. It's a backlog candidate.
+
+### D-64 Redesign implementation (Proposed, owner to review at the redesign mini-gate)
+- **Applied:**
+  - The bundle's `styles/app.css` section 1 (tokens) is in `src/ui/theme.css`; sections 2 to 12 are in `src/ui/app.css`, reformatted by Prettier.
+  - P1: the stale `<p>` gets `status status-stale`.
+  - P3 comes with the bundle CSS (the sticky Month column at 560 px and below).
+- **Deviations from the bundle** (each protects a tested or spec rule the bundle couldn't see):
+  1. **Removed** `body { overflow-x: hidden }`. It would hide real sideways overflow instead of preventing it, so the no-horizontal-scroll tests could pass while content was clipped.
+  2. **Changed** `.field-error:empty { display: none }` to hide only the "!" icon. Each field-error element is the `aria-live` region of §8.3; `display: none` would take it out of the accessibility tree, so new errors wouldn't be announced. Field errors now take no height when empty, as the design intends, but stay in the tree.
+  3. **Added** the `.fatal` style the handoff describes (step 5) but the bundle didn't include.
+- **Not run:** the bundle's `scripts/check-contrast.mjs`. Contrast is checked by the app's own tests (AC-6.5, `[SPEC-§8.4]`) against the live computed tokens.
+- **Verification:** `CI=1 npm run verify` **exit 0**: Vitest 297 of 297; size 85.4 KB (CSS adds no JavaScript); E2E **453 of 453** across 3 browsers; `trace --results` OK. Page width equals viewport width at 1280, 360 and 180 px. Screenshots match the bundle's reference boards.
+  - An earlier full run had 3 WebKit click timeouts (load); the same three tests passed 15 of 15 in isolation.
+  - A first L-MAX render probe suggested WebKit was 3× slower. A fair alternating A/B (3 rounds, WebKit, same method) disproved it: redesign medians 126 / 172 / 135 ms against old CSS 188 / 162 / 142 ms, all far under 1 s. The first probe was measurement noise, and the claim is retracted.
+- **Open observation:** the full E2E suite takes about 8.3 minutes against 5.5 before. The cause isn't established, and it isn't a failure.
+- **Note for the owner:** the design's reference board shows `Rs 66,185.46` and `Rs 1,066,185.46` for L-A. Those are example numbers in a static picture; the correct figures, which the app shows and the tests check, are 66,185.45 and 1,066,185.45.
 
 ### D-47 Group 2 builds the schedule table; cross-group ACs reported as pending
 - **Decision:** The shared helper `expectResultsShown` requires the schedule table, so group 2 builds `ScheduleTable` too; group 3 then verifies S-10 and S-13. AC-4.4 needs the Theme and Currency selects (group 4), and AC-9.2 needs saved calculations (group 5), so they are reported at G4.2 as **pending later groups**, not as done.
