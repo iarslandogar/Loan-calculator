@@ -73,6 +73,7 @@ Each decision is **Approved** or **Proposed — needs owner approval**. Claude C
 | D-57 | Group 5 implementation choices | Approved (owner, G4.5), 2026-10-18 |
 | D-58 | Handling of the G4.5 review's findings | Approved (owner, G4.5), 2026-10-18 |
 | D-59 | Post-G3 fix: portable AC-8.1 "Tab past the last control" assertion | Approved (owner), 2026-10-18 |
+| D-60 | Group 6 implementation choices | **Proposed**: developer decisions, owner to review at G4.6 |
 
 **How this log is kept (D-24):** every decision is recorded here, however small. Entries are never deleted or rewritten. A changed decision gets a new dated **Decision** line under its entry, or a new entry that names the one it supersedes, and a row in the change history.
 
@@ -533,6 +534,22 @@ The code-reviewer reported `BLOCKING FINDINGS: 0` for group 5, with these findin
 - **Defect (G45-4):** in `e2e/s08-keyboard.spec.ts`, `[AC-8.1] Tab order on a first visit` asserts `expect(resetBtn(page)).not.toBeFocused()` after pressing Tab past Reset, the last tabbable control. Playwright's Firefox keeps focus on the last element in that case, while Chromium and WebKit move it to `BODY`. This was shown on a neutral page by both the developer and the reviewer. The line tests browser behaviour, not the app.
 - **Decision (owner, 2026-10-18):** replace only that line with a portable check: after the Tab, focus is on Reset or has left the page content (`body` or `document`), but is **not on any other element of the page**. The `clearAllBtn not.toBeFocused()` check before it stays. The `test-designer` makes the edit, and the owner sees the diff.
 - **Rejected:** removing the line (it loses the "no unexpected focus" check); leaving it failing (S-8 could never be Implemented).
+
+### D-60 Group 6 implementation choices (Proposed, owner to review at G4.6)
+Every S-5 and S-8 test already passed before group 6, apart from the D-59 Firefox issue. So group 6 fixed the layout findings from earlier reviews instead:
+1. **D54-2, Calculate clipped at 200% zoom:** button rows (`.actions`, history `.entry-actions`) wrap instead of overflowing.
+2. **Narrow viewports:** below 300 CSS px (360 px at 200% zoom = 180 px), tenure and unit stack, and page and card padding tighten. 360 px and up look unchanged. The history entry's non-wrapping buttons had pushed the page to 234 px at 180 px wide; it's now 180/180 in Chromium, Firefox and WebKit, with no clipped buttons. This is beyond the spec's 360 px requirement and WCAG's 320 px reflow, but it's a real case (phones at 200% zoom).
+3. **D54-3, figures broke mid-number:** a `<wbr>` after every comma in the summary figures and history lines, via `BreakAfterCommas`. Long amounts now wrap between digit groups. `<wbr>` adds no text, so `textContent`, the `getByLabel` names and the D-29 button names are unchanged. `overflow-wrap: anywhere` stays as a last resort.
+4. **M-5, inconsistent summary wrapping:** every figure shows its label above its value. The headline uses `clamp(1.15rem, 6vw, 1.5rem)`.
+
+**Exit condition met:** `CI=1 npm run verify` exits 0.
+- lint, format, typecheck: clean.
+- Vitest: 297 of 297.
+- build; size 85.4 KB of 150 KB.
+- E2E: **453 of 453** across Chromium, Firefox and WebKit.
+- `trace --results`: OK, **94 of 94 v1 ACs tested and passing**.
+
+**Still open for G4.6:** CI on GitHub (D-22, D-32). The remote doesn't exist yet, so AC-10.8's "on the CI test machine" isn't proven yet.
 
 ### D-47 Group 2 builds the schedule table; cross-group ACs reported as pending
 - **Decision:** The shared helper `expectResultsShown` requires the schedule table, so group 2 builds `ScheduleTable` too; group 3 then verifies S-10 and S-13. AC-4.4 needs the Theme and Currency selects (group 4), and AC-9.2 needs saved calculations (group 5), so they are reported at G4.2 as **pending later groups**, not as done.
