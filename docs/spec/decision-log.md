@@ -70,6 +70,7 @@ Each decision is **Approved** or **Proposed — needs owner approval**. Claude C
 | D-54 | Widen the input limits (supersedes D-02's bounds) | Approved (owner), 2026-10-18: amount 10 to 10^15, rate 0 to 75%, 1 to 100 years / 1 to 1,200 months |
 | D-55 | Counterexample to invariant 6 / AC-10.5 within the current limits | Approved (owner), 2026-10-18: option A, state it truthfully |
 | D-56 | Test-designer readings for the D-54/D-55 test update | Accepted with the D-54 mini-gate (owner), 2026-10-18 |
+| D-57 | Group 5 implementation choices | **Proposed**: developer decisions, owner to review at G4.5 |
 
 **How this log is kept (D-24):** every decision is recorded here, however small. Entries are never deleted or rewritten. A changed decision gets a new dated **Decision** line under its entry, or a new entry that names the one it supersedes, and a row in the change history.
 
@@ -499,6 +500,21 @@ Other incidental changes (each needed because an old "invalid" example became va
 **Result after the code change:**
 - Vitest: 297 of 297, including every property at 1,000 runs, seed 20261017, over the new bounds.
 - E2E for groups 1 to 4 (group 5 and group 6 layout tests excluded, the exclusions listed): 282 of 282 across the 3 browsers.
+
+### D-57 Group 5 implementation choices (Proposed, owner to review at G4.5)
+1. **One module, re-read first:** `src/storage/history.ts` owns all history storage. Every save, delete and clear re-reads storage first and returns the list it just wrote, and the UI shows exactly that list (D-13). The duplicate check compares against the newest *stored* entry.
+2. **Load validation (§9.2):** every check, in order. A `monthlyPayment` that isn't a valid number is caught rather than thrown. The payment is checked with `emi` alone, not a full schedule. Later duplicates of an `id` are dropped, and the list is cut to 20.
+3. **History line 2** shows the stored `monthlyPayment`. On load it has already been checked equal to `round2(emi(...))`, so it *is* the recomputed value.
+4. **Failure paths are kept separate:**
+   - a failed **save** makes history *unavailable* for the visit (§9.3);
+   - a failed **delete or Clear all** keeps the entries and shows `history.removeFailed` (D-28);
+   - the message clears on the next successful change. A reload triggered by another tab doesn't clear it.
+5. **Deleting the last entry** removes the storage key, the same as Clear all, rather than writing `[]`.
+6. **Focus** is applied in an effect after the DOM updates (§8.3, D-30, AC-12.1). Restore focuses its own button explicitly, because WebKit doesn't focus buttons on click. The dialog's close effect, a child effect, runs before the panel's focus effect, so focus never lands behind the modal.
+7. **Escape on the dialog:** the native `cancel` event is prevented and routed through state, so all focus handling stays in one place.
+8. **Other tabs:** the `storage` listener reloads on the history key or `key === null`. If the focused entry vanished, focus moves to the heading.
+9. **Markup:** the Saved calculations `<section>` isn't named, so there's no extra landmark. The list (`<ul aria-labelledby>`) carries the name, per §8.3.1.
+10. **IDs:** `crypto.randomUUID()` where available, otherwise timestamp plus counter (§9.2).
 
 ### D-47 Group 2 builds the schedule table; cross-group ACs reported as pending
 - **Decision:** The shared helper `expectResultsShown` requires the schedule table, so group 2 builds `ScheduleTable` too; group 3 then verifies S-10 and S-13. AC-4.4 needs the Theme and Currency selects (group 4), and AC-9.2 needs saved calculations (group 5), so they are reported at G4.2 as **pending later groups**, not as done.
