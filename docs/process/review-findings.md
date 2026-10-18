@@ -182,3 +182,47 @@ Reviewer: code-reviewer. Scope 44c6afe..babc602. No `src/` or frozen test edited
 Pending, not defects: AC-7.5 and AC-9.2 (need saved calculations, group 5).
 
 BLOCKING FINDINGS: 0
+
+---
+
+## 2026-10-18: D-54/D-55 change (widened limits, corrected payment guarantee, D-56 readings)
+Reviewer: code-reviewer. Commits: 8797b10 (spec, ACs, decisions), 16c8cc8 (frozen tests, owner-authorised), 34a06b8 (code), 0c510f5 (D-56).
+
+### Gate
+- `npx vitest run`: 7 files, 297 tests passed, exit 0 (matches the developer).
+- `npm run lint` exit 0; `npm run typecheck` exit 0; `npm run format:check` exit 0.
+- `CI=1 npx playwright test` on specs s01 s02 s03 s04 s05 s06 s07 s09 s10 s13 spec-rules with the developer's `--grep-invert`: **282 passed (3.6m)**, exit 0. Reproduced.
+- `--list` (chromium): 114 tests in those specs, 94 kept, 20 excluded (94 x 3 = 282). The 20 are: AC-5.2, AC-5.4, AC-5.5 x3 (group 6 layout), AC-7.5, AC-9.2 (group 5), the `[SPEC-§9.2]` tampered test, all 8 `[SPEC-§9.3]` tests, both `[SPEC-§9.1]` blocked-storage tests, and both Restore `[SPEC-§3.2]` tests. Nothing else is dropped. s08, s11 and s12 are not in the run.
+- Port 4173: no listener left. Probe files deleted; `e2e/review/` is empty and `git status` is clean.
+
+### Test integrity (16c8cc8 against the new text in 8797b10)
+- Every changed expected value is a hard-coded literal that matches the AC/spec text exactly: L-MIN `Rs 10.00 / Rs 0.00 / Rs 10.00` and `Rs 10.00 at 0.01% for 1 month`; L-MAX `Rs 62,500,000,000,000.00 / Rs 74,000,000,000,000,003.34 / Rs 75,000,000,000,000,003.34`; 1,200 rows (1,201 `<tr>`), 100 years; limits 10, 10^15, 75, 100 years, 1,200 months; the new messages and the note. Nothing is computed from the code under test.
+- D-55 loosening is exactly as authorised: `e2e/fixtures.ts` `checkScheduleArithmetic` allows `2n` for the last row only (index `months - 1`) and `1n` for all others; `loan.property.test.ts` uses `TWO_CENTS` for the last row only; the two §5.3 regression tests check rows 1..n-1 at 0.01 and the last at 0.02. `showRoundingNote === differs` is unchanged. No other assertion is looser.
+- No deleted test and no `.skip/.only/.fixme/test.fail` added (grep over the whole `g3-tests-approved..HEAD` patch). Vitest count is 297.
+- Incidental edits are each forced by an old invalid value becoming valid (SPEC-§3.2 tenure 41 to 101, AC-2.11 rate 60 to 99, validate cases moved to 75.01, 5000 and 1201). `00012` now valid and `.5`, `9.99`, `1000000000000000.01` are `AMOUNT_RANGE`, as the new §4.2 table says. `75.001` gives `RATE_DECIMALS` (precision before range), consistent with the existing rule and the live app.
+- Freeze check vs `g3-tests-approved`: only three commits touch the scope: 749144e (D-46), 5751988 (D-48), 16c8cc8 (D-54/D-55). All authorised.
+- Gap (D-56 item 4, accepted): nothing asserts that fast-check drew each exact bound; the 24-combination bound grid covers them deterministically.
+
+### Spec conformance of the code change
+- 34a06b8 changes only the constants in `validate.ts` (10, 10^15, 0, 75, tenure max 100 / 1,200), one comment, and 5 strings in `copy.ts`. Comparisons stay inclusive. Each string matches spec §7 character for character. A grep of `src/` finds no other hard-coded 480, 1,000,000,000, 50% or 40 years. Money stays `Decimal`; the only `.toNumber()` is the tenure after the 1..1,200 range check.
+
+### Independent verification (own seed, real code)
+Throwaway probe (deleted) importing `src/domain/validate` and `src/domain/loan`, own PRNG (mulberry32, seed 90210), chromium only: **20,010 valid loans** (10 exact-bound corners; 35% amounts 10 to 20,000 with rates 45 to 74.99 and 900 to 1,200 months; 15% small whole-number loans; 50% amounts spread over every order of magnitude up to 10^15 with 1 to 1,200 months). Checked per loan: rows = months; payment = interest + principal; 0 <= principal <= opening; balance = opening - principal; at most 2 dp; final balance 0.00; sum of principal = amount; total payable = amount + total interest; non-final payments within 0.01 of the headline; final within 0.02. **0 failures, 0 counterexamples.** The final row differed by more than 0.01 in 22 loans (max 0.02), consistent with D-55. A 120-digit independent oracle on 501 sampled loans reproduced the headline payment every time. Run time 6.1 min.
+
+### Exploratory (chromium)
+- L-MAX at 360 px: document width 360 = viewport; the three figures are fully visible (`scrollWidth == clientWidth`, no ellipsis). At 180 px wide (200% zoom of 360): document width 180; figures wrap over several lines (breaking inside the number, e.g. `62,500,00 / 0,000,000. / 00`) but nothing is clipped; AC-5.6 allows wrapping.
+- Messages: amount 9.99 and 1000000000000000.01 give the new amount message; tenure 101 years and 1201 months give the new tenure messages; 1200 months and 100 years show no error; rate 75, 75.00 and 74.99 calculate; 75.01 gives `Interest rate must be between 0 and 75%.`; 75.001 gives `Interest rate can have at most 2 decimal places.`
+- 1,200-row schedule: focusing the region and pressing End reaches row 1200 (`1200 | 62,500,000,000,000.00 | 3,676,470,588,235.29 | 58,823,529,411,764.71 | 0.00`); PageUp scrolls back; the page never scrolls horizontally.
+
+### Findings
+
+| ID | Severity | Story/AC | Evidence | Suggested fix |
+|---|---|---|---|---|
+| D54-1 | Major | S-2, AC-2.15 | `docs/user-stories.md` line 94 still reads "then I see `Loan amount must be between 1,000 and 1,000,000,000.`". 8797b10 updated AC-2.4, 2.5 and 2.10 but missed this one. The tests (`COPY.amountRange`) and the manual checklist (line 40) already use the new message, so the AC text now contradicts the app, spec §7 and the tests; S-2 cannot be marked Implemented against this literal text. | Owner edits the AC to `Loan amount must be between 10 and 1,000,000,000,000,000.` (the reviewer may not edit ACs). |
+| D54-2 | Minor | S-5, group 6 | At 180 px wide (200% zoom of 360) the Calculate label is clipped ("Calcul") and the amount input text overflows (`BUTTON Calculate 80>56`, `Reset 54>46`). Not caused by D-54; AC-5.6 covers only the summary figures, which are fine. | Group 6: let the button row wrap or shrink under about 240 px. |
+| D54-3 | Minor | S-3 presentation | At narrow widths the 17-digit figures break mid-group (`62,500,00 / 0,000,000. / 00`), which is hard to read. Allowed by AC-5.6. | Optional: smaller summary font at narrow widths, or avoid `overflow-wrap: anywhere` so breaks fall at commas. |
+| D54-4 | Minor | Process | D-56 is still `Proposed` while the code is committed. | Owner approves or amends D-56 before group 5. |
+
+No counterexample to the D-55 guarantee was found; no wrong number, crash, data loss or false Implemented claim from this change.
+
+BLOCKING FINDINGS: 0
