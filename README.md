@@ -59,7 +59,7 @@ npx playwright install --with-deps  # Linux (also installs system libraries)
 **Notes:**
 - The full end-to-end run takes **about 9 minutes** (549 tests: 183 in each browser).
 - **On Windows, plug the laptop in.** On battery, the throttled CPU made some WebKit tests time out, and the same tests pass on mains power (decision D-73 in the [decision log](docs/spec/decision-log.md)).
-- **On Windows, an occasional WebKit timeout can still happen under the full parallel run, even on mains power.** For example, one click timed out after 8 s in 1 of 549 tests, and the same test then passed 5 of 5 when run alone (`npx playwright test --project=webkit <file>:<line>`). The three-browser run that counts is the Linux CI run (spec NFR-1), and it passes.
+- **On Windows, an occasional timeout (seen in WebKit and Firefox) can still happen under the full parallel run, even on mains power.** For example, one click timed out after 8 s in 1 of 549 tests, and the same test then passed 5 of 5 when run alone (`npx playwright test --project=<browser> <file>:<line>`). The three-browser run that counts is the Linux CI run (spec NFR-1), and it passes.
 - Every test that proves an acceptance criterion is titled with its ID, for example `[AC-2.4] …`.
 
 ## Product docs
@@ -68,7 +68,7 @@ npx playwright install --with-deps  # Linux (also installs system libraries)
 - [docs/jobs-to-be-done.md](docs/jobs-to-be-done.md): what they need to get done (11 jobs).
 - [docs/user-stories.md](docs/user-stories.md): 22 stories (17 in v1, 5 in the backlog) and 115 acceptance criteria, with the reference loans.
 - [docs/spec/technical-spec.md](docs/spec/technical-spec.md): stack, architecture, the calculation algorithm, copy, storage, testing and CI.
-- [docs/spec/decision-log.md](docs/spec/decision-log.md): every decision, D-00 to D-74, and who approved it.
+- [docs/spec/decision-log.md](docs/spec/decision-log.md): every decision, numbered from D-00, and who approved it.
 
 **Story statuses** follow one rule: a story is marked `Implemented` only when all of its acceptance criteria pass in the automated tests in all three browsers **and** in the owner's manual check at Gate G5 ([docs/process/manual-test-checklist.md](docs/process/manual-test-checklist.md)).
 
