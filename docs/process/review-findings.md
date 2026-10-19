@@ -447,3 +447,37 @@ Scope: all 17 v1 stories (110 v1 ACs) against the spec and decision log (D-00 to
 Reviewer tests added: `e2e/review/phase5.spec.ts` (`[REVIEW-P5-1]`). Typecheck and ESLint clean; red in Firefox only, as described. My other probe scripts were kept outside the repository.
 
 BLOCKING FINDINGS: 0
+
+---
+
+## Phase 5, round 2: re-review of the D-76 fixes (2026-10-19)
+
+Scope: commits 92e635a (F-P5-1), b37fd88 (F-P5-2), fa26524 (F-P5-4), 0d84ccf (F-P5-5), db71d5e (D-76), 3439360 (README), on top of 5ac54c8 (F-P5-7). HEAD `3439360`. Laptop on mains power (`BatteryStatus` = 2).
+
+### Gate
+- `CI=1 npm run verify`: **exit 0**. lint, format and typecheck clean; Vitest **345 of 345**; size **87.6 KB of 150 KB**; E2E **552 of 552 passed** (9.6 min); `trace: OK`. No timeouts this time, so there was nothing to re-run alone. The `[AC-2.6]` WebKit timeout the developer saw in their run did not recur in mine; I cannot say whether the fixes change its rate (their A/B is 36/36 against 35/36).
+- `[REVIEW-P5-1]` passes in all three browsers in that run (it was red 3 of 3 in Firefox in round 1).
+
+### Freeze integrity
+- `git diff --stat g3b-visuals-tests-approved..HEAD` over the freeze scope (excluding `e2e/review/`) is **empty**. No test, fixture or config changed since round 1. The only test-side change is the reviewer's own `e2e/review/phase5.spec.ts`.
+
+### Fix by fix (my probes, dev server, Chromium, Firefox and WebKit)
+| ID | Result | Evidence |
+|---|---|---|
+| F-P5-1 | Fixed | 1280 x 560, 640 and 700, Tab through the form: every focused control is fully inside the viewport in all three browsers (Firefox at 640 previously hid Calculate and Reset by 14 px). Page `scrollY` after the Tabs is 26 at 640 and 334 to 350 at 560 (the page scrolls only as far as needed). No new focus move: `scrollIntoView({ block: 'nearest' })` moves the viewport, not focus. |
+| F-P5-2 | Fixed | 360 x 740, 180 x 740 and 768 x 1024, in all three browsers: after Calculate the results card top is at **12 px** (`scrollY` 726, 1037 and 730), and after Restore from the bottom of the page it is again at 12 px. Pressing Calculate again with the card already at the top does not move the page. At 1280 x 800 a Calculate does not scroll (`scrollY` 0); a Restore from the bottom leaves the page at the bottom, as before (no scroll on desktop widths). Focus is unchanged: Calculate stays focused after Calculate, Restore stays focused after Restore (WebKit shows `body` after a mouse click on Calculate, which is the engine's existing behaviour). `reducedMotion: 'reduce'` gives identical positions (the scroll is instant). No horizontal overflow, no page error. |
+| F-P5-2 timing (AC-10.8 / AC-21.3, D-72) | No regression | The position check is inside a `requestAnimationFrame`, not in the click. L-MAX, click to the 1,200th row, measured inside the page with a `MutationObserver`, at **360 px** (where the effect runs): chromium 284 / 160 / 273 ms, firefox 285 / 156 / 194 ms, webkit 222 / 146 / 133 ms. At 1280 px: 261 / 148 / 241, 279 / 152 / 185, 202 / 152 / 140 ms. All far under 1,000 ms. |
+| F-P5-4 | Fixed | `index.html` carries an inline `data:image/svg+xml` icon. In all runs the request log has **0** `favicon` requests, on both the 360 px and 1280 px pages. |
+| F-P5-5 | Fixed | L-MAX at 360 and 1280 px: the balance and payment-split axes read `1 1,200`; a 12-month loan reads `1 12`. The caption still reads "over 1,200 months". |
+
+### New findings
+
+| ID | Severity | Story/AC | Evidence | Suggested fix |
+|---|---|---|---|---|
+| F-P5-10 | Minor | README accuracy | README line 60 still says "549 tests: 183 in each browser"; with the three `[REVIEW-P5-1]` runs the suite is now **552 tests, 184 per browser** (my verify: "552 passed"). Line 62 repeats "1 of 549". The other changes in the README's Known issues table are accurate: the four fixed rows name the right commits (`b37fd88`, `fa26524`, `0d84ccf`, `92e635a`, all present in `git log`) and the two not-fixed rows (undo, announcement) match D-76. | Say 552 and 184, or drop the exact counts, which change whenever a reviewer test is added. |
+
+I found no regression from the four fixes: no new focus moves, no scroll on desktop widths, no extra request, no change in the 360 px or 180 px layout (page overflow 0 in every state probed), and the sticky form still behaves as in round 1.
+
+Reviewer tests: no new tests; `[REVIEW-P5-1]` now passes in all three browsers. Not tested: a real phone with a soft keyboard (the focus scroll with the keyboard open), and the AC-2.6 WebKit flake beyond the one clean full run.
+
+BLOCKING FINDINGS: 0
