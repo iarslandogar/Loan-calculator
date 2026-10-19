@@ -89,7 +89,8 @@ Each decision is **Approved** or **Proposed — needs owner approval**. Claude C
 | D-73 | Deploy to GitHub Pages before Phase 5, at the owner's direction | Approved (owner), 2026-10-18 |
 | D-74 | Transcripts: readable Markdown plus filtered raw logs | Approved (owner), 2026-10-19 |
 | D-75 | README owner inputs; Phase 5 started | Owner, 2026-10-19 |
-| D-76 | Phase 5 round 1: owner chose which Minor findings to fix before G5 | Approved (owner), 2026-10-19; fixes for re-review |
+| D-76 | Phase 5 round 1: owner chose which Minor findings to fix before G5 | Approved (owner), 2026-10-19; round 2 re-review 0 blocking |
+| D-77 | G5: owner marks the 17 v1 stories Implemented on the automated evidence, without a line-by-line hand check | Approved (owner), 2026-10-19 |
 
 **How this log is kept (D-24):** every decision is recorded here, however small. Entries are never deleted or rewritten. A changed decision gets a new dated **Decision** line under its entry, or a new entry that names the one it supersedes, and a row in the change history.
 
@@ -781,6 +782,19 @@ The code-reviewer's visuals report (docs/process/review-findings.md, "Visuals") 
   - `CI=1 npm run verify` on mains power exited 1: Vitest 345 of 345; size 87.6 KB; E2E 551 of 552 (`[REVIEW-P5-1]` now passes in all 3 browsers). The one failure was `[webkit] [AC-2.6]`, an 8 s timeout on the *first* Calculate click, before any error or focus move.
   - A/B, the whole S-2 file in WebKit with 4 workers, twice each: **36 of 36 with the fixes, and 1 of 36 failed without them**. The intermittent WebKit timeout predates these changes; it is the known Windows load pattern (D-64, D-68, D-73).
 
+### D-77 Gate G5: statuses set on the automated evidence (owner, 2026-10-19)
+- **Phase 5 result:**
+  - round 1: `BLOCKING FINDINGS: 0`, with the Minors handled per D-76;
+  - round 2: `BLOCKING FINDINGS: 0`. The reviewer's `CI=1 npm run verify` at `3439360` exited 0, with E2E 552 of 552 across the 3 browsers;
+  - one more README slip (F-P5-10) was fixed in `fe36603`.
+- **Request (owner):** "push and deploy everything and mark it done". The developer pointed out that the checklist showed 0 of 110 lines ticked, and asked how to record it. **Answer (owner): "Approve without full check."**
+- **Decision:** the 17 v1 stories (S-1 to S-13 and S-19 to S-22) are set to `Implemented` in `docs/user-stories.md`. The 5 backlog stories stay `Not implemented`.
+- **Honest record:**
+  - spec §15 point 4 and the user-stories *Conventions* call for a manual check by the human before `Implemented`. That line-by-line check was **not** done, and `docs/process/manual-test-checklist.md` stays unticked;
+  - the statuses rest on the automated evidence and the owner's approval;
+  - `docs/user-stories.md` (a status note under the index) and the README say the same. The convention text itself is unchanged.
+- **Evidence before the push** (Phase 6 step 2): `npm run trace -- --results` → `trace: OK`, every Implemented story n/n passing, read from the reports of the reviewer's 552/552 run. The commits since that run change only the README and docs.
+
 ### D-47 Group 2 builds the schedule table; cross-group ACs reported as pending
 - **Decision:** The shared helper `expectResultsShown` requires the schedule table, so group 2 builds `ScheduleTable` too; group 3 then verifies S-10 and S-13. AC-4.4 needs the Theme and Currency selects (group 4), and AC-9.2 needs saved calculations (group 5), so they are reported at G4.2 as **pending later groups**, not as done.
 
@@ -800,3 +814,4 @@ The code-reviewer's visuals report (docs/process/review-findings.md, "Visuals") 
 | 2026-10-18 | Visuals mini-gate: D-64, D-68, D-70 and D-71 approved; D-69 failed the owner's check and was fixed; spec §8.3.2 gains the drawing-ratio line | Claude Code (Opus 5.5) for M. Arslan |
 | 2026-10-18 | D-72 AC-10.8 regression fixed; D-73 deploy before Phase 5 | Claude Code (Opus 5.5) for M. Arslan |
 | 2026-10-19 | D-74 transcripts added | Claude Code (Opus 5.5) for M. Arslan |
+| 2026-10-19 | D-75 to D-77: README owner inputs, Phase 5 fixes, G5 statuses (17 v1 stories Implemented, on automated evidence) | Claude Code (Opus 5.5) for M. Arslan, owner-approved |

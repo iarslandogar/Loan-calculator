@@ -16,28 +16,30 @@
 
 | Story | Title | Role | Job | Scope | Status |
 |---|---|---|---|---|---|
-| S-1 | Calculate the monthly payment | R-1 | J-1 | v1 | Not implemented |
-| S-2 | Clear messages for invalid input | R-1 | J-1 | v1 | Not implemented |
-| S-3 | See total interest and total amount payable | R-1 | J-2 | v1 | Not implemented |
-| S-4 | Results always match the inputs on screen | R-1 | J-1 | v1 | Not implemented |
-| S-5 | Use it comfortably on a phone | R-1 | J-11 | v1 | Not implemented |
-| S-6 | Choose a light or dark display | R-1 | J-10 | v1 | Not implemented |
-| S-7 | Choose the currency amounts are shown in | R-1 | J-3 | v1 | Not implemented |
-| S-8 | Work entirely from the keyboard | R-2 | J-4 | v1 | Not implemented |
-| S-9 | Start a fresh quote in one step | R-2 | J-4 | v1 | Not implemented |
-| S-10 | See how each payment splits into interest and principal | R-2 | J-5 | v1 | Not implemented |
-| S-11 | Recall earlier calculations | R-2 | J-6 | v1 | Not implemented |
-| S-12 | Delete saved calculations | R-2 | J-7 | v1 | Not implemented |
-| S-13 | See the balance remaining after each payment | R-3 | J-8 | v1 | Not implemented |
+| S-1 | Calculate the monthly payment | R-1 | J-1 | v1 | Implemented |
+| S-2 | Clear messages for invalid input | R-1 | J-1 | v1 | Implemented |
+| S-3 | See total interest and total amount payable | R-1 | J-2 | v1 | Implemented |
+| S-4 | Results always match the inputs on screen | R-1 | J-1 | v1 | Implemented |
+| S-5 | Use it comfortably on a phone | R-1 | J-11 | v1 | Implemented |
+| S-6 | Choose a light or dark display | R-1 | J-10 | v1 | Implemented |
+| S-7 | Choose the currency amounts are shown in | R-1 | J-3 | v1 | Implemented |
+| S-8 | Work entirely from the keyboard | R-2 | J-4 | v1 | Implemented |
+| S-9 | Start a fresh quote in one step | R-2 | J-4 | v1 | Implemented |
+| S-10 | See how each payment splits into interest and principal | R-2 | J-5 | v1 | Implemented |
+| S-11 | Recall earlier calculations | R-2 | J-6 | v1 | Implemented |
+| S-12 | Delete saved calculations | R-2 | J-7 | v1 | Implemented |
+| S-13 | See the balance remaining after each payment | R-3 | J-8 | v1 | Implemented |
 | S-14 | Compare two loan offers side by side | R-1 | J-2 | Backlog | Not implemented |
 | S-15 | Find the largest loan a monthly budget allows | R-1 | J-1 | Backlog | Not implemented |
 | S-16 | Copy a quote summary to share | R-2 | J-4 | Backlog | Not implemented |
 | S-17 | Export or print the repayment schedule | R-2 | J-5 | Backlog | Not implemented |
 | S-18 | See the effect of an extra one-off repayment | R-3 | J-8 | Backlog | Not implemented |
-| S-19 | See interest versus principal for each year | R-3 | J-9 | v1 | Not implemented |
-| S-20 | See what share of the total cost is interest | R-1 | J-2 | v1 | Not implemented |
-| S-21 | See the balance fall over time | R-3 | J-8 | v1 | Not implemented |
-| S-22 | See how each payment splits between interest and principal | R-2 | J-5 | v1 | Not implemented |
+| S-19 | See interest versus principal for each year | R-3 | J-9 | v1 | Implemented |
+| S-20 | See what share of the total cost is interest | R-1 | J-2 | v1 | Implemented |
+| S-21 | See the balance fall over time | R-3 | J-8 | v1 | Implemented |
+| S-22 | See how each payment splits between interest and principal | R-2 | J-5 | v1 | Implemented |
+
+**Status note (2026-10-19, decision D-77):** the owner set the 17 v1 stories to `Implemented` on the automated evidence: every acceptance criterion passes in Chromium, Firefox and WebKit, `npm run verify` and `trace --results` pass, and the Phase 5 review reported 0 blocking findings. The line-by-line manual check described under *Conventions* was not done; `docs/process/manual-test-checklist.md` is unticked.
 
 ## Reference loans used in the criteria
 
@@ -56,7 +58,7 @@
 # v1 stories
 
 ## S-1 Calculate the monthly payment
-**Role:** R-1 Prospective Borrower · **Serves:** J-1 · **Scope:** v1 · **Status:** Not implemented
+**Role:** R-1 Prospective Borrower · **Serves:** J-1 · **Scope:** v1 · **Status:** Implemented
 
 "As a Prospective Borrower, I want to enter a loan amount, interest rate and tenure and get the monthly payment, so that I can check whether it fits my budget."
 
@@ -74,7 +76,7 @@
 - **AC-1.12** Given a first visit, when the page loads, then the tenure unit is **Years**, all three inputs are empty, no results are shown, and the results area shows `Enter your loan details and select Calculate.`
 
 ## S-2 Clear messages for invalid input
-**Role:** R-1 Prospective Borrower · **Serves:** J-1 · **Scope:** v1 · **Status:** Not implemented
+**Role:** R-1 Prospective Borrower · **Serves:** J-1 · **Scope:** v1 · **Status:** Implemented
 
 "As a Prospective Borrower, I want to be told clearly what is wrong with what I typed, so that I can fix it and never act on a figure built from bad input."
 
@@ -99,7 +101,7 @@ Error messages appear directly below the field they refer to. While any error is
 - **AC-2.17** Given loan amount `1,,000`, `1000,50`, `1,5`, `,1000` or `10,0000` (each tried separately, with rate `12` and tenure `1` **Years**), when I Calculate, then I see `Loan amount must be a number.` and no results. *(Commas are accepted only as thousands or lakh separators in the whole-number part.)*
 
 ## S-3 See total interest and total amount payable
-**Role:** R-1 Prospective Borrower · **Serves:** J-2 · **Scope:** v1 · **Status:** Not implemented
+**Role:** R-1 Prospective Borrower · **Serves:** J-2 · **Scope:** v1 · **Status:** Implemented
 
 "As a Prospective Borrower, I want to see the total interest and the total I will repay, so that I can compare the true cost of different offers."
 
@@ -111,7 +113,7 @@ Error messages appear directly below the field they refer to. While any error is
 - **AC-3.6** Given any valid inputs, when I Calculate, then loan amount + **Total interest** equals **Total amount payable** exactly, **Total interest** equals the sum of the schedule's Interest column, and **Total amount payable** equals the sum of the Payment column. *(Verified by a property test over at least 1,000 random valid inputs plus all reference loans.)*
 
 ## S-4 Results always match the inputs on screen
-**Role:** R-1 Prospective Borrower · **Serves:** J-1 · **Scope:** v1 · **Status:** Not implemented
+**Role:** R-1 Prospective Borrower · **Serves:** J-1 · **Scope:** v1 · **Status:** Implemented
 
 "As a Prospective Borrower, I want results to disappear as soon as I change an input, so that I never mistake old figures for the loan I am now looking at."
 
@@ -121,7 +123,7 @@ Error messages appear directly below the field they refer to. While any error is
 - **AC-4.4** Given results are showing, when I change the currency or the theme, then the results stay visible (these settings do not change the calculation).
 
 ## S-5 Use it comfortably on a phone
-**Role:** R-1 Prospective Borrower · **Serves:** J-11 · **Scope:** v1 · **Status:** Not implemented
+**Role:** R-1 Prospective Borrower · **Serves:** J-11 · **Scope:** v1 · **Status:** Implemented
 
 "As a Prospective Borrower, I want the calculator to work well on my phone, so that I can check an offer wherever I am."
 
@@ -133,7 +135,7 @@ Error messages appear directly below the field they refer to. While any error is
 - **AC-5.6** Given a viewport 360 px wide and L-MAX results, then every amount in the summary is fully visible (wrapping onto a new line is allowed; clipping is not).
 
 ## S-6 Choose a light or dark display
-**Role:** R-1 Prospective Borrower · **Serves:** J-10 · **Scope:** v1 · **Status:** Not implemented
+**Role:** R-1 Prospective Borrower · **Serves:** J-10 · **Scope:** v1 · **Status:** Implemented
 
 "As a Prospective Borrower, I want the app to match a light or dark display, so that I can read figures comfortably at any time of day."
 
@@ -145,7 +147,7 @@ Error messages appear directly below the field they refer to. While any error is
 - **AC-6.6** Given the browser blocks storage, when I change the theme, then it changes for the current visit and no error is shown.
 
 ## S-7 Choose the currency amounts are shown in
-**Role:** R-1 Prospective Borrower · **Serves:** J-3 · **Scope:** v1 · **Status:** Not implemented
+**Role:** R-1 Prospective Borrower · **Serves:** J-3 · **Scope:** v1 · **Status:** Implemented
 
 "As a Prospective Borrower, I want to see amounts in Pakistani rupees or US dollars, so that the figures read like the quote I was given."
 
@@ -156,7 +158,7 @@ Error messages appear directly below the field they refer to. While any error is
 - **AC-7.5** Given a saved calculation made in PKR, when I switch to USD, then that saved entry still shows its amounts in `Rs`.
 
 ## S-8 Work entirely from the keyboard
-**Role:** R-2 Loan Advisor · **Serves:** J-4 · **Scope:** v1 · **Status:** Not implemented
+**Role:** R-2 Loan Advisor · **Serves:** J-4 · **Scope:** v1 · **Status:** Implemented
 
 "As a Loan Advisor, I want to do everything from the keyboard, so that I can produce quotes quickly without reaching for the mouse."
 
@@ -168,7 +170,7 @@ Error messages appear directly below the field they refer to. While any error is
 - **AC-8.6** Given only a keyboard, when I enter L-A, calculate, enter L-B, calculate, restore the L-A entry, delete the L-B entry and clear all history, then every step succeeds without a mouse. *(One end-to-end keyboard-only test.)*
 
 ## S-9 Start a fresh quote in one step
-**Role:** R-2 Loan Advisor · **Serves:** J-4 · **Scope:** v1 · **Status:** Not implemented
+**Role:** R-2 Loan Advisor · **Serves:** J-4 · **Scope:** v1 · **Status:** Implemented
 
 "As a Loan Advisor, I want to clear the form in one step, so that I can start the next quote immediately."
 
@@ -177,7 +179,7 @@ Error messages appear directly below the field they refer to. While any error is
 - **AC-9.3** Given an already empty form, when I select **Reset**, then the form stays empty and no error is shown.
 
 ## S-10 See how each payment splits into interest and principal
-**Role:** R-2 Loan Advisor · **Serves:** J-5 · **Scope:** v1 · **Status:** Not implemented
+**Role:** R-2 Loan Advisor · **Serves:** J-5 · **Scope:** v1 · **Status:** Implemented
 
 "As a Loan Advisor, I want a month-by-month schedule showing interest and principal in each payment, so that I can explain exactly how the quote was reached."
 
@@ -191,7 +193,7 @@ Error messages appear directly below the field they refer to. While any error is
 - **AC-10.8** Given L-MAX, when I Calculate, then all 1,200 rows are shown, and the 1,200th row is in the page within 1 second of selecting Calculate. The time is measured inside the page, in each browser, both locally and on the CI test machine.
 
 ## S-11 Recall earlier calculations
-**Role:** R-2 Loan Advisor · **Serves:** J-6 · **Scope:** v1 · **Status:** Not implemented
+**Role:** R-2 Loan Advisor · **Serves:** J-6 · **Scope:** v1 · **Status:** Implemented
 
 "As a Loan Advisor, I want my recent calculations kept on this device, so that I can bring back an earlier quote exactly without retyping it."
 
@@ -210,7 +212,7 @@ Saved calculations are stored only in this browser on this device. They are neve
 - **AC-11.11** Tenure is described in entries as `1 year`, `N years`, `1 month` or `N months`, and the rate with no trailing zeros (`12%`, `21.5%`, `0.01%`).
 
 ## S-12 Delete saved calculations
-**Role:** R-2 Loan Advisor · **Serves:** J-7 · **Scope:** v1 · **Status:** Not implemented
+**Role:** R-2 Loan Advisor · **Serves:** J-7 · **Scope:** v1 · **Status:** Implemented
 
 "As a Loan Advisor, I want to delete one saved calculation or all of them, so that the next customer cannot see the previous customer's figures."
 
@@ -223,7 +225,7 @@ Saved calculations are stored only in this browser on this device. They are neve
 - **AC-12.7** Given saved entries are shown and the browser then refuses to change stored data, when I select **Delete** on an entry or confirm **Clear all**, then the entries stay on screen as they were and I see `Couldn't remove saved calculations from this browser. To be sure, clear this site's data in your browser settings.`
 
 ## S-13 See the balance remaining after each payment
-**Role:** R-3 Existing Borrower · **Serves:** J-8 · **Scope:** v1 · **Status:** Not implemented
+**Role:** R-3 Existing Borrower · **Serves:** J-8 · **Scope:** v1 · **Status:** Implemented
 
 "As an Existing Borrower, I want to see what I still owe after each payment, so that I can plan an early repayment or a refinance."
 
@@ -232,7 +234,7 @@ Saved calculations are stored only in this browser on this device. They are neve
 - **AC-13.3** Given any valid inputs, then the schedule has exactly as many rows as the tenure in months, every Balance equals the previous Balance minus that row's Principal, no Balance is negative, and the final Balance is exactly `0.00`. *(Property test.)*
 
 ## S-19 See interest versus principal for each year
-**Role:** R-3 Existing Borrower · **Serves:** J-9 · **Scope:** v1 · **Status:** Not implemented
+**Role:** R-3 Existing Borrower · **Serves:** J-9 · **Scope:** v1 · **Status:** Implemented
 
 "As an Existing Borrower, I want a yearly summary of interest versus principal paid, so that I can see how much of my money went to interest each year."
 
@@ -244,7 +246,7 @@ Saved calculations are stored only in this browser on this device. They are neve
 - **AC-19.4** Given L-B, then a yearly chart shows one stacked bar per year, with a legend naming **Principal** and **Interest**.
 
 ## S-20 See what share of the total cost is interest
-**Role:** R-1 Prospective Borrower · **Serves:** J-2 · **Scope:** v1 · **Status:** Not implemented
+**Role:** R-1 Prospective Borrower · **Serves:** J-2 · **Scope:** v1 · **Status:** Implemented
 
 "As a Prospective Borrower, I want to see at a glance how much of what I repay is interest, so that I can judge the true cost of an offer."
 
@@ -256,7 +258,7 @@ Saved calculations are stored only in this browser on this device. They are neve
 - **AC-20.6** Given a viewport 360 px wide and L-MAX results, then the page does not scroll horizontally and every chart fits inside its card.
 
 ## S-21 See the balance fall over time
-**Role:** R-3 Existing Borrower · **Serves:** J-8 · **Scope:** v1 · **Status:** Not implemented
+**Role:** R-3 Existing Borrower · **Serves:** J-8 · **Scope:** v1 · **Status:** Implemented
 
 "As an Existing Borrower, I want to see my balance fall over the life of the loan, so that I can see how quickly I will owe less."
 
@@ -265,7 +267,7 @@ Saved calculations are stored only in this browser on this device. They are neve
 - **AC-21.3** Given L-MAX, when I Calculate, then the chart is shown and AC-10.8's 1-second budget still holds with all charts present.
 
 ## S-22 See how each payment splits between interest and principal
-**Role:** R-2 Loan Advisor · **Serves:** J-5 · **Scope:** v1 · **Status:** Not implemented
+**Role:** R-2 Loan Advisor · **Serves:** J-5 · **Scope:** v1 · **Status:** Implemented
 
 "As a Loan Advisor, I want to show a customer how the interest part of each payment shrinks over time, so that I can explain the schedule at a glance."
 
