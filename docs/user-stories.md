@@ -39,7 +39,9 @@
 | S-21 | See the balance fall over time | R-3 | J-8 | v1 | Implemented |
 | S-22 | See how each payment splits between interest and principal | R-2 | J-5 | v1 | Implemented |
 
-**Status note (2026-10-19, decision D-77):** the owner set the 17 v1 stories to `Implemented` on the automated evidence: every acceptance criterion passes in Chromium, Firefox and WebKit, `npm run verify` and `trace --results` pass, and the Phase 5 review reported 0 blocking findings. The line-by-line manual check described under *Conventions* was not done; `docs/process/manual-test-checklist.md` is unticked.
+**Status note (2026-10-19, decisions D-77 and D-78):** the 17 v1 stories are `Implemented`. Both conditions in *Conventions* are met:
+- **Automated tests:** every acceptance criterion passes in Chromium, Firefox and WebKit; `npm run verify` and `trace --results` pass; the Phase 5 review reported 0 blocking findings.
+- **Manual check:** on 19 Oct 2026 the owner did the manual check in a desktop browser and on a phone, and ticked all 110 lines of `docs/process/manual-test-checklist.md` (one per v1 acceptance criterion). No line failed.
 
 ## Reference loans used in the criteria
 
