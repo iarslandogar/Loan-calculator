@@ -1,3 +1,5 @@
+Snapshot taken before Phase 5; several findings have since been fixed (see README Known issues).
+
 # Submission audit: Loan EMI Calculator
 
 **Date:** 2026-10-19, second run at about 00:40 Pakistan time. The first run (about 00:20) was rerun after `main` was fast-forwarded to `v1` and the default branch was switched to `main`. No code or doc file changed between the runs (`git diff 68c9e02 HEAD` is empty), but every count below comes from the second run.
