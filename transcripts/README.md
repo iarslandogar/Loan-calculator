@@ -2,9 +2,12 @@
 
 How this app was built: one Claude Code session in which **Muhammad Arslan (product owner)** directed the work and Claude Code (**Opus 5.5**, the developer) wrote the code, with **Sonnet 5.5 subagents** challenging the spec, writing the tests and reviewing the code. 17 Oct 2026 20:44 to 18 Oct 2026 23:59, Pakistan time.
 
+**The primary record** is [`session-01-export.txt`](session-01-export.txt): Claude Code's own `/export` of this session, **unedited except that personal details on 5 lines are replaced with `[personal detail removed]`**. `/export` only contains the current context, so it begins at the context compaction (18 Oct 2026, 20:12 PKT) and runs to the end of the session. The rest of this folder holds readable or filtered versions alongside it, generated from Claude Code's own session logs, which also cover the part before the compaction.
+
 | File | What it is |
 |---|---|
-| [`session-01-claude-code.md`](session-01-claude-code.md) | **Start here.** The main session, readable: every owner message verbatim, every Claude reply, and every tool call (collapsed and shortened). Owner answers to Claude's multiple-choice questions are kept in full. |
+| [`session-01-export.txt`](session-01-export.txt) | Claude Code's own `/export` (see above): from the compaction to the end of the session. |
+| [`session-01-claude-code.md`](session-01-claude-code.md) | **Start here for the whole session.** The main session, readable: every owner message verbatim, every Claude reply, and every tool call (collapsed and shortened). Owner answers to Claude's multiple-choice questions are kept in full. |
 | [`session-01-conversation.pdf`](session-01-conversation.pdf) | The same conversation as a 66-page PDF: every message in full, each run of tool work shown as one line. |
 | [`subagents/`](subagents/) | 19 subagent runs, one file each, linked from the point in the main session where they were started. |
 | [`raw/`](raw/) | The underlying session logs as JSON Lines, filtered as described below. |
