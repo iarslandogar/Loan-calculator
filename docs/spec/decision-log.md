@@ -90,7 +90,8 @@ Each decision is **Approved** or **Proposed — needs owner approval**. Claude C
 | D-74 | Transcripts: readable Markdown plus filtered raw logs | Approved (owner), 2026-10-19 |
 | D-75 | README owner inputs; Phase 5 started | Owner, 2026-10-19 |
 | D-76 | Phase 5 round 1: owner chose which Minor findings to fix before G5 | Approved (owner), 2026-10-19; round 2 re-review 0 blocking |
-| D-77 | G5: owner marks the 17 v1 stories Implemented on the automated evidence, without a line-by-line hand check | Approved (owner), 2026-10-19 |
+| D-77 | G5: owner marks the 17 v1 stories Implemented on the automated evidence, without a line-by-line hand check | Approved (owner), 2026-10-19; manual-check part superseded by D-78 |
+| D-78 | G5 manual check done (110/110); final packaging changes | Approved (owner), 2026-10-19 |
 
 **How this log is kept (D-24):** every decision is recorded here, however small. Entries are never deleted or rewritten. A changed decision gets a new dated **Decision** line under its entry, or a new entry that names the one it supersedes, and a row in the change history.
 
@@ -795,6 +796,23 @@ The code-reviewer's visuals report (docs/process/review-findings.md, "Visuals") 
   - `docs/user-stories.md` (a status note under the index) and the README say the same. The convention text itself is unchanged.
 - **Evidence before the push** (Phase 6 step 2): `npm run trace -- --results` → `trace: OK`, every Implemented story n/n passing, read from the reports of the reviewer's 552/552 run. The commits since that run change only the README and docs.
 
+### D-78 G5 manual check done; final packaging (owner, 2026-10-19)
+Supersedes the "manual check was not done" part of D-77. D-77's Status decision stands.
+- **Manual check:** on 19 Oct 2026 the owner did the manual check in a desktop browser and on a phone, and ticked **all 110 lines** of `docs/process/manual-test-checklist.md`, one per v1 acceptance criterion. No line was left empty, so no story goes back to `Not implemented`. The status notes in `docs/user-stories.md` and the README now say so.
+  - The checklist's intro still says "94 in all", the count before S-19 to S-22 were added. Not changed, because the owner listed only the ticks for that file.
+- **Packaging changes the owner listed:**
+  1. `submission-audit.md` moves to `docs/process/submission-audit-2026-10-19.md`, with a note that it is a snapshot from before Phase 5.
+  2. **J-10** in `docs/jobs-to-be-done.md` (an owner-only file; the owner approved this exact edit): "rather than the screen" becomes "rather than the glare", so no job names a screen (audit §5).
+  3. `.gitignore` gains `.env*`.
+  4. The README's "Why a loan EMI calculator" line stays as it is (owner: "Keep current").
+- **claude.ai transcripts:** the owner supplied two PDF exports.
+  - `transcripts/claude-ai-testing-2026-10-18.pdf` (4 pages) is published as received.
+  - The **session-00 requirements** export (49 pages) showed, on pages 44 to 49, the chat's own redaction commands, which print in plain text the personal details they search for: an address area, the employer, citizenship, the email and a Jira account ID. The owner chose to **cut those pages**.
+    - `transcripts/session-00-requirements.pdf` is a rebuilt 43-page file. The dropped pages' objects are removed, not just hidden: 748 of 838 objects kept.
+    - Pages 1 and 43 render pixel-identical to the original. The cut pages held only the transcript-rendering and redaction steps, not the requirements work.
+    - The original was moved out of the repo, not deleted.
+  - The plan-review (17 Oct) and packaging (19 Oct) chats are to follow from the owner. The redesign chat is represented by `design/emi-pastel-redesign/`.
+
 ### D-47 Group 2 builds the schedule table; cross-group ACs reported as pending
 - **Decision:** The shared helper `expectResultsShown` requires the schedule table, so group 2 builds `ScheduleTable` too; group 3 then verifies S-10 and S-13. AC-4.4 needs the Theme and Currency selects (group 4), and AC-9.2 needs saved calculations (group 5), so they are reported at G4.2 as **pending later groups**, not as done.
 
@@ -815,3 +833,4 @@ The code-reviewer's visuals report (docs/process/review-findings.md, "Visuals") 
 | 2026-10-18 | D-72 AC-10.8 regression fixed; D-73 deploy before Phase 5 | Claude Code (Opus 5.5) for M. Arslan |
 | 2026-10-19 | D-74 transcripts added | Claude Code (Opus 5.5) for M. Arslan |
 | 2026-10-19 | D-75 to D-77: README owner inputs, Phase 5 fixes, G5 statuses (17 v1 stories Implemented, on automated evidence) | Claude Code (Opus 5.5) for M. Arslan, owner-approved |
+| 2026-10-19 | D-78: G5 manual check done (110/110); audit moved; J-10 wording; .env* ignored; claude.ai PDFs added | Claude Code (Opus 5.5) for M. Arslan, owner-approved |
