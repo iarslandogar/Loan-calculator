@@ -1,4 +1,4 @@
-import { memo } from 'react'
+import { memo, useEffect, useRef } from 'react'
 import type { CalculatedLoan, Currency } from '../../domain/types'
 import { useApp } from '../AppContext'
 import { copy } from '../copy'
@@ -36,8 +36,27 @@ const ResultsDetail = memo(function ResultsDetail({
 export function ResultsPanel() {
   const { state } = useApp()
   const { results, settings } = state
+  const cardRef = useRef<HTMLElement>(null)
+  const shownLoan = results.status === 'shown' ? results.loan : null
+
+  // On the stacked (phone) layout, new results can land below the screen, or above it after a
+  // Restore from the bottom, so nothing seems to happen (F-P5-2, D-76). Bring the card into view,
+  // instantly. Focus stays where it is (spec §8.3). Measured one frame later so the check never
+  // forces a layout inside the Calculate click (AC-10.8, D-72).
+  useEffect(() => {
+    if (!shownLoan || typeof window.matchMedia !== 'function') return
+    if (!window.matchMedia('(max-width: 768px)').matches) return
+    const frame = requestAnimationFrame(() => {
+      const card = cardRef.current
+      if (!card) return
+      const top = card.getBoundingClientRect().top
+      if (top < 0 || top > window.innerHeight / 2) card.scrollIntoView({ block: 'start' })
+    })
+    return () => cancelAnimationFrame(frame)
+  }, [shownLoan])
+
   return (
-    <section className="card results-card">
+    <section ref={cardRef} className="card results-card">
       {/* The idle and stale texts are announced politely when they appear (D-49). */}
       <div aria-live="polite">
         {results.status === 'idle' && <p className="status">{copy.results.idle}</p>}
