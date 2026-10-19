@@ -88,6 +88,7 @@ Each decision is **Approved** or **Proposed — needs owner approval**. Claude C
 | D-72 | Remove the forced layout in the yearly-table overflow check (AC-10.8 regression from D-70) | Developer fix, 2026-10-18; owner informed |
 | D-73 | Deploy to GitHub Pages before Phase 5, at the owner's direction | Approved (owner), 2026-10-18 |
 | D-74 | Transcripts: readable Markdown plus filtered raw logs | Approved (owner), 2026-10-19 |
+| D-75 | README owner inputs; Phase 5 started | Owner, 2026-10-19 |
 
 **How this log is kept (D-24):** every decision is recorded here, however small. Entries are never deleted or rewritten. A changed decision gets a new dated **Decision** line under its entry, or a new entry that names the one it supersedes, and a row in the change history.
 
@@ -749,6 +750,16 @@ The code-reviewer's visuals report (docs/process/review-findings.md, "Visuals") 
 - **Secrets scan:** GitHub, Anthropic, OpenAI and AWS tokens, bearer tokens and private keys: none found.
 - **PDF (owner request, "give me file here as well, as a pdf"):** `session-01-conversation.pdf`, 66 pages: the conversation in full, with each run of tool work as one line (a PDF can't collapse sections, so the full tool detail stays in the Markdown). It is printed from generated HTML with Playwright's Chromium, so no new dependency. `transcripts/` is added to ESLint's `globalIgnores`, like `design/` (D-62), so the helper scripts can't fail `verify`.
 - **Still owed by the owner:** the `session-00-requirements` export from claude.ai (D-00e).
+
+### D-75 README owner inputs; Phase 5 started (owner, 2026-10-19)
+- **README, from the owner's own words:**
+  - **Why a loan EMI calculator:** "it provides a highly practical, mathematically deterministic problem space to demonstrate core software engineering principles."
+  - **Code changed by hand:** "None".
+- **Story statuses:** the owner chose "do the check and get everything approved". This starts **Phase 5** (loop plan):
+  - the `code-reviewer` reviews the whole app, including exploratory testing;
+  - the developer fixes every Blocker and Major without touching frozen tests, re-reviewing until `BLOCKING FINDINGS: 0`, at most 3 rounds;
+  - the owner then ticks `docs/process/manual-test-checklist.md` (110 lines) on desktop and on a phone, and decides each story's Status at **G5**.
+- **Rule kept:** no Status changes until the owner has done that hand check and approved each story (CLAUDE.md, spec §15). The developer can't do the owner's manual check.
 
 ### D-47 Group 2 builds the schedule table; cross-group ACs reported as pending
 - **Decision:** The shared helper `expectResultsShown` requires the schedule table, so group 2 builds `ScheduleTable` too; group 3 then verifies S-10 and S-13. AC-4.4 needs the Theme and Currency selects (group 4), and AC-9.2 needs saved calculations (group 5), so they are reported at G4.2 as **pending later groups**, not as done.

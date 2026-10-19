@@ -8,7 +8,7 @@ A browser app that works out the equal monthly instalment (EMI), the total inter
 - **R-2 Loan Advisor:** "Give the customer an exact, defensible quote, fast." Many quotes a day, keyboard-first, needs recall and privacy between customers.
 - **R-3 Existing Borrower:** "Where is my money going, and what do I still owe?" Already repaying; cares about the schedule and the remaining balance.
 
-**Why a loan EMI calculator:** TODO(owner): your reason, in one or two sentences.
+**Why a loan EMI calculator:** it is a highly practical, mathematically deterministic problem space, well suited to demonstrating core software engineering principles.
 
 ## Live app
 
@@ -86,7 +86,7 @@ TODO(owner): G5 hasn't happened yet. At the time of writing, every story reads `
 
 ## Code changed by hand
 
-TODO(owner): an honest list of any code you changed by hand, or "None".
+None. All code was written by Claude Code, directed and reviewed by the owner.
 
 ## Assumptions
 
