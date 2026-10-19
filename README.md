@@ -107,14 +107,16 @@ From [technical-spec §16](docs/spec/technical-spec.md) and the decision log:
 
 ## Known issues
 
-These were found in the pre-submission audit and are not fixed as of commit `68c9e02`:
+These were found in the pre-submission audit and the Phase 5 review (`docs/process/review-findings.md`):
 
 | Issue | Status |
 |---|---|
-| On a phone, the page doesn't scroll to the results after **Calculate**: at 360 × 740 the results start just below the visible area. | Not fixed |
-| **Delete** on a single saved calculation has no undo. Only **Clear all** asks for confirmation. | Not fixed |
-| No favicon: `favicon.ico` returns 404. | Not fixed |
-| On a 1,200-month loan, the chart axis shows "1200" next to the caption "over 1,200 months". | Not fixed |
+| On a phone, the page didn't scroll to the results after **Calculate** or **Restore**: at 360 × 740 the results started just below the visible area. | **Fixed** before submission (`b37fd88`, F-P5-2) |
+| No favicon: `favicon.ico` returned 404. | **Fixed** before submission: an inline icon, with no extra request (`fa26524`, F-P5-4) |
+| On a 1,200-month loan, the chart axis showed "1200" next to the caption "over 1,200 months". | **Fixed** before submission (`0d84ccf`, F-P5-5) |
+| In Firefox, in a slightly short window, Tab to **Calculate** left the button just below the screen. | **Fixed** before submission (`92e635a`, F-P5-1) |
+| **Delete** on a single saved calculation has no undo. Only **Clear all** asks for confirmation. | Not fixed. A product choice: an undo would keep a customer's figures around after the advisor deleted them (J-7) |
+| When results appear, screen readers don't announce them, and focus stays on **Calculate**. The figures can be read straight after. | Not fixed. Beyond the spec, and a candidate for later (F-P5-6) |
 
 ## Tech stack
 
