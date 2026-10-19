@@ -1,4 +1,4 @@
-import { useRef, type FormEvent, type RefObject } from 'react'
+import { useRef, type FocusEvent, type FormEvent, type RefObject } from 'react'
 import { calculateLoan } from '../../domain/loan'
 import type { ErrorCode, Field, Unit } from '../../domain/types'
 import { validateInputs } from '../../domain/validate'
@@ -84,8 +84,14 @@ export function LoanForm() {
   const edit = (field: 'amount' | 'rate' | 'tenure') => (value: string) =>
     dispatch({ type: 'edit', field, value })
 
+  // Firefox doesn't scroll a focused control inside the sticky form into view when the window is
+  // a little too short (F-P5-1, D-76). 'nearest' does nothing when the control is already visible.
+  function onFocus(event: FocusEvent<HTMLFormElement>) {
+    if (event.target instanceof HTMLElement) event.target.scrollIntoView?.({ block: 'nearest' })
+  }
+
   return (
-    <form className="card form-card" noValidate onSubmit={onSubmit}>
+    <form className="card form-card" noValidate onSubmit={onSubmit} onFocus={onFocus}>
       <CurrencySelect />
       <TextField
         id="amount"
