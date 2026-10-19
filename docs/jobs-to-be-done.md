@@ -26,7 +26,7 @@ A job describes what the person needs to get done whether or not this app exists
 
 **J-3 (Prospective Borrower).** "When a lender quotes me figures in a particular currency, I want to see amounts in that currency's familiar notation, so I can relate them to my own money without misreading them."
 
-**J-10 (Prospective Borrower).** "When I am checking figures late in the evening or in a dim room, I want to read them without glare or eye strain, so I can concentrate on the numbers rather than the screen."
+**J-10 (Prospective Borrower).** "When I am checking figures late in the evening or in a dim room, I want to read them without glare or eye strain, so I can concentrate on the numbers rather than the glare."
 
 **J-11 (Prospective Borrower).** "When I am away from my desk, at a showroom or a bank branch, I want to work out repayments on whatever device I have with me, so I can respond to an offer on the spot."
 
