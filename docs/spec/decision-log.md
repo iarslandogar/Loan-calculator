@@ -89,6 +89,7 @@ Each decision is **Approved** or **Proposed — needs owner approval**. Claude C
 | D-73 | Deploy to GitHub Pages before Phase 5, at the owner's direction | Approved (owner), 2026-10-18 |
 | D-74 | Transcripts: readable Markdown plus filtered raw logs | Approved (owner), 2026-10-19 |
 | D-75 | README owner inputs; Phase 5 started | Owner, 2026-10-19 |
+| D-76 | Phase 5 round 1: owner chose which Minor findings to fix before G5 | Approved (owner), 2026-10-19; fixes for re-review |
 
 **How this log is kept (D-24):** every decision is recorded here, however small. Entries are never deleted or rewritten. A changed decision gets a new dated **Decision** line under its entry, or a new entry that names the one it supersedes, and a row in the change history.
 
@@ -760,6 +761,25 @@ The code-reviewer's visuals report (docs/process/review-findings.md, "Visuals") 
   - the developer fixes every Blocker and Major without touching frozen tests, re-reviewing until `BLOCKING FINDINGS: 0`, at most 3 rounds;
   - the owner then ticks `docs/process/manual-test-checklist.md` (110 lines) on desktop and on a phone, and decides each story's Status at **G5**.
 - **Rule kept:** no Status changes until the owner has done that hand check and approved each story (CLAUDE.md, spec §15). The developer can't do the owner's manual check.
+
+### D-76 Phase 5 round 1: which Minor findings to fix (owner, 2026-10-19)
+- **Review result:** `BLOCKING FINDINGS: 0`, with 9 Minor findings (`docs/process/review-findings.md`, "Phase 5, round 1"). The reviewer's `CI=1 npm run verify` exited 1 on three load timeouts (2 Firefox, 1 WebKit), which then passed 45 of 45 alone.
+- **Decision (owner):** fix F-P5-1, F-P5-2, F-P5-4 and F-P5-5 before the G5 hand check. F-P5-7 (README slips) was fixed straight away. **Not fixed, by the owner's choice:**
+  - F-P5-3: no undo on Delete. It is a product choice, and undo works against J-7 privacy.
+  - F-P5-6: shown results are not announced to screen readers. It goes beyond the spec; a candidate for later.
+  - F-P5-8: a process note, not a code defect.
+  - F-P5-9: invalid stored entries are hidden but stay in storage. Only a tampered store can cause it.
+- **Fixes:**
+  1. **F-P5-1, Firefox focus in the sticky form:** the form's `onFocus` calls `scrollIntoView({ block: 'nearest' })` on the focused control, which does nothing when the control is already visible. Form controls get `scroll-margin: 12px`, so the 3 px focus ring and its 3 px offset stay visible.
+     - Probe at 1280 × 640: Tab to Calculate gives 580–628 of 640 in Chromium, Firefox and WebKit. Before, Firefox showed 606–654.
+  2. **F-P5-2, results out of view on a phone:** on the stacked layout (≤ 768 px), when new results are shown (Calculate or Restore) and the results card's top is above the screen or below its middle, the card is scrolled to the top with a 12 px margin. The scroll is instant, so no motion and no unsettled positions for tests. Focus stays where it is (spec §8.3). The position check runs one animation frame later, so it never forces a layout inside the Calculate click (the D-72 lesson).
+     - Probe at 360 × 740: after Calculate, `scrollY` is 726, the card top is at 12 px and the monthly payment is visible. After Restore from the bottom, the card top is at 12 px. At 1280 × 800 nothing moves. Same in all three browsers.
+  3. **F-P5-4, favicon:** an inline SVG `data:` icon in `index.html`. No file and no request: the probe saw no `favicon.ico` request.
+  4. **F-P5-5, axis label:** the axis end uses the existing `groupCount`, so a 1,200-month loan reads `1,200`, like its caption. No frozen test reads the axis text; the AC-21.3 test reads the caption and accepts either form.
+- **No frozen test or config was changed.**
+- **Evidence:**
+  - `CI=1 npm run verify` on mains power exited 1: Vitest 345 of 345; size 87.6 KB; E2E 551 of 552 (`[REVIEW-P5-1]` now passes in all 3 browsers). The one failure was `[webkit] [AC-2.6]`, an 8 s timeout on the *first* Calculate click, before any error or focus move.
+  - A/B, the whole S-2 file in WebKit with 4 workers, twice each: **36 of 36 with the fixes, and 1 of 36 failed without them**. The intermittent WebKit timeout predates these changes; it is the known Windows load pattern (D-64, D-68, D-73).
 
 ### D-47 Group 2 builds the schedule table; cross-group ACs reported as pending
 - **Decision:** The shared helper `expectResultsShown` requires the schedule table, so group 2 builds `ScheduleTable` too; group 3 then verifies S-10 and S-13. AC-4.4 needs the Theme and Currency selects (group 4), and AC-9.2 needs saved calculations (group 5), so they are reported at G4.2 as **pending later groups**, not as done.
