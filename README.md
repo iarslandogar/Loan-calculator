@@ -72,7 +72,12 @@ npx playwright install --with-deps  # Linux (also installs system libraries)
 
 **Story statuses** follow one rule: a story is marked `Implemented` only when all of its acceptance criteria pass in the automated tests in all three browsers **and** in the owner's manual check at Gate G5 ([docs/process/manual-test-checklist.md](docs/process/manual-test-checklist.md)).
 
-TODO(owner): G5 hasn't happened yet. At the time of writing, every story reads `Not implemented`, although every v1 acceptance criterion has passing tests. Update this paragraph after your G5 check.
+**How the statuses were actually set (G5, decision D-77):** on 2026-10-19 the owner marked all **17 v1 stories `Implemented`** on the automated evidence:
+- every acceptance criterion passes in Chromium, Firefox and WebKit;
+- `npm run verify` and `trace --results` pass;
+- the Phase 5 independent review reported 0 blocking findings.
+
+The line-by-line manual check was **not** done; the checklist is unticked. The 5 backlog stories (S-14 to S-18) were not built and stay `Not implemented`.
 
 ## How it was built
 
