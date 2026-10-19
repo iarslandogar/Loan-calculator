@@ -1,6 +1,6 @@
 import type { ReactNode } from 'react'
 import { copy } from '../../copy'
-import { VIEW_H, VIEW_W, centrePercent } from './chartGeometry'
+import { VIEW_H, VIEW_W, centrePercent, groupCount } from './chartGeometry'
 
 /** HTML legend (spec §8.3.2): Principal first, Interest second, in every chart. */
 export function Legend({
@@ -24,12 +24,12 @@ export function Legend({
   )
 }
 
-/** First and last item numbers under the plot (numbers only; no new words, D-68). */
+/** First and last item numbers under the plot (numbers only; no new words, D-68), grouped like the caption (F-P5-5). */
 export function AxisEnds({ count }: { count: number }) {
   return (
     <div className="chart-axis">
       <span>1</span>
-      {count > 1 && <span>{count}</span>}
+      {count > 1 && <span>{groupCount(count)}</span>}
     </div>
   )
 }
