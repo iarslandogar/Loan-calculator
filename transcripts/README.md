@@ -9,7 +9,7 @@ How this app was built: one Claude Code session in which **Muhammad Arslan (prod
 | [`subagents/`](subagents/) | 19 subagent runs, one file each, linked from the point in the main session where they were started. |
 | [`raw/`](raw/) | The underlying session logs as JSON Lines, filtered as described below. |
 | `make_transcripts.py`, `make_pdf.py`, `make_pdf.cjs` | The scripts that produced all of the above from Claude Code's local logs (Python standard library, plus Playwright's Chromium, already a dev dependency, to print the PDF). |
-| `session-00-requirements` | **Not here yet.** The claude.ai chat where the requirements pack was drafted, to be exported by the owner (decision D-00e). |
+| [claude.ai sessions](#claudeai-sessions) | The chats held in the claude.ai app rather than Claude Code: requirements and testing. See the table below. |
 
 **At a glance:** 40 owner messages, 237 Claude replies, 646 tool calls, 19 subagent runs, and 1 context compaction (marked in the transcript, with the summary Claude continued from).
 
@@ -31,8 +31,23 @@ Gates are where Claude stopped and waited for the owner. Every decision is also 
 | 19:16 | Sticky form requested (D-69) | screenshot |
 | 21:56 | **Visuals mini-gate:** four approvals, one "Not working" (the sticky form), found and fixed (D-69 to D-72) | "2-Not working" |
 | 22:02 to 23:59 | GitHub repo created; CI green on Linux; deployed to GitHub Pages with live smoke tests passing (D-73) | "cool, now we need to deploy it" |
+| 19 Oct 00:00 to 01:10 | Transcripts and PDF (D-74); a read-only pre-submission audit; the root README written from verifiable facts, with the owner's inputs marked TODO, and every command in it run on this machine | "Write the root README.md for the KnowledgeCity submission." |
+| 09:29 to 10:45 | **Phase 5:** round 1 of the whole-app review gives 0 blocking and 9 Minor findings. The owner picks four to fix: Firefox focus in the sticky form, scroll to results on a phone, favicon, and the "1,200" axis label. Round 2 gives 0 blocking, and the reviewer's verify passes 552/552 (D-75, D-76) | "Do the check and get everything approved." |
+| 11:51 to 11:55 | **G5, first pass:** the 17 v1 stories are set to Implemented on the automated evidence, recorded honestly as before the hand check (D-77) | "push and deploy everything and mark it done" |
+| 12:47 | **G5 manual check:** the owner ticks all 110 checklist lines on desktop and phone (D-78) | "a , done" |
+| 13:00 to 14:00 | **Packaging:** audit filed as a dated snapshot, J-10 reworded so no job names a screen, `.env*` ignored, the claude.ai transcripts added with their personal-detail pages cut, and a clean clone from GitHub run through `npm ci`, `npm test` and `npm run build` (D-78) | "Final packaging for the KnowledgeCity submission." |
 
-**Still to come:** Phase 5 (whole-app review and the owner's hand check, after which the owner decides each story's Status) and Phase 6 (README and release).
+
+## claude.ai sessions
+
+| Session | File | What happened |
+|---|---|---|
+| **Session 00: requirements** (17 Oct, 20:00 to 20:50 PKT) | [`session-00-requirements.md`](session-00-requirements.md) and the same chat as a PDF, [`session-00-requirements.pdf`](session-00-requirements.pdf) | Claude read the KnowledgeCity brief, proposed a stack and a human-gated loop, and asked 10 questions. The owner answered them (loan/EMI, several roles, React, GitHub Pages, human gates, Opus with Sonnet checking). Claude computed every reference figure with exact decimals, found that the textbook fixed-instalment schedule fails inside normal ranges, and wrote the whole requirements pack. |
+| **Plan review** (17 Oct, 20:49 PKT) | Part of session 00, message 4 | The owner reviewed the generated pack and caught that the `@` imports in CLAUDE.md weren't loading, because punctuation was stuck to the paths. Claude fixed all six. |
+| **Pastel redesign** (18 Oct) | [`../design/emi-pastel-redesign/`](../design/emi-pastel-redesign/) | The design tool's output, kept exactly as received (D-62). The design chat itself isn't exported; the brief it worked from is in session 01. |
+| **First-time-user testing** (18 Oct, 23:34 to 23:50 PKT) | [`claude-ai-testing-2026-10-18.pdf`](claude-ai-testing-2026-10-18.pdf) | Claude used the live app as a first-time user would: 65 test cases (48 passed, 14 passed with a note, 3 failed) and every payment matched Excel's PMT. Its main finding, results landing off-screen on a phone, was fixed in Phase 5 (F-P5-2). Its Excel report isn't included. |
+
+**Redaction (owner's decision, D-78):** session 00 ended (18 Oct, from 23:55 PKT) with the steps that rendered and redacted its own transcript. Those tool calls printed in plain text the personal details they searched for: an address area, the employer, citizenship, an email and a Jira ID. Both the Markdown and the PDF are therefore cut at the same point, and the Markdown says so where it ends. No requirements work happened after that point.
 
 ## Moments worth reading
 
