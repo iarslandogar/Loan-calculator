@@ -86,7 +86,7 @@ The 5 backlog stories (S-14 to S-18) were not built and stay `Not implemented`.
 
 **Process:** the work ran in phases (spec challenge, scaffold, tests first, build story by story, independent review, release). At the end of each phase the developer stopped at a gate, and the owner approved or corrected it. Tests were written before the code and frozen when approved (tag `g3-tests-approved`); after that, a test could change only with the owner's explicit approval, recorded in the decision log. The full plan is in [docs/process/loop-plan.md](docs/process/loop-plan.md).
 
-**Transcripts:** [transcripts/README.md](transcripts/README.md) has the full development session, the 19 subagent runs, and a PDF of the conversation.
+**Transcripts:** [transcripts/README.md](transcripts/README.md) has the full development session, the 20 subagent runs, and a PDF of the conversation.
 
 ## Code changed by hand
 

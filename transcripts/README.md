@@ -9,12 +9,12 @@ How this app was built: one Claude Code session in which **Muhammad Arslan (prod
 | [`session-01-export.txt`](session-01-export.txt) | Claude Code's own `/export` (see above): from the compaction to the end of the session. |
 | [`session-01-claude-code.md`](session-01-claude-code.md) | **Start here for the whole session.** The main session, readable: every owner message verbatim, every Claude reply, and every tool call (collapsed and shortened). Owner answers to Claude's multiple-choice questions are kept in full. |
 | [`session-01-conversation.pdf`](session-01-conversation.pdf) | The same conversation as a 96-page PDF: every message in full, each run of tool work shown as one line. |
-| [`subagents/`](subagents/) | 19 subagent runs, one file each, linked from the point in the main session where they were started. |
+| [`subagents/`](subagents/) | 20 subagent runs, one file each, linked from the point in the main session where they were started. |
 | [`raw/`](raw/) | The underlying session logs as JSON Lines, filtered as described below. |
 | `make_transcripts.py`, `make_pdf.py`, `make_pdf.cjs` | The scripts that produced all of the above from Claude Code's local logs (Python standard library, plus Playwright's Chromium, already a dev dependency, to print the PDF). |
 | [claude.ai sessions](#claudeai-sessions) | The chats held in the claude.ai app rather than Claude Code: requirements and testing. See the table below. |
 
-**At a glance:** 63 owner messages, 325 Claude replies, 888 tool calls, 19 subagent runs, and 1 context compaction (marked in the transcript, with the summary Claude continued from).
+**At a glance:** 63 owner messages, 325 Claude replies, 888 tool calls, 20 subagent runs, and 1 context compaction (marked in the transcript, with the summary Claude continued from).
 
 ## Timeline
 
