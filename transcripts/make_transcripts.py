@@ -1,6 +1,9 @@
 """Build readable transcripts and filtered raw logs from Claude Code session logs.
 
-Usage: python -I make_transcripts.py <logs-dir> <session-id> <out-dir>
+Usage: python -I make_transcripts.py <logs-dir> <session-id> <out-dir> [personal-patterns-file]
+
+The optional patterns file holds one regular expression per line (# for comments). Each match is replaced with
+"[personal detail removed]". It is kept outside the repo, so this script never contains the details themselves.
 """
 import datetime as dt
 import glob
@@ -10,6 +13,10 @@ import re
 import sys
 
 LOGS, SID, OUT = sys.argv[1], sys.argv[2], sys.argv[3]
+PERSONAL = []
+if len(sys.argv) > 4:
+    with open(sys.argv[4], encoding='utf-8') as fh:
+        PERSONAL = [re.compile(l.strip()) for l in fh if l.strip() and not l.lstrip().startswith('#')]
 PKT = dt.timezone(dt.timedelta(hours=5))
 
 SECRET_PATTERNS = [
@@ -25,6 +32,8 @@ KEEP_RAW_TYPES = {'user', 'assistant', 'system'}
 def redact(s):
     for p in SECRET_PATTERNS:
         s = re.sub(p, '[REDACTED]', s)
+    for p in PERSONAL:
+        s = p.sub('[personal detail removed]', s)
     return s
 
 
@@ -99,8 +108,9 @@ def describe_call(name, inp, agent_links):
         body.append('Brief given to the subagent:\n' + fence(cut(inp.get('prompt', ''), 4000)))
     elif name == 'AskUserQuestion':
         for q in inp.get('questions', []):
-            opts = '\n'.join(f"  - **{o.get('label')}**: {o.get('description', '')}" for o in q.get('options', []))
-            body.append(f"> **{q.get('question')}**\n{opts}")
+            opts = '\n'.join(f"  - **{clean(o.get('label', ''))}**: {clean(o.get('description', ''))}"
+                             for o in q.get('options', []))
+            body.append(f"> **{clean(q.get('question', ''))}**\n{opts}")
     elif name in ('Read', 'Glob', 'Grep', 'TaskStop', 'ToolSearch', 'ScheduleWakeup', 'Skill'):
         body.append(fence(cut({k: v for k, v in inp.items() if k != '_id'}, 600), 'json'))
     else:
@@ -210,7 +220,7 @@ def strip_strings(o):
     if isinstance(o, list):
         return [strip_strings(x) for x in o]
     if isinstance(o, dict):
-        return {k: strip_strings(v) for k, v in o.items()}
+        return {strip_strings(k): strip_strings(v) for k, v in o.items()}  # keys too: question text is a key
     return o
 
 

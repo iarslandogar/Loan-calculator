@@ -1,6 +1,6 @@
 # Transcripts
 
-How this app was built: one Claude Code session in which **Muhammad Arslan (product owner)** directed the work and Claude Code (**Opus 5.5**, the developer) wrote the code, with **Sonnet 5.5 subagents** challenging the spec, writing the tests and reviewing the code. 17 Oct 2026 20:44 to 18 Oct 2026 23:59, Pakistan time.
+How this app was built: one Claude Code session in which **Muhammad Arslan (product owner)** directed the work and Claude Code (**Opus 5.5**, the developer) wrote the code, with **Sonnet 5.5 subagents** challenging the spec, writing the tests and reviewing the code. 17 Oct 2026 20:44 to 19 Oct 2026 14:13, Pakistan time.
 
 **The primary record** is [`session-01-export.txt`](session-01-export.txt): Claude Code's own `/export` of this session, **unedited except that personal details on 5 lines are replaced with `[personal detail removed]`**. `/export` only contains the current context, so it begins at the context compaction (18 Oct 2026, 20:12 PKT) and runs to the end of the session. The rest of this folder holds readable or filtered versions alongside it, generated from Claude Code's own session logs, which also cover the part before the compaction.
 
@@ -8,13 +8,13 @@ How this app was built: one Claude Code session in which **Muhammad Arslan (prod
 |---|---|
 | [`session-01-export.txt`](session-01-export.txt) | Claude Code's own `/export` (see above): from the compaction to the end of the session. |
 | [`session-01-claude-code.md`](session-01-claude-code.md) | **Start here for the whole session.** The main session, readable: every owner message verbatim, every Claude reply, and every tool call (collapsed and shortened). Owner answers to Claude's multiple-choice questions are kept in full. |
-| [`session-01-conversation.pdf`](session-01-conversation.pdf) | The same conversation as a 66-page PDF: every message in full, each run of tool work shown as one line. |
+| [`session-01-conversation.pdf`](session-01-conversation.pdf) | The same conversation as a 96-page PDF: every message in full, each run of tool work shown as one line. |
 | [`subagents/`](subagents/) | 19 subagent runs, one file each, linked from the point in the main session where they were started. |
 | [`raw/`](raw/) | The underlying session logs as JSON Lines, filtered as described below. |
 | `make_transcripts.py`, `make_pdf.py`, `make_pdf.cjs` | The scripts that produced all of the above from Claude Code's local logs (Python standard library, plus Playwright's Chromium, already a dev dependency, to print the PDF). |
 | [claude.ai sessions](#claudeai-sessions) | The chats held in the claude.ai app rather than Claude Code: requirements and testing. See the table below. |
 
-**At a glance:** 40 owner messages, 237 Claude replies, 646 tool calls, 19 subagent runs, and 1 context compaction (marked in the transcript, with the summary Claude continued from).
+**At a glance:** 63 owner messages, 325 Claude replies, 888 tool calls, 19 subagent runs, and 1 context compaction (marked in the transcript, with the summary Claude continued from).
 
 ## Timeline
 
@@ -67,4 +67,5 @@ Gates are where Claude stopped and waited for the owner. Every decision is also 
   - `<system-reminder>` blocks, which the tool injects automatically and which repeat project files or list connected services.
 - **The readable transcripts** also leave out Claude's private reasoning ("thinking") blocks, and shorten long tool inputs and outputs. Every cut says how much was removed; `raw/` has the full text.
 - **Secrets:** all logs were scanned for GitHub, Anthropic, OpenAI and AWS tokens, bearer tokens and private keys, and none were found. Any match would have been replaced with `[REDACTED]`.
+- **Personal details** (decision D-78): an address area, the employer, citizenship and a Jira ID are replaced with `[personal detail removed]` wherever they appear: in the export, the readable transcripts, the PDF and `raw/`. The patterns are read from a file outside the repo (`make_transcripts.py`'s optional fourth argument), so no script in this folder contains them. The email address isn't removed; it is already public as the commit author.
 - **Times** are converted from UTC to Pakistan time (UTC+5).
